@@ -1,3 +1,8 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.cbcr.controllers.MicroserviceHelloWorld.hello
+POST      /saveFileUploadResponse       uk.gov.hmrc.cbcr.controllers.SaveAndRetrieveController.saveFileUploadResponse(cbcId:String)
+GET       /retrieveFileUploadResponse/:envelopeId   uk.gov.hmrc.cbcr.controllers.SaveAndRetrieveController.retrieveFileUploadResponse(cbcId:String, envelopeId: String)
+
+
+
+
