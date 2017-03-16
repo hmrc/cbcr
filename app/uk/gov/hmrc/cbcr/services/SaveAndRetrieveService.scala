@@ -36,7 +36,7 @@ object RetrieveService {
 
   val criteria = Json.obj("envelopeId" -> envelopeId, "status" -> "AVAILABLE")
 
-    Logger.debug("retrieve json for the criteria: "+Json.stringify(criteria))
+    Logger.debug("Query Json for the criteria: "+Json.stringify(criteria))
     find(criteria)
   }
 }
