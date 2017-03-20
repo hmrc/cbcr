@@ -22,6 +22,8 @@ import play.api._
 import play.api.http._
 import play.api.ApplicationLoader.Context
 import play.api.i18n.I18nComponents
+import play.api.inject.{Injector, SimpleInjector}
+import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.{RequestHeader, Result}
 import play.api.routing.Router
 import play.core.SourceMapper
@@ -30,6 +32,7 @@ import reactivemongo.api.DefaultDB
 import uk.gov.hmrc.cbcr.controllers.SaveAndRetrieveController
 import uk.gov.hmrc.cbcr.repositories.SaveAndRetrieveRepository
 import uk.gov.hmrc.play.config.AppName
+import uk.gov.hmrc.play.health.AdminController
 import uk.gov.hmrc.play.microservice.bootstrap.JsonErrorHandling
 
 import scala.concurrent.Future
@@ -42,7 +45,8 @@ class CBCRApplicationLoader extends ApplicationLoader {
   }
 }
 
-class MyComponents(context: Context) extends BuiltInComponentsFromContext(context) with I18nComponents { self =>
+class MyComponents(context: Context) extends BuiltInComponentsFromContext(context)  with AhcWSComponents
+with I18nComponents { self =>
   //lazy val router = Router.empty
 
 
@@ -54,6 +58,10 @@ class MyComponents(context: Context) extends BuiltInComponentsFromContext(contex
   lazy val router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController, "/")
 
  // lazy val applicationController = new controllers.SaveAndRetrieveController()
+
+  override lazy val application: Application = new DefaultApplication(environment, applicationLifecycle, customInjector,
+    configuration, httpRequestHandler, httpErrorHandler, actorSystem, materializer)
+
 
   lazy val configurationApp = new Application() {
     def actorSystem = self.actorSystem
@@ -75,6 +83,12 @@ class MyComponents(context: Context) extends BuiltInComponentsFromContext(contex
   lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
 
   lazy val healthRoutes: health.Routes = health.Routes
+
+  lazy val adminController = new AdminController(configuration)
+
+  // Since core libraries are using deprecated play.api.libs.ws.WS we need to add wsApi into injector
+  lazy val customInjector: Injector = new SimpleInjector(injector) + adminController + wsApi
+
 
   lazy val metricsController = new MetricsController(metrics)
 
