@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import play.api.Logger
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json._
 import play.api.mvc.{Action, Result}
@@ -37,6 +38,8 @@ class SaveAndRetrieveController(val messagesApi: MessagesApi)(implicit repositor
 trait SaveAndRetrieveHelperController extends BaseController with I18nSupport {
 
   def saveFileUploadResponseData(cbcId: String)(implicit repo: SaveAndRetrieveRepository): Action[SaveAndRetrieve] = Action.async(parse.json[SaveAndRetrieve]) { implicit request =>
+    Logger.debug("Country by Country-backend: CBCR Save the file upload response")
+
     SaveService.save(request.body, cbcId).map {
       case Left(err) => err.toResult
       case Right(dbSuccess) => dbSuccess.toResult
@@ -44,6 +47,8 @@ trait SaveAndRetrieveHelperController extends BaseController with I18nSupport {
   }
 
   def retrieveFileUploadResponseData(cbcId: String, envelopeId: String)(implicit repo: SaveAndRetrieveRepository) = Action.async { implicit request =>
+    Logger.debug("Country by Country-backend: CBCR Retrieve the file upload response")
+
     RetrieveService.retrieve(cbcId, envelopeId).map {
       case Some(x) => Ok(x.value)
       case None => Ok(Json.obj())
