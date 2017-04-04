@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.models
+package uk.gov.hmrc.cbcr.repositories
 
-import play.api.mvc.{Result, Results}
-import uk.gov.hmrc.cbcr.typeclasses.AsResult
+import play.modules.reactivemongo.MongoDbConnection
+import uk.gov.hmrc.cbcr.models.UploadFileResponse
 
-
-sealed trait DbOperationResult
-case object UpdateSuccess extends DbOperationResult
-case object UpdateFailed extends DbOperationResult
-
-object DbOperationResult {
-  implicit def dbResult(dbOR: DbOperationResult): AsResult[DbOperationResult] = new AsResult[DbOperationResult] {
-    override def asResult: Result = dbOR match {
-      case UpdateSuccess => Results.Ok
-      case UpdateFailed  => Results.InternalServerError
-    }
-  }
+object FileUploadResponseRepository extends MongoDbConnection {
+  val store = new GenericRepository[UploadFileResponse]("File_Upload_Response")
 }
-
-

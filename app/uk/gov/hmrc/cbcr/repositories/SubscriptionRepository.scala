@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.typeclasses
+package uk.gov.hmrc.cbcr.repositories
 
-import play.api.libs.json.JsObject
-import uk.gov.hmrc.cbcr.models.SaveAndRetrieve
-import uk.gov.hmrc.cbcr.repositories.SaveAndRetrieveRepository
+import play.modules.reactivemongo.MongoDbConnection
+import uk.gov.hmrc.cbcr.models.SubscriptionData
 
-import scala.concurrent.{ExecutionContext, Future}
-
-trait FindOne[T] {
-  def apply(criteria: JsObject)(implicit ex: ExecutionContext): Future[Option[T]]
-}
-
-object FindOne {
-
-  implicit def saveAndRetrieve(implicit repo: SaveAndRetrieveRepository) = new FindOne[SaveAndRetrieve] {
-    def apply(criteria: JsObject)(implicit ex: ExecutionContext): Future[Option[SaveAndRetrieve]] = {
-      repo.retrieve(criteria)
-    }
-  }
+object SubscriptionRepository extends MongoDbConnection {
+  val store = new GenericRepository[SubscriptionData]("Subscription_Data")
 }

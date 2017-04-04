@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.exceptions
+package uk.gov.hmrc.cbcr.models
 
+import play.api.libs.json.{JsValue, Json, OFormat}
+import play.api.mvc.Result
 import play.api.mvc.Results.Ok
-import play.api.libs.json.{ Json, JsPath, JsValue }
+import uk.gov.hmrc.cbcr.typeclasses.AsResult
 
-sealed trait UnexpectedState extends Product with Serializable {
 
-  private def toMessage(msg: String) = Json.obj("error" -> msg)
+final case class InvalidState(errorMsg: String, json: Option[JsValue] = None)
 
-  private def jsonResponse: JsValue = this match {
-    case InvalidState(errorMsg) => toMessage(errorMsg)
-    case InvalidStateWithJson(errorMsg, json) => toMessage(errorMsg) + ("json" -> json)
+
+object InvalidState{
+  implicit val invalidStateFormat: OFormat[InvalidState] = Json.format[InvalidState]
+
+  implicit def invalidStateResponse(i:InvalidState): AsResult[InvalidState] = new AsResult[InvalidState] {
+    override def asResult: Result = Ok(Json.toJson(i))
   }
-
-  def toResult = Ok(jsonResponse)
 }
-
-case class InvalidState(errorMsg: String) extends UnexpectedState
-case class InvalidStateWithJson(errorMsg: String, json: JsValue) extends UnexpectedState

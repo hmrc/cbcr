@@ -16,26 +16,25 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
+
+import cats.data.OptionT
 import play.api.libs.json._
 import reactivemongo.api.DefaultDB
 import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.cbcr.core.Opt
-import uk.gov.hmrc.cbcr.models.{DbOperationResult, SaveAndRetrieve}
+import uk.gov.hmrc.cbcr.core.{ServiceResponse, ServiceResponseOpt}
+import uk.gov.hmrc.cbcr.models.DbOperationResult
 import uk.gov.hmrc.mongo.ReactiveRepository
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
-class SaveAndRetrieveRepository(implicit mongo: () => DefaultDB)
-    extends ReactiveRepository[JsObject, BSONObjectID]("Save_And_Retrieve", mongo, implicitly[Format[JsObject]]) {
+/**
+  * Created by max on 04/04/17.
+  */
+class GenericRepository[A](name:String)(implicit mongo: () => DefaultDB, format:OFormat[A], m: Manifest[A])
+  extends ReactiveRepository[A, BSONObjectID](name, mongo, format){
 
-  def save(form: SaveAndRetrieve): Future[Opt[DbOperationResult]] = {
-    val insert = collection.insert(form.value)
-    checkUpdateResult(insert)
-  }
+  def save(form: A): ServiceResponse[DbOperationResult] = checkUpdateResult(collection.insert(form))
 
-  def retrieve(selector: JsObject): Future[Option[SaveAndRetrieve]] = {
-    collection.find(selector).one[SaveAndRetrieve]
-  }
+  def retrieve(selector: JsObject): ServiceResponseOpt[A] = OptionT(collection.find(selector).one[A])
+
 }
-

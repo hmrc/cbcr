@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr
 import play.api.libs.json._
 import play.api.mvc.{BodyParser, BodyParsers}
 import play.api.libs.iteratee.Execution.Implicits.trampoline
-import uk.gov.hmrc.cbcr.exceptions.InvalidStateWithJson
+import uk.gov.hmrc.cbcr.models.InvalidState
 
 package object controllers {
 
@@ -32,7 +32,7 @@ package object controllers {
         } yield (a, b)
         resultAB match {
           case JsSuccess((a, b), _) => Right((a, b))
-          case JsError(error) => Left(InvalidStateWithJson("Cannot read data from json. Got:" + error, json).toResult)
+          case JsError(error) => Left(InvalidState("Cannot read data from json. Got:" + error, Some(json)).asResult)
         }
       }
     }
