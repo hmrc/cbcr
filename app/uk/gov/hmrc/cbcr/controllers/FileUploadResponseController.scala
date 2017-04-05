@@ -33,8 +33,6 @@ class FileUploadResponseController(implicit val repository: GenericRepository[Up
   def saveFileUploadResponse(cbcId: String)  = Action.async(parse.json) { implicit request =>
     Logger.debug(s"Country by Country-backend: CBCR Save the file upload response")
 
-    request.body.validate[UploadFileResponse]
-
     request.body.validate[UploadFileResponse].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
       response => repository.save(response).fold(
