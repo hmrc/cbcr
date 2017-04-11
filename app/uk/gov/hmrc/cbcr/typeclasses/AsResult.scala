@@ -16,23 +16,17 @@
 
 package uk.gov.hmrc.cbcr.typeclasses
 
-import play.api.libs.json._
-import uk.gov.hmrc.cbcr.core.Opt
-import uk.gov.hmrc.cbcr.models.{DbOperationResult, SaveAndRetrieve}
-import uk.gov.hmrc.cbcr.repositories.SaveAndRetrieveRepository
+import play.api.mvc.Result
 
-import scala.concurrent.{ExecutionContext, Future}
-
-trait Save[T] {
-  def apply(e: T)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]]
+/**
+  * Typeclass to present some type A as a [[play.api.mvc.Result]]
+  */
+trait AsResult[A] {
+  def asResult:Result
 }
 
-object Save {
+object AsResult {
 
-  implicit def saveEntity(implicit repo: SaveAndRetrieveRepository) = new Save[SaveAndRetrieve] {
-    def apply(entity: SaveAndRetrieve)(implicit ex: ExecutionContext): Future[Opt[DbOperationResult]] = {
-      repo.save(entity)
-    }
-  }
+  def apply[A](implicit instance: AsResult[A]):AsResult[A] = instance
 
 }

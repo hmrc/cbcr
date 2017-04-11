@@ -16,28 +16,20 @@
 
 package uk.gov.hmrc.cbcr
 
-import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
-import uk.gov.hmrc.cbcr.core.Opt
-import uk.gov.hmrc.cbcr.exceptions.InvalidState
-import uk.gov.hmrc.cbcr.models.{DbOperationResult, UpdateSuccess}
+import cats.data.EitherT
+import reactivemongo.api.commands.WriteResult
+import uk.gov.hmrc.cbcr.core.ServiceResponse
+import uk.gov.hmrc.cbcr.models.{DbOperationResult, InvalidState, UpdateSuccess}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 package object repositories {
 
-  def checkUpdateResult(future: Future[WriteResult])(
-    implicit
-    ex: ExecutionContext
-  ): Future[Opt[DbOperationResult]] = {
-    future.map { r =>
-      if (r.ok) {
-        Right(UpdateSuccess)
-      } else {
-        Left(InvalidState("Update failed."))
-      }
+  def checkUpdateResult(future: Future[WriteResult])(implicit ex: ExecutionContext): ServiceResponse[DbOperationResult] =
+    EitherT(future.map { r =>
+      if (r.ok) Right(UpdateSuccess)
+      else Left(InvalidState(r.errmsg.getOrElse("Update failed")))
     }.recover {
-      case t: Throwable =>
-        Left(InvalidState(t.getMessage))
-    }
-  }
+      case t: Throwable => Left(InvalidState(t.getMessage))
+    })
 }

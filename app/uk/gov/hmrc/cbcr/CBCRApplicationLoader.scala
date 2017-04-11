@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.cbcr
 
-import app.Routes
 import com.kenshoo.play.metrics.{MetricsController, MetricsImpl}
+import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http._
-import play.api.ApplicationLoader.Context
 import play.api.i18n.I18nComponents
 import play.api.inject.{Injector, SimpleInjector}
 import play.api.libs.ws.ahc.AhcWSComponents
@@ -29,9 +28,9 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
-import uk.gov.hmrc.cbcr.controllers.SaveAndRetrieveController
-import uk.gov.hmrc.cbcr.repositories.SaveAndRetrieveRepository
-import uk.gov.hmrc.play.config.AppName
+import uk.gov.hmrc.cbcr.controllers.{FileUploadResponseController, SubscriptionDataController}
+import uk.gov.hmrc.cbcr.models.SubscriptionData
+import uk.gov.hmrc.cbcr.repositories.{FileUploadResponseRepository, SubscriptionRepository}
 import uk.gov.hmrc.play.health.AdminController
 import uk.gov.hmrc.play.microservice.bootstrap.JsonErrorHandling
 
@@ -53,7 +52,7 @@ with I18nComponents { self =>
   override lazy val httpErrorHandler: HttpErrorHandler = new CustomErrorHandling(environment, configuration, sourceMapper, Some(router))
   lazy val metrics = new MetricsImpl(applicationLifecycle, configuration)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, "cbcr")
+  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, subscriptionDataController, "cbcr")
 
   lazy val router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController, "/")
 
@@ -74,13 +73,18 @@ with I18nComponents { self =>
     def requestHandler = self.httpRequestHandler
     def stop() = self.applicationLifecycle.stop()
   }
+
   lazy val reactiveMongoComponent = new ReactiveMongoComponentImpl(configurationApp, applicationLifecycle)
 
   lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
-  lazy implicit val saveAndRetrieveRespository = new SaveAndRetrieveRepository()(db)
+  lazy implicit val saveAndRetrieveRepository = FileUploadResponseRepository.store
 
-  lazy val saveAndRetrieveController = new SaveAndRetrieveController(messagesApi)(saveAndRetrieveRespository)
+  lazy implicit val subscriptionDataRepository = SubscriptionRepository.store
+
+  lazy val subscriptionDataController = new SubscriptionDataController()(subscriptionDataRepository)
+
+  lazy val saveAndRetrieveController = new FileUploadResponseController()(saveAndRetrieveRepository)
 
   lazy val healthRoutes: health.Routes = health.Routes
 
@@ -89,9 +93,7 @@ with I18nComponents { self =>
   // Since core libraries are using deprecated play.api.libs.ws.WS we need to add wsApi into injector
   lazy val customInjector: Injector = new SimpleInjector(injector) + adminController + wsApi
 
-
   lazy val metricsController = new MetricsController(metrics)
-
 
 }
 

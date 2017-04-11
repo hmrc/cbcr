@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.controllers
+package uk.gov.hmrc.cbcr.models
 
-import play.api.test.FakeRequest
-import uk.gov.hmrc.play.test.UnitSpec
+import play.api.libs.json.Json
 
-class MicroserviceHelloWorldControllerSpec extends UnitSpec {
+/**
+  * Created by max on 03/04/17.
+  */
+case class SubscriptionData(name:String, position:String, email:String, cbcId:String)
 
-  val fakeRequest = FakeRequest("GET", "/")
-
-  "GET /" should {
-    "return 200" in {
-      pending
-    }
-  }
-
+object SubscriptionData {
+  implicit val sdFormat  = Json.format[SubscriptionData]
 }

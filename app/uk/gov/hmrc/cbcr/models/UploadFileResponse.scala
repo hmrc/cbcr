@@ -16,16 +16,20 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.json._
+import play.api.libs.json.Json
 
-case class SaveAndRetrieve(value: JsObject) extends AnyVal
 
-object SaveAndRetrieve {
-  val writes = Writes[SaveAndRetrieve](id => id.value)
-  val reads = Reads[SaveAndRetrieve] {
-    case o @ JsObject(_) => JsSuccess(SaveAndRetrieve(o))
-    case otherwise => JsError(s"Invalid Save and Retrieve format, expected JsObject, got: $otherwise")
-  }
+case class FileId(value: String) extends AnyVal
+case class EnvelopeId(value: String) extends AnyVal
+case class UploadFileResponse(envelopeId: EnvelopeId, fileId: FileId, fileName: String, contentType: String, body: Array[Byte])
 
-  implicit val format = Format[SaveAndRetrieve](reads, writes)
+object FileId{
+  implicit val fileIdFormat = Json.format[FileId]
+}
+object EnvelopeId{
+  implicit val envelopeIdFormat = Json.format[EnvelopeId]
+}
+
+object UploadFileResponse {
+  implicit val ufrFormat  = Json.format[UploadFileResponse]
 }
