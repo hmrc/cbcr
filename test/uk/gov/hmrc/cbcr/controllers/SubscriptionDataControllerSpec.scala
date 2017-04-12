@@ -43,7 +43,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
   val store: GenericRepository[SubscriptionData] = mock[GenericRepository[SubscriptionData]]
 
-  val exampleSubscriptionData = SubscriptionData("name", "position", "email", "cbcId")
+  val exampleSubscriptionData = SubscriptionData("name", "position", "phoneNumber","email", "cbcId")
 
   val controller = new SubscriptionDataController()(store)
 

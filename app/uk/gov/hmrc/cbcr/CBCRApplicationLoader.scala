@@ -29,8 +29,8 @@ import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
 import uk.gov.hmrc.cbcr.controllers.{FileUploadResponseController, SubscriptionDataController}
-import uk.gov.hmrc.cbcr.models.SubscriptionData
-import uk.gov.hmrc.cbcr.repositories.{FileUploadResponseRepository, SubscriptionRepository}
+import uk.gov.hmrc.cbcr.models.{SubscriptionData, UploadFileResponse}
+import uk.gov.hmrc.cbcr.repositories.GenericRepository
 import uk.gov.hmrc.play.health.AdminController
 import uk.gov.hmrc.play.microservice.bootstrap.JsonErrorHandling
 
@@ -76,11 +76,11 @@ with I18nComponents { self =>
 
   lazy val reactiveMongoComponent = new ReactiveMongoComponentImpl(configurationApp, applicationLifecycle)
 
-  lazy val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
+  lazy implicit val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
 
-  lazy implicit val saveAndRetrieveRepository = FileUploadResponseRepository.store
+  lazy implicit val saveAndRetrieveRepository = new GenericRepository[UploadFileResponse]("File_Upload_Response")
 
-  lazy implicit val subscriptionDataRepository = SubscriptionRepository.store
+  lazy implicit val subscriptionDataRepository = new GenericRepository[SubscriptionData]("Subscription_Data")
 
   lazy val subscriptionDataController = new SubscriptionDataController()(subscriptionDataRepository)
 

@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 /**
   * Created by max on 03/04/17.
   */
-case class SubscriptionData(name:String, position:String, email:String, cbcId:String)
+case class SubscriptionData(name:String, role:String, phoneNumber:String, email:String, cbcId:String)
 
 object SubscriptionData {
   implicit val sdFormat  = Json.format[SubscriptionData]

@@ -42,7 +42,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar {
 
   val store = mock[GenericRepository[UploadFileResponse]]
 
-  val fir = UploadFileResponse(EnvelopeId("id1"),FileId("fid1"),"filename","xml",Array.emptyByteArray)
+  val fir = UploadFileResponse("id1","fid1","status")
 
   val controller = new FileUploadResponseController()(store)
 
