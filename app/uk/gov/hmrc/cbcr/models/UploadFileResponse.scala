@@ -18,17 +18,7 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json.Json
 
-
-case class FileId(value: String) extends AnyVal
-case class EnvelopeId(value: String) extends AnyVal
-case class UploadFileResponse(envelopeId: EnvelopeId, fileId: FileId, fileName: String, contentType: String, body: Array[Byte])
-
-object FileId{
-  implicit val fileIdFormat = Json.format[FileId]
-}
-object EnvelopeId{
-  implicit val envelopeIdFormat = Json.format[EnvelopeId]
-}
+case class UploadFileResponse(envelopeId: String, fileId: String, status:String)
 
 object UploadFileResponse {
   implicit val ufrFormat  = Json.format[UploadFileResponse]
