@@ -28,7 +28,8 @@ import play.api.routing.Router
 import play.core.SourceMapper
 import play.modules.reactivemongo.ReactiveMongoComponentImpl
 import reactivemongo.api.DefaultDB
-import uk.gov.hmrc.cbcr.controllers.{FileUploadResponseController, SubscriptionDataController}
+import uk.gov.hmrc.cbcr.connectors.DESConnectorImpl
+import uk.gov.hmrc.cbcr.controllers.{BusinessPartnerRecordController, FileUploadResponseController, SubscriptionDataController}
 import uk.gov.hmrc.cbcr.models.{SubscriptionData, UploadFileResponse}
 import uk.gov.hmrc.cbcr.repositories.GenericRepository
 import uk.gov.hmrc.play.health.AdminController
@@ -52,7 +53,7 @@ with I18nComponents { self =>
   override lazy val httpErrorHandler: HttpErrorHandler = new CustomErrorHandling(environment, configuration, sourceMapper, Some(router))
   lazy val metrics = new MetricsImpl(applicationLifecycle, configuration)
 
-  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, subscriptionDataController, "cbcr")
+  lazy val appRoutes = new app.Routes(httpErrorHandler, saveAndRetrieveController, subscriptionDataController, businessPartnerRecordController,"cbcr")
 
   lazy val router = new prod.Routes(httpErrorHandler, appRoutes, healthRoutes, metricsController, "/")
 
@@ -74,6 +75,8 @@ with I18nComponents { self =>
     def stop() = self.applicationLifecycle.stop()
   }
 
+  lazy implicit val ec = self.actorSystem.dispatcher
+
   lazy val reactiveMongoComponent = new ReactiveMongoComponentImpl(configurationApp, applicationLifecycle)
 
   lazy implicit val db: () => DefaultDB = reactiveMongoComponent.mongoConnector.db
@@ -85,6 +88,9 @@ with I18nComponents { self =>
   lazy val subscriptionDataController = new SubscriptionDataController()(subscriptionDataRepository)
 
   lazy val saveAndRetrieveController = new FileUploadResponseController()(saveAndRetrieveRepository)
+
+  lazy val desConnector = new DESConnectorImpl
+  lazy val businessPartnerRecordController = new BusinessPartnerRecordController(desConnector)
 
   lazy val healthRoutes: health.Routes = health.Routes
 

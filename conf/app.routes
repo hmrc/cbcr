@@ -6,6 +6,8 @@ GET       /retrieveFileUploadResponse/:envelopeId   uk.gov.hmrc.cbcr.controllers
 POST      /saveSubscriptionData                     uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.saveSubscriptionData()
 GET       /retrieveSubscriptionData/:cbcId          uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionData(cbcId:String)
 
+GET       /getBusinessPartnerRecord/:utr            uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
+
 
 
 
