@@ -10,6 +10,7 @@ object MicroServiceBuild extends Build with MicroService {
 
   val compile = Seq(
     "uk.gov.hmrc" %% "play-reactivemongo" % "5.1.0",
+    "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "1.4.1",
     ws,
     "uk.gov.hmrc" %% "microservice-bootstrap" % "5.15.0",
     "uk.gov.hmrc" %% "play-authorisation" % "4.3.0",
@@ -18,7 +19,8 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "play-config" % "4.3.0",
     "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
     "uk.gov.hmrc" %% "domain" % "4.1.0",
-    "org.typelevel" %% "cats" % "0.9.0"
+    "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
+    "com.typesafe.akka" %% "akka-persistence" % "2.4.14"
   )
 
   def test(scope: String = "test,it") = Seq(
@@ -27,9 +29,8 @@ object MicroServiceBuild extends Build with MicroService {
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % scope,
-    "org.mockito" % "mockito-core" % "1.9.0" % scope
-
-
+    "org.mockito" % "mockito-core" % "1.9.0" % scope,
+    "org.scalacheck" %% "scalacheck" % "1.12.6" % scope
   )
 
 }
