@@ -16,13 +16,16 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import javax.inject.{Inject,Singleton}
+
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext
 
-class BusinessPartnerRecordController(connector:DESConnector)(implicit val ec:ExecutionContext) extends BaseController{
+@Singleton
+class BusinessPartnerRecordController @Inject() (connector:DESConnector)(implicit val ec:ExecutionContext) extends BaseController{
 
   def getBusinessPartnerRecord(utr:String) = Action.async{ implicit request =>
     connector.lookup(utr).map {
