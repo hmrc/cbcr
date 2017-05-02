@@ -18,30 +18,22 @@ package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import cats.data.{EitherT, OptionT}
-import cats.instances.future._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import play.api.http.Status
+import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
-import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
-import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json._
-import uk.gov.hmrc.cbcr.models.SubscriptionData
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-/**
-  * Created by max on 04/04/17.
-  */
 class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
   val store = mock[SubscriptionDataRepository]
@@ -50,7 +42,8 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
   val failResult = DefaultWriteResult(false,1,Seq(WriteError(1,1,"Error")),None,None,Some("Error"))
 
-  val exampleSubscriptionData = SubscriptionData("name", "position", "phoneNumber","email", "cbcId")
+  val bpr = BusinessPartnerRecord(Some("MySafeID"),Some(OrganisationResponse("Dave Corp")),EtmpAddress(None,None,None,None,None,None))
+  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","02072653787",EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001").get)
 
   val controller = new SubscriptionDataController(store)
 
@@ -64,13 +57,13 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
   "The SubscriptionDataController" should {
     "respond with a 200 when asked to store SubscriptionData" in {
-      when(store.save(any(classOf[SubscriptionData]))).thenReturn(Future.successful(okResult))
+      when(store.save(any(classOf[SubscriptionDetails]))).thenReturn(Future.successful(okResult))
       val result  = controller.saveSubscriptionData()(fakePostRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure" in {
-      when(store.save(any(classOf[SubscriptionData]))).thenReturn(Future.successful(failResult))
+      when(store.save(any(classOf[SubscriptionDetails]))).thenReturn(Future.successful(failResult))
       val result  = controller.saveSubscriptionData()(fakePostRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
@@ -79,7 +72,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
       when(store.get(any(classOf[String]))).thenReturn(Future.successful(Some(exampleSubscriptionData)))
       val result  = controller.retrieveSubscriptionData("cbcId")(fakeGetRequest)
       status(result) shouldBe Status.OK
-      jsonBodyOf(result).validate[SubscriptionData].isSuccess shouldBe true
+      jsonBodyOf(result).validate[SubscriptionDetails].isSuccess shouldBe true
     }
 
     "respond with a 404 when asked to retrieve a non-existent CBCID" in {
