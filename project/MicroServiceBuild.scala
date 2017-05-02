@@ -23,7 +23,8 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "domain" % "4.1.0",
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
     "com.typesafe.akka" %% "akka-persistence" % "2.4.14",
-    "com.github.kxbmap" %% "configs" % "0.4.4"
+    "com.github.kxbmap" %% "configs" % "0.4.4",
+    "uk.gov.hmrc" %% "emailaddress" % "2.1.0"
   )
 
   def test(scope: String = "test,it") = Seq(
@@ -36,8 +37,7 @@ object MicroServiceBuild extends Build with MicroService {
     "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % scope,
     "org.mockito" % "mockito-core" % "1.9.0" % scope,
     "org.scalacheck" %% "scalacheck" % "1.12.6" % scope,
-    "org.eu.acolyte" % "play-reactive-mongo_2.11" % "1.0.43-j7p" % scope,
-    "org.specs2" %% "specs2-core" % "3.8.9" % scope
+    "org.eu.acolyte" % "play-reactive-mongo_2.11" % "1.0.43-j7p" % scope
   )
 
 }

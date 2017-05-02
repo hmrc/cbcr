@@ -23,7 +23,7 @@ import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json._
-import uk.gov.hmrc.cbcr.models.SubscriptionData
+import uk.gov.hmrc.cbcr.models.SubscriptionDetails
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -33,12 +33,12 @@ class SubscriptionDataRepository @Inject() (val mongo: ReactiveMongoApi)(implici
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
 
-  def save(s:SubscriptionData) : Future[WriteResult] =
+  def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
-  def get(cbcId:String) : Future[Option[SubscriptionData]] = {
+  def get(cbcId:String) : Future[Option[SubscriptionDetails]] = {
     val criteria = Json.obj("cbcId" -> cbcId)
-    repository.flatMap(_.find(criteria).one[SubscriptionData])
+    repository.flatMap(_.find(criteria).one[SubscriptionDetails])
   }
 
 }

@@ -16,13 +16,16 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.emailaddress.PlayJsonFormats._
 
-/**
-  * Created by max on 03/04/17.
-  */
-case class SubscriptionData(name:String, role:String, phoneNumber:String, email:String, cbcId:String)
+case class SubscriberContact(name:String, phoneNumber:String, email:EmailAddress)
+object SubscriberContact {
+  implicit val subscriptionFormat :Format[SubscriberContact] = Json.format[SubscriberContact]
+}
 
-object SubscriptionData {
-  implicit val sdFormat  = Json.format[SubscriptionData]
+case class SubscriptionDetails(businessPartnerRecord: BusinessPartnerRecord, subscriberContact: SubscriberContact, cbcId:CBCId)
+object SubscriptionDetails {
+  implicit val subscriptionDetailsFormat = Json.format[SubscriptionDetails]
 }

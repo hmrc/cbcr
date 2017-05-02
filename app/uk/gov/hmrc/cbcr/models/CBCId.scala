@@ -18,6 +18,7 @@ package uk.gov.hmrc.cbcr.models
 
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
+import play.api.libs.json._
 import uk.gov.hmrc.domain.Modulus23Check
 
 /**
@@ -36,6 +37,16 @@ class CBCId private(val value:String){
 
 object CBCId extends Modulus23Check {
 
+  implicit val cbcIdFormat = new Format[CBCId] {
+    override def writes(o: CBCId): JsValue = JsString(o.value)
+
+    override def reads(json: JsValue): JsResult[CBCId] = json match {
+      case JsString(value) => CBCId(value).fold[JsResult[CBCId]](
+        JsError(s"CBCId is invalid: $value")
+      )(cbcid => JsSuccess(cbcid))
+      case other => JsError(s"CBCId is invalid: $other")
+    }
+  }
   def apply(s:String) : Option[CBCId] =
     if(isValidCBC(s) && isCheckCorrect(s,1)){
       Some(new CBCId(s))

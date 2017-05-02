@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.cbcr.models.SubscriptionData
+import uk.gov.hmrc.cbcr.models.SubscriptionDetails
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
@@ -34,11 +34,12 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
   def saveSubscriptionData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
 
     Logger.debug("Country by Country-backend: CBCR Save subscription data")
+    Logger.error(s"request.body: ${request.body}")
 
-    request.body.validate[SubscriptionData].fold(
+    request.body.validate[SubscriptionDetails].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.save(response).map {
-        case result if result.writeErrors.nonEmpty => InternalServerError(result.writeErrors.mkString)
+        case result if !result.ok => InternalServerError(result.writeErrors.mkString)
         case _ => Ok
       }
     )
