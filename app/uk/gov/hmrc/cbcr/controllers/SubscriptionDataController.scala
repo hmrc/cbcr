@@ -20,10 +20,11 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.Logger
 import play.api.libs.json.{JsError, JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.cbcr.models.SubscriptionDetails
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import cats.instances.future._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -34,7 +35,6 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
   def saveSubscriptionData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
 
     Logger.debug("Country by Country-backend: CBCR Save subscription data")
-    Logger.error(s"request.body: ${request.body}")
 
     request.body.validate[SubscriptionDetails].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
@@ -43,6 +43,17 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
         case _ => Ok
       }
     )
+  }
+
+  def clearSubscriptionData(cbcId:String):Action[AnyContent] = Action.async{ implicit request =>
+
+    Logger.debug("Country by Country-backend: CBCR clear subscription data")
+
+    repo.clear(cbcId).fold[Result](NotFound){
+      case result if !result.ok => InternalServerError(result.writeErrors.mkString)
+      case _ => Ok
+    }
+
   }
 
   def retrieveSubscriptionData(cbcId:String):Action[AnyContent] = Action.async{ implicit request =>

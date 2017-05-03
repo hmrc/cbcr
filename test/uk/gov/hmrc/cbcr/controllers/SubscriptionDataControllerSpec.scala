@@ -18,6 +18,8 @@ package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import cats.data.OptionT
+import cats.instances.future._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
@@ -26,11 +28,12 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import reactivemongo.api.commands.{DefaultWriteResult, WriteError, WriteResult}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.test.UnitSpec
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
 
@@ -79,6 +82,24 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
       when(store.get(any(classOf[String]))).thenReturn(Future.successful(None))
       val result  = controller.retrieveSubscriptionData("cbcId")(fakeGetRequest)
       status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "respond with a 200 when asked to clear a record that exists" in {
+      when(store.clear(any(classOf[String]))).thenReturn(OptionT.some[Future,WriteResult](okResult))
+      val result  = controller.clearSubscriptionData("cbcId")(fakeGetRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "respond with a 404 when asked to clear a record that doesn't exist" in {
+      when(store.clear(any(classOf[String]))).thenReturn(OptionT.none[Future,WriteResult])
+      val result  = controller.clearSubscriptionData("cbcId")(fakeGetRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "respond with a 500 when asked to clear a record but something goes wrong" in {
+      when(store.clear(any(classOf[String]))).thenReturn(OptionT.some[Future,WriteResult](failResult))
+      val result  = controller.clearSubscriptionData("cbcId")(fakeGetRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
   }

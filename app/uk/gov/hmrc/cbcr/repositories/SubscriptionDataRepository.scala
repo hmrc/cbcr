@@ -18,20 +18,31 @@ package uk.gov.hmrc.cbcr.repositories
 
 import javax.inject.{Inject, Singleton}
 
+import cats.data.OptionT
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json._
+import cats.instances.future._
 import uk.gov.hmrc.cbcr.models.SubscriptionDetails
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SubscriptionDataRepository @Inject() (val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext){
+class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext){
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
+
+  def clear(cbcId:String): OptionT[Future,WriteResult] = {
+    val criteria = Json.obj("cbcId" -> cbcId)
+    for {
+      repo   <- OptionT.liftF(repository)
+      _      <- OptionT(repo.find(criteria).one[SubscriptionDetails])
+      result <- OptionT.liftF(repo.remove(criteria))
+    } yield result
+  }
 
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
