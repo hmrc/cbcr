@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr
+package uk.gov.hmrc
 
 import cats.data.{EitherT, OptionT}
 import uk.gov.hmrc.cbcr.models.InvalidState
 
 import scala.concurrent.{ExecutionContext, Future}
 
-package object core {
+package object cbcr {
 
   type ServiceResponse[A] = EitherT[Future, InvalidState, A]
   type ServiceResponseOpt[A] = OptionT[Future, A]

@@ -16,21 +16,26 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import javax.inject.Singleton
+import javax.inject.{Inject, Singleton}
 
+import com.google.inject.ImplementedBy
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
-import uk.gov.hmrc.cbcr.{MicroserviceGlobal, WSHttp}
+import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.logging.Authorization
+import uk.gov.hmrc.play.http.ws.WSPost
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
+
+  @ImplementedBy(classOf[DESConnectorImpl])
   trait DESConnector extends ServicesConfig with RawResponseReads {
 
     implicit val ec:ExecutionContext
@@ -43,9 +48,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
     def urlHeaderAuthorization: String
 
-    def http: HttpGet with HttpPost
+    def http: HttpPost
 
-    def audit = new Audit("known-fact-checking", MicroserviceGlobal.auditConnector)
+    val audit:Audit
 
     val lookupData: JsObject = Json.obj(
       "regime" -> "ITSA",
@@ -78,10 +83,13 @@ import scala.concurrent.{ExecutionContext, Future}
   }
 
   @Singleton
-  class DESConnectorImpl(implicit val ec: ExecutionContext) extends DESConnector {
+  class DESConnectorImpl @Inject() (val ec: ExecutionContext, val auditConnector:AuditConnectorI) extends DESConnector {
     lazy val serviceUrl: String = baseUrl("etmp-hod")
     lazy val orgLookupURI: String = "registration/organisation"
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
-    lazy val http = WSHttp
+    val audit = new Audit("known-fact-checking", auditConnector)
+    val http:WSPost = new WSPost {
+      override val hooks: Seq[HttpHook] = NoneRequired
+    }
   }

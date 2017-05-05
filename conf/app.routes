@@ -1,12 +1,15 @@
 # microservice specific routes
 
 POST      /saveFileUploadResponse                   uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.saveFileUploadResponse(cbcId:String)
-GET       /retrieveFileUploadResponse/:envelopeId   uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.retrieveFileUploadResponse(cbcId:String, envelopeId: String)
+GET       /retrieveFileUploadResponse/:envelopeId   uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.retrieveFileUploadResponse(envelopeId: String)
 
 POST      /saveSubscriptionData                     uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.saveSubscriptionData()
+POST      /clearSubscriptionData                    uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcId:String)
 GET       /retrieveSubscriptionData/:cbcId          uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionData(cbcId:String)
 
 GET       /getBusinessPartnerRecord/:utr            uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
+
+GET       /getCBCId                                 uk.gov.hmrc.cbcr.controllers.CBCIdController.getCBCId
 
 
 

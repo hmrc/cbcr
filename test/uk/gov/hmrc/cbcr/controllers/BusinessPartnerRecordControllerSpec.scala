@@ -22,7 +22,6 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.cbcr.models.{EtmpAddress, FindBusinessDataResponse}
 import uk.gov.hmrc.play.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -39,10 +38,10 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockitoSugar {
 
   "The BusinessPartnerRecordController" should {
     "respond with a 200 if the UTR is matched" in {
-      val response = FindBusinessDataResponse(false, None, None, Some("safeid"), EtmpAddress(None, None, None, None, Some("SW46NS"), None))
+      val response = Json.obj("safeId"->"XV0000100085686","agentReferenceNumber"->"BARN0000191","isEditable"->false,"isAnAgent"->true,"isAnASAgent"->true,"isAnIndividual"->true,"individual"-> Json.obj("firstName"->"First Name Taxpayer 01","lastName"->"Last Name Taxpayer 01","dateOfBirth"->"1960-12-01"),"address"->Json.obj("addressLine1"->"Matheson House 1","addressLine2"->"Grange Central","addressLine3"->"Telford","addressLine4"->"Shropshire","countryCode"->"GB","postalCode"->"TF3 4ER"), "contactDetails" -> Json.obj())
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(utr)) thenReturn Future.successful(HttpResponse(Status.OK, Some(Json.toJson(response))))
+      when(dc.lookup(utr)) thenReturn Future.successful(HttpResponse(Status.OK, Some(response)))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.OK
     }
 
