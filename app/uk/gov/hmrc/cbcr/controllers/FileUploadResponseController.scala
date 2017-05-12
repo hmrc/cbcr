@@ -31,7 +31,7 @@ import scala.concurrent.Future
 @Singleton
 class FileUploadResponseController @Inject() (repo:FileUploadRepository) extends BaseController {
 
-  def saveFileUploadResponse(cbcId: String)  = Action.async(parse.json) { implicit request =>
+  def saveFileUploadResponse  = Action.async(parse.json) { implicit request =>
     Logger.debug(s"Country by Country-backend: CBCR Save the file upload response")
 
     request.body.validate[UploadFileResponse].fold(
