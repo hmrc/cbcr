@@ -76,10 +76,10 @@ class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with S
       jsonBodyOf(result).validate[UploadFileResponse].isSuccess shouldBe true
     }
 
-    "respond with a 404 when asked to retrieve a non-existent envelopeId" in {
+    "respond with a 204 when asked to retrieve a non-existent envelopeId" in {
       when(repo.get(any(classOf[String]))).thenReturn(Future.successful(None))
       val result = controller.retrieveFileUploadResponse("envelopeIdFail")(fakeGetRequest)
-      status(result) shouldBe Status.NOT_FOUND
+      status(result) shouldBe Status.NO_CONTENT
     }
 
   }

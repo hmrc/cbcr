@@ -48,7 +48,7 @@ class FileUploadResponseController @Inject() (repo:FileUploadRepository) extends
 
     repo.get(envelopeId).map{
       case Some(obj) => Ok(Json.toJson(obj))
-      case None      => NotFound
+      case None      => NoContent
     }
 
   }
