@@ -11,6 +11,8 @@ GET       /getBusinessPartnerRecord/:utr            uk.gov.hmrc.cbcr.controllers
 
 GET       /getCBCId                                 uk.gov.hmrc.cbcr.controllers.CBCIdController.getCBCId
 
+PUT       /messageRefId/:id                         uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
+GET       /messageRefId/:id                         uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)
 
 
 
