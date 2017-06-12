@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
-import uk.gov.hmrc.cbcr.models.SubscriptionDetails
+import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails, Utr}
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import cats.instances.future._
@@ -56,15 +56,18 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
 
   }
 
-  def retrieveSubscriptionData(cbcId:String):Action[AnyContent] = Action.async{ implicit request =>
+  def utrAlreadySubscribed(utr:Utr):Action[AnyContent] = Action.async { implicit request =>
+    repo.get(utr).map{
+      case Some(_)   => Ok
+      case None      => NotFound
+    }
+  }
 
-    Logger.debug("Country by Country-backend: CBCR Retrieve subscription data")
-
+  def retrieveSubscriptionData(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
     repo.get(cbcId).map{
       case Some(obj) => Ok(Json.toJson(obj))
       case None      => NotFound
     }
-
   }
 
 }
