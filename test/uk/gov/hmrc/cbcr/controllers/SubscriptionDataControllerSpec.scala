@@ -76,26 +76,26 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
     "respond with a 200 and a SubscriptionData when asked to retrieve an existing CBCID" in {
       when(store.get(any(classOf[CBCId]))).thenReturn(Future.successful(Some(exampleSubscriptionData)))
-      val result  = controller.retrieveSubscriptionData(cbcId)(fakeGetRequest)
+      val result  = controller.retrieveSubscriptionDataCBCId(cbcId)(fakeGetRequest)
       status(result) shouldBe Status.OK
       jsonBodyOf(result).validate[SubscriptionDetails].isSuccess shouldBe true
     }
 
     "respond with a 404 when asked to retrieve a non-existent CBCID" in {
       when(store.get(any(classOf[CBCId]))).thenReturn(Future.successful(None))
-      val result  = controller.retrieveSubscriptionData(cbcId)(fakeGetRequest)
+      val result  = controller.retrieveSubscriptionDataCBCId(cbcId)(fakeGetRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "respond with a 200 when queried with a utr that already exists" in {
       when(store.get(any(classOf[Utr]))).thenReturn(Future.successful(Some(exampleSubscriptionData)))
-      val result  = controller.utrAlreadySubscribed(utr)(fakeGetRequest)
+      val result  = controller.retrieveSubscriptionDataUtr(utr)(fakeGetRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 404 when queried with a utr that doesnt exist" in {
       when(store.get(any(classOf[Utr]))).thenReturn(Future.successful(None))
-      val result  = controller.utrAlreadySubscribed(utr)(fakeGetRequest)
+      val result  = controller.retrieveSubscriptionDataUtr(utr)(fakeGetRequest)
       status(result) shouldBe Status.NOT_FOUND
 
     }
