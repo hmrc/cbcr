@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.models
 import cats.data.Validated
 import cats.data.Validated.{Invalid, Valid}
 import play.api.libs.json._
+import play.api.mvc.PathBindable
 import uk.gov.hmrc.domain.Modulus23Check
 
 /**
@@ -36,6 +37,13 @@ class CBCId private(val value:String){
 }
 
 object CBCId extends Modulus23Check {
+
+  implicit val pathFormat = new PathBindable[CBCId] {
+
+    override def bind(key: String, value: String): Either[String, CBCId] = CBCId(value).toRight("Invalid CBCId")
+    override def unbind(key: String, value: CBCId): String = value.value
+
+  }
 
   implicit val cbcIdFormat = new Format[CBCId] {
     override def writes(o: CBCId): JsValue = JsString(o.value)

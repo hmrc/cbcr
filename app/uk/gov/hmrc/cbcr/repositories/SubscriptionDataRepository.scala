@@ -25,7 +25,7 @@ import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json._
 import cats.instances.future._
-import uk.gov.hmrc.cbcr.models.SubscriptionDetails
+import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails, Utr}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,8 +47,13 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
-  def get(cbcId:String) : Future[Option[SubscriptionDetails]] = {
-    val criteria = Json.obj("cbcId" -> cbcId)
+  def get(cbcId:CBCId) : Future[Option[SubscriptionDetails]] = {
+    val criteria = Json.obj("cbcId" -> cbcId.value)
+    repository.flatMap(_.find(criteria).one[SubscriptionDetails])
+  }
+
+  def get(utr:Utr): Future[Option[SubscriptionDetails]] = {
+    val criteria = Json.obj("utr" -> utr.utr)
     repository.flatMap(_.find(criteria).one[SubscriptionDetails])
   }
 
