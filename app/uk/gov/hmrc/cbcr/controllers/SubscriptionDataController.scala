@@ -56,14 +56,14 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
 
   }
 
-  def utrAlreadySubscribed(utr:Utr):Action[AnyContent] = Action.async { implicit request =>
+  def retrieveSubscriptionDataUtr(utr:Utr):Action[AnyContent] = Action.async { implicit request =>
     repo.get(utr).map{
-      case Some(_)   => Ok
+      case Some(obj) => Ok(Json.toJson(obj))
       case None      => NotFound
     }
   }
 
-  def retrieveSubscriptionData(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
+  def retrieveSubscriptionDataCBCId(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
     repo.get(cbcId).map{
       case Some(obj) => Ok(Json.toJson(obj))
       case None      => NotFound

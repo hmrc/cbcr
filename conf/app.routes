@@ -5,8 +5,8 @@ GET       /retrieveFileUploadResponse/:envelopeId   uk.gov.hmrc.cbcr.controllers
 
 POST      /saveSubscriptionData                     uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.saveSubscriptionData()
 POST      /clearSubscriptionData                    uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcId:String)
-GET       /retrieveSubscriptionData/:cbcId          uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionData(cbcId:uk.gov.hmrc.cbcr.models.CBCId)
-GET       /utr-already-subscribed/:utr               uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.utrAlreadySubscribed(utr:uk.gov.hmrc.cbcr.models.Utr)
+GET       /subscription-data/cbc-id/:cbcId           uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataCBCId(cbcId:uk.gov.hmrc.cbcr.models.CBCId)
+GET       /subscription-data/utr/:utr               uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataUtr(utr:uk.gov.hmrc.cbcr.models.Utr)
 
 GET       /getBusinessPartnerRecord/:utr            uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
 
