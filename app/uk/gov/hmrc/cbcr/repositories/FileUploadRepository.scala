@@ -33,11 +33,13 @@ class FileUploadRepository @Inject() (val mongo: ReactiveMongoApi)(implicit ec:E
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("FileUpload"))
 
-  def save(f:UploadFileResponse) : Future[WriteResult] =
-    repository.flatMap(_.insert(f))
+  def save(f:UploadFileResponse) : Future[WriteResult] = {
+    val criteria = Json.obj("envelopeId" -> f.envelopeId)
+    repository.flatMap(_.update(criteria, f, upsert = true))
+  }
 
   def get(envelopeId:String): Future[Option[UploadFileResponse]] = {
-    val criteria = Json.obj("envelopeId" -> envelopeId, "status" -> "AVAILABLE")
+    val criteria = Json.obj("envelopeId" -> envelopeId)
     repository.flatMap(_.find(criteria).one[UploadFileResponse])
   }
 

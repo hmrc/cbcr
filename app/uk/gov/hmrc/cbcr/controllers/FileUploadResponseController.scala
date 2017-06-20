@@ -32,8 +32,6 @@ import scala.concurrent.Future
 class FileUploadResponseController @Inject() (repo:FileUploadRepository) extends BaseController {
 
   def saveFileUploadResponse  = Action.async(parse.json) { implicit request =>
-    Logger.debug(s"Country by Country-backend: CBCR Save the file upload response")
-
     request.body.validate[UploadFileResponse].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.save(response).map{
@@ -44,13 +42,10 @@ class FileUploadResponseController @Inject() (repo:FileUploadRepository) extends
   }
 
   def retrieveFileUploadResponse(envelopeId: String) = Action.async { implicit request =>
-    Logger.debug("Country by Country-backend: CBCR Retrieve the file upload response")
-
     repo.get(envelopeId).map{
       case Some(obj) => Ok(Json.toJson(obj))
       case None      => NoContent
     }
-
   }
 
 }
