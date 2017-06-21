@@ -39,7 +39,7 @@ import scala.concurrent.Future
   */
 class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures {
 
-  val fir = UploadFileResponse("id1", "fid1", "status")
+  val fir = UploadFileResponse("id1", "fid1", "status",None)
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 

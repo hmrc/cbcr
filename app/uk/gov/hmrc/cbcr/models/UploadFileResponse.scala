@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json.Json
 
-case class UploadFileResponse(envelopeId: String, fileId: String, status:String)
+case class UploadFileResponse(envelopeId: String, fileId: String, status:String, reason:Option[String])
 
 object UploadFileResponse {
   implicit val ufrFormat  = Json.format[UploadFileResponse]
