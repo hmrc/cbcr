@@ -1,0 +1,120 @@
+/*
+ * Copyright 2017 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package uk.gov.hmrc.cbcr.controllers
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import org.mockito.Matchers._
+import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mock.MockitoSugar
+import play.api.http.Status
+import play.api.test.{FakeRequest, Helpers}
+import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
+import uk.gov.hmrc.play.test.UnitSpec
+
+import scala.concurrent.Future
+
+class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures {
+
+  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+
+  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+
+  val fakePutRequest = FakeRequest(Helpers.PUT, "/DocRefId/myRefIDxx")
+
+  val fakeGetRequest = FakeRequest(Helpers.GET, "/DocRefId/myRefIDxx")
+
+  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val as = ActorSystem()
+  implicit val mat = ActorMaterializer()
+
+  val repo = mock[DocRefIdRepository]
+
+  val controller = new DocRefIdController(repo)
+
+  "The DocRefIdController" should {
+    "be able to save a DocRefID and" should {
+      "respond with a 200 when all is good" in {
+        when(repo.save(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Ok))
+        val result = controller.saveDocRefId(DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.OK
+      }
+
+      "respond with a 500 if there is a DB failure" in {
+        when(repo.save(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Failed))
+        val result = controller.saveDocRefId(DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      }
+
+      "respond with a CONFLICT if that DocRefId already exists" in {
+        when(repo.save(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.AlreadyExists))
+        val result = controller.saveDocRefId(DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.CONFLICT
+      }
+    }
+    "be able to query a DocRefId and" should {
+
+      "respond with a 200 when asked to query an existing and valid DocRefId" in {
+        when(repo.query(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Valid))
+        val result = controller.query(DocRefId("DocRefId"))(fakeGetRequest)
+        status(result) shouldBe Status.OK
+      }
+
+      "respond with a 404 when asked to query a non-existent DocRefId" in {
+        when(repo.query(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist))
+        val result = controller.query(DocRefId("DocRefId"))(fakeGetRequest)
+        status(result) shouldBe Status.NOT_FOUND
+      }
+
+      "respond with a CONFLICT when asked to query an expired DocRefId" in {
+        when(repo.query(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Invalid))
+        val result = controller.query(DocRefId("DocRefId"))(fakeGetRequest)
+        status(result) shouldBe Status.CONFLICT
+      }
+    }
+    "be able to save a CorrRefId and DocRefId pair, and "  should {
+      "respond with a 200 when CorrRefId and DocRefId are both valid" in {
+        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Ok)))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.OK
+      }
+      "respond with a 404 when CorrRefId referrs to a non-existant DocRefId" in {
+        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist -> None))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.NOT_FOUND
+      }
+      "respond with a BadRequest when the CorrRefId refers to an INVALID DocRefId"  in {
+        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Invalid -> None))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.BAD_REQUEST
+      }
+      "respond with a BadRequest when the DocRefId is not unique" in {
+        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.AlreadyExists)))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.BAD_REQUEST
+      }
+      "respond with a 500 if mongo fails" in {
+        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Failed)))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      }
+    }
+  }
+}
