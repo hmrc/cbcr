@@ -15,5 +15,9 @@ GET       /getCBCId                                 uk.gov.hmrc.cbcr.controllers
 PUT       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
 GET       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)
 
+PUT       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
+PUT       /corr-doc-ref-id/:cid/:id                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
+
 
 
