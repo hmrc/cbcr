@@ -35,26 +35,26 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
 
-  def clear(cbcId:String): OptionT[Future,WriteResult] = {
-    val criteria = Json.obj("cbcId" -> cbcId)
+  def clear(cbcId:CBCId): OptionT[Future,WriteResult] = {
+    val criteria = Json.obj("cbcId" -> cbcId.value)
     for {
       repo   <- OptionT.liftF(repository)
       _      <- OptionT(repo.find(criteria).one[SubscriptionDetails])
-      result <- OptionT.liftF(repo.remove(criteria))
+      result <- OptionT.liftF(repo.remove(criteria, firstMatchOnly = true))
     } yield result
   }
 
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
-  def get(cbcId:CBCId) : Future[Option[SubscriptionDetails]] = {
+  def get(cbcId:CBCId) : OptionT[Future,SubscriptionDetails] = {
     val criteria = Json.obj("cbcId" -> cbcId.value)
-    repository.flatMap(_.find(criteria).one[SubscriptionDetails])
+    OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
   }
 
-  def get(utr:Utr): Future[Option[SubscriptionDetails]] = {
+  def get(utr:Utr): OptionT[Future,SubscriptionDetails] = {
     val criteria = Json.obj("utr" -> utr.utr)
-    repository.flatMap(_.find(criteria).one[SubscriptionDetails])
+    OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
   }
 
 }
