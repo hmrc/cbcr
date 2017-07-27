@@ -33,9 +33,6 @@ import scala.concurrent.Future
 class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) extends BaseController {
 
   def saveSubscriptionData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-
-    Logger.debug("Country by Country-backend: CBCR Save subscription data")
-
     request.body.validate[SubscriptionDetails].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.save(response).map {
@@ -45,29 +42,25 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
     )
   }
 
-  def clearSubscriptionData(cbcId:String):Action[AnyContent] = Action.async{ implicit request =>
-
-    Logger.debug("Country by Country-backend: CBCR clear subscription data")
-
-    repo.clear(cbcId).fold[Result](NotFound){
-      case result if !result.ok => InternalServerError(result.writeErrors.mkString)
-      case _ => Ok
-    }
-
+  def clearSubscriptionData(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
+    repo.clear(cbcId).cata[Result](
+      NotFound,
+      result => if(!result.ok) InternalServerError(result.writeErrors.mkString) else Ok("ok")
+    )
   }
 
   def retrieveSubscriptionDataUtr(utr:Utr):Action[AnyContent] = Action.async { implicit request =>
-    repo.get(utr).map{
-      case Some(obj) => Ok(Json.toJson(obj))
-      case None      => NotFound
-    }
+    repo.get(utr).cata(
+      NotFound,
+      details => Ok(Json.toJson(details))
+    )
   }
 
   def retrieveSubscriptionDataCBCId(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
-    repo.get(cbcId).map{
-      case Some(obj) => Ok(Json.toJson(obj))
-      case None      => NotFound
-    }
+    repo.get(cbcId).cata(
+      NotFound,
+      details => Ok(Json.toJson(details))
+    )
   }
 
 }
