@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.repositories
+package uk.gov.hmrc.cbcr.connectors
 
-import play.modules.reactivemongo.MongoDbConnection
-import uk.gov.hmrc.cbcr.models.SubscriptionData
+import uk.gov.hmrc.play.http.{HttpReads, HttpResponse}
 
-object SubscriptionRepository extends MongoDbConnection {
-  val store = new GenericRepository[SubscriptionData]("Subscription_Data")
+trait RawResponseReads {
+
+  implicit val httpReads: HttpReads[HttpResponse] = new HttpReads[HttpResponse] {
+    override def read(method: String, url: String, response: HttpResponse) = response
+  }
 }

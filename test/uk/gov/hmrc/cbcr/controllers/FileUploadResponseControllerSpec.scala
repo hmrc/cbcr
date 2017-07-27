@@ -18,33 +18,32 @@ package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import cats.data.{EitherT, OptionT}
-import cats.instances.future._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import play.api.http.Status
+import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
-import play.api.libs.json.{JsObject, JsValue}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.cbcr.models.{InvalidState, _}
-import uk.gov.hmrc.cbcr.repositories.GenericRepository
+import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
   * Created by max on 03/04/17.
   */
-class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar {
+class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures {
 
-  val store = mock[GenericRepository[UploadFileResponse]]
+  val fir = UploadFileResponse("id1", "fid1", "status",None)
 
-  val fir = UploadFileResponse(EnvelopeId("id1"),FileId("fid1"),"filename","xml",Array.emptyByteArray)
+  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
-  val controller = new FileUploadResponseController()(store)
+  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fir))
 
@@ -53,35 +52,36 @@ class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar {
   implicit val as = ActorSystem()
   implicit val mat = ActorMaterializer()
 
+  val repo = mock[FileUploadRepository]
+
+  val controller = new FileUploadResponseController(repo)
+
   "The FileUploadResponseController" should {
     "respond with a 200 when asked to store an UploadFileResponse" in {
-      when(store.save(any(classOf[UploadFileResponse]))).thenReturn(EitherT.pure[Future,InvalidState,DbOperationResult](UpdateSuccess))
-      val result  = controller.saveFileUploadResponse("test")(fakePostRequest)
+      when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(okResult))
+      val result     = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure" in {
-      when(store.save(any(classOf[UploadFileResponse]))).thenReturn(EitherT.pure[Future,InvalidState,DbOperationResult](UpdateFailed))
-      val result  = controller.saveFileUploadResponse("test")(fakePostRequest)
+      when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
+      val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 200 and a FileUploadResponse when asked to retrieve an existing envelopeId" in {
-      when(store.retrieve(any(classOf[JsObject]))).thenReturn(OptionT.pure[Future,UploadFileResponse](fir))
-      val result  = controller.retrieveFileUploadResponse("cbcId","envelopeId")(fakeGetRequest)
+      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(Some(fir)))
+      val result = controller.retrieveFileUploadResponse("envelopeIdOk")(fakeGetRequest)
       status(result) shouldBe Status.OK
       jsonBodyOf(result).validate[UploadFileResponse].isSuccess shouldBe true
     }
 
-    "respond with a 404 when asked to retrieve a non-existent envelopeId" in {
-      when(store.retrieve(any(classOf[JsObject]))).thenReturn(OptionT.fromOption[Future](None:Option[UploadFileResponse]))
-      val result  = controller.retrieveFileUploadResponse("cbcId","envelopeId")(fakeGetRequest)
-      status(result) shouldBe Status.NOT_FOUND
+    "respond with a 204 when asked to retrieve a non-existent envelopeId" in {
+      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(None))
+      val result = controller.retrieveFileUploadResponse("envelopeIdFail")(fakeGetRequest)
+      status(result) shouldBe Status.NO_CONTENT
     }
 
   }
-
-
-
 
 }

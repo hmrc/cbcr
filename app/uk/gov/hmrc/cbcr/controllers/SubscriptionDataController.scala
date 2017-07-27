@@ -16,49 +16,58 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import cats.instances.future._
+import javax.inject.{Inject, Singleton}
+
 import play.api.Logger
 import play.api.libs.json.{JsError, JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.cbcr.models.DbOperationResult.dbResult
-import uk.gov.hmrc.cbcr.models.SubscriptionData
-import uk.gov.hmrc.cbcr.repositories.GenericRepository
+import play.api.mvc.{Action, AnyContent, Result}
+import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import cats.instances.future._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-/**
-  * Created by max on 03/04/17.
-  */
-class SubscriptionDataController(implicit val repository:GenericRepository[SubscriptionData]) extends BaseController {
+@Singleton
+class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) extends BaseController {
 
   def saveSubscriptionData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
 
     Logger.debug("Country by Country-backend: CBCR Save subscription data")
 
-    request.body.validate[SubscriptionData].fold(
+    request.body.validate[SubscriptionDetails].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
-      response => repository.save(response).fold(
-        state  => state.asResult,
-        result => result.asResult
-      )
+      response => repo.save(response).map {
+        case result if !result.ok => InternalServerError(result.writeErrors.mkString)
+        case _ => Ok
+      }
     )
   }
 
+  def clearSubscriptionData(cbcId:String):Action[AnyContent] = Action.async{ implicit request =>
 
-  def retrieveSubscriptionData(cbcId:String):Action[AnyContent] = Action.async{ implicit request =>
+    Logger.debug("Country by Country-backend: CBCR clear subscription data")
 
-    Logger.debug("Country by Country-backend: CBCR Retrieve subscription data")
-
-    val criteria = Json.obj("cbcId" -> cbcId)
-
-    repository.retrieve(criteria).cata(
-      NotFound,
-      (data: SubscriptionData) => Ok(Json.toJson(data))
-    )
+    repo.clear(cbcId).fold[Result](NotFound){
+      case result if !result.ok => InternalServerError(result.writeErrors.mkString)
+      case _ => Ok
+    }
 
   }
 
+  def retrieveSubscriptionDataUtr(utr:Utr):Action[AnyContent] = Action.async { implicit request =>
+    repo.get(utr).map{
+      case Some(obj) => Ok(Json.toJson(obj))
+      case None      => NotFound
+    }
+  }
+
+  def retrieveSubscriptionDataCBCId(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
+    repo.get(cbcId).map{
+      case Some(obj) => Ok(Json.toJson(obj))
+      case None      => NotFound
+    }
+  }
 
 }
