@@ -54,6 +54,8 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveSubscriptionData")
 
+  val fakeDeleteRequest = FakeRequest(Helpers.DELETE,"subscription-data")
+
 
   implicit val as = ActorSystem()
   implicit val mat = ActorMaterializer()
@@ -102,19 +104,19 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
 
     "respond with a 200 when asked to clear a record that exists" in {
       when(store.clear(any(classOf[CBCId]))).thenReturn(OptionT.some[Future,WriteResult](okResult))
-      val result  = controller.clearSubscriptionData()(fakePostRequest.withBody(Json.toJson(cbcId)))
+      val result  = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 404 when asked to clear a record that doesn't exist" in {
       when(store.clear(any(classOf[CBCId]))).thenReturn(OptionT.none[Future,WriteResult])
-      val result  = controller.clearSubscriptionData()(fakePostRequest.withBody(Json.toJson(cbcId)))
+      val result  = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "respond with a 500 when asked to clear a record but something goes wrong" in {
       when(store.clear(any(classOf[CBCId]))).thenReturn(OptionT.some[Future,WriteResult](failResult))
-      val result  = controller.clearSubscriptionData()(fakePostRequest.withBody(Json.toJson(cbcId)))
+      val result  = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
