@@ -27,9 +27,12 @@ import play.api.{Configuration, Environment, Logger}
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
+
+  val graphiteConfig:Configuration = configuration.getConfig("microservice.metrics.graphite").getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
+
   val metricsPluginEnabled: Boolean = configuration.getBoolean("metrics.enabled").getOrElse(false)
 
-  val graphitePublisherEnabled: Boolean = configuration.getBoolean("microservice.metrics.graphite.enabled").getOrElse(false)
+  val graphitePublisherEnabled: Boolean = graphiteConfig.getBoolean("enabled").getOrElse(false)
 
   val graphiteEnabled: Boolean = metricsPluginEnabled && graphitePublisherEnabled
 
@@ -39,10 +42,10 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     Logger.info("Graphite metrics enabled, starting the reporter")
 
     val graphite = new Graphite(new InetSocketAddress(
-      configuration.getString("graphite.host").getOrElse("graphite"),
-      configuration.getInt("graphite.port").getOrElse(2003)))
+      graphiteConfig.getString("host").getOrElse("graphite"),
+      graphiteConfig.getInt("port").getOrElse(2003)))
 
-    val prefix = configuration.getString("graphite.prefix").getOrElse(s"tax.${configuration.getString("appName")}")
+    val prefix = graphiteConfig.getString("prefix").getOrElse("play.cbcr")
 
     val reporter = GraphiteReporter.forRegistry(
       SharedMetricRegistries.getOrCreate(registryName))
@@ -52,7 +55,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       .filter(MetricFilter.ALL)
       .build(graphite)
 
-    reporter.start(configuration.getLong("graphite.interval").getOrElse(10L), SECONDS)
+    reporter.start(graphiteConfig.getLong("interval").getOrElse(10L), SECONDS)
   }
 
   def configure(): Unit = {
