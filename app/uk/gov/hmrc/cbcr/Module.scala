@@ -27,7 +27,6 @@ import play.api.{Configuration, Environment, Logger}
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-
   val graphiteConfig:Configuration = configuration.getConfig("microservice.metrics.graphite").getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
 
   val metricsPluginEnabled: Boolean = configuration.getBoolean("metrics.enabled").getOrElse(false)
@@ -59,6 +58,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   }
 
   def configure(): Unit = {
+    Logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
     lazy val appName = configuration.getString("appName").get
     lazy val loggerDateFormat: Option[String] = configuration.getString("logger.json.dateformat")
 
