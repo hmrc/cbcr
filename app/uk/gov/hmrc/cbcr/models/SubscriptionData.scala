@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
 
-case class SubscriberContact(name:String, phoneNumber:String, email:EmailAddress)
+case class SubscriberContact(firstName:String, lastName:String, phoneNumber:String, email:EmailAddress)
 object SubscriberContact {
   implicit val subscriptionFormat :Format[SubscriberContact] = Json.format[SubscriberContact]
 }
