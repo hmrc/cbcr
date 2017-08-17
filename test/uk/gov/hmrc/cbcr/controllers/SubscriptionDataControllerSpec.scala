@@ -46,7 +46,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
   val failResult = DefaultWriteResult(false,1,Seq(WriteError(1,1,"Error")),None,None,Some("Error"))
 
   val bpr = BusinessPartnerRecord(Some("MySafeID"),Some(OrganisationResponse("Dave Corp")),EtmpAddress(None,None,None,None,None,None))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","02072653787",EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001").get,Utr("utr"))
+  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","Jones","02072653787",EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001").get,Utr("utr"))
 
   val controller = new SubscriptionDataController(store)
 
