@@ -24,11 +24,4 @@ object DesErrorResults {
 
   implicit val errorBodyWrites: Reads[DesErrorBody] = Json.reads[DesErrorBody]
 
-  sealed trait DES_ERRORS
-  case object INVALID_PAYLOAD extends DES_ERRORS
-  case object ACTIVE_SUBSCRIPTION extends DES_ERRORS
-  case object SERVICE_UNAVAILABLE extends DES_ERRORS
-  case object SERVER_ERROR extends DES_ERRORS
-
-
 }

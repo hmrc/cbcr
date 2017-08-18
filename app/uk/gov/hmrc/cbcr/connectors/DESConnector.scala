@@ -19,22 +19,17 @@ package uk.gov.hmrc.cbcr.connectors
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import play.api.Logger
-import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.SubscriptionRequestBody
-import uk.gov.hmrc.play.audit.AuditExtensions._
-import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
+import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.logging.Authorization
 import uk.gov.hmrc.play.http.ws.WSPost
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 
   @ImplementedBy(classOf[DESConnectorImpl])
