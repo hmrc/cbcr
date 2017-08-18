@@ -62,33 +62,18 @@ import scala.util.control.NonFatal
       "isAnAgent" -> false
     )
 
-    def lookup(utr: String): Future[HttpResponse] = {
-      implicit val hc: HeaderCarrier = createHeaderCarrier
-      http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).map { response =>
-        if(response.status != OK) {
-          Logger.warn(s"[DESConnector][lookup] - status: ${response.status}")
-          doFailedAudit("lookupFailed", lookupData.toString, response.body)
-        }
-        response
+    def lookup(utr: String)(implicit hc:HeaderCarrier): Future[HttpResponse] = {
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
     }
 
-    def subscribeToCBC(sub:SubscriptionRequestBody) : Future[HttpResponse] = {
-      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub))
+    def subscribeToCBC(sub:SubscriptionRequestBody)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
+      }
     }
 
-
-    def createHeaderCarrier: HeaderCarrier =
-      HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
-
-    def doFailedAudit(auditType: String, request: String, response: String)(implicit hc:HeaderCarrier): Unit = {
-      val auditDetails = Map("request" -> request,
-        "response" -> response)
-
-      audit.sendDataEvent(DataEvent("business-matching", auditType,
-        tags = hc.toAuditTags("", "N/A"),
-        detail = hc.toAuditDetails(auditDetails.toSeq: _*)))
-    }
   }
 
   @Singleton

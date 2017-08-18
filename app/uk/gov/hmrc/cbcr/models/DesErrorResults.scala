@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.json.Json.toJson
-import play.api.libs.json.{Json, Writes}
-import play.api.mvc.Results.{BadRequest, Conflict, NotFound}
+import play.api.libs.json.{Json, Reads}
 
 object DesErrorResults {
 
   case class DesErrorBody(code: String, reason: String)
 
-  implicit val errorBodyWrites: Writes[DesErrorBody] = Json.writes[DesErrorBody]
+  implicit val errorBodyWrites: Reads[DesErrorBody] = Json.reads[DesErrorBody]
 
-  val GenericNotFound = genericNotFound("The remote endpoint has indicated that no data can be found.")
-  def genericNotFound(reason: String) = NotFound(toJson(DesErrorBody("NOT_FOUND", reason)))
-  val InvalidUtr =      BadRequest(toJson(DesErrorBody("INVALID_UTR", "Submission has not passed validation. Invalid parameter UTR.")))
-  val InvalidPayload =  BadRequest(toJson(DesErrorBody("INVALID_PAYLOAD", "Submission has not passed validation. Invalid Payload.")))
-  val SubscriptionExists =  Conflict(toJson(DesErrorBody("CONFLICT", "This UTR is already subscribed to MTD")))
+  sealed trait DES_ERRORS
+  case object INVALID_PAYLOAD extends DES_ERRORS
+  case object ACTIVE_SUBSCRIPTION extends DES_ERRORS
+  case object SERVICE_UNAVAILABLE extends DES_ERRORS
+  case object SERVER_ERROR extends DES_ERRORS
+
 
 }

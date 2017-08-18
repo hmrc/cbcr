@@ -22,11 +22,13 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.play.http.HttpResponse
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import org.mockito.Matchers._
+import org.mockito.Matchers.{eq => EQ}
 
 /**
   * Created by max on 24/04/17.
@@ -41,21 +43,21 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockitoSugar {
       val response = Json.obj("safeId"->"XV0000100085686","agentReferenceNumber"->"BARN0000191","isEditable"->false,"isAnAgent"->true,"isAnASAgent"->true,"isAnIndividual"->true,"individual"-> Json.obj("firstName"->"First Name Taxpayer 01","lastName"->"Last Name Taxpayer 01","dateOfBirth"->"1960-12-01"),"address"->Json.obj("addressLine1"->"Matheson House 1","addressLine2"->"Grange Central","addressLine3"->"Telford","addressLine4"->"Shropshire","countryCode"->"GB","postalCode"->"TF3 4ER"), "contactDetails" -> Json.obj())
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(utr)) thenReturn Future.successful(HttpResponse(Status.OK, Some(response)))
+      when(dc.lookup(EQ(utr))(any())) thenReturn Future.successful(HttpResponse(Status.OK, Some(response)))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.OK
     }
 
     "respond with a 404 if the UTR is not found" in {
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(utr)) thenReturn Future.successful(HttpResponse(Status.NOT_FOUND))
+      when(dc.lookup(EQ(utr))(any())) thenReturn Future.successful(HttpResponse(Status.NOT_FOUND))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.NOT_FOUND
 
     }
     "respond with a 500 if the DES service is unavailable" in {
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(utr)) thenReturn Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR))
+      when(dc.lookup(EQ(utr))(any())) thenReturn Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.INTERNAL_SERVER_ERROR
 
     }

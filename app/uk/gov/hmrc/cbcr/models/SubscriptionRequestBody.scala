@@ -18,9 +18,13 @@ package uk.gov.hmrc.cbcr.models
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import play.api.libs.json._ // JSON library
+import play.api.libs.json.Reads._ // Custom validation helpers
+import play.api.libs.functional.syntax._ // Combinator syntax
 
 import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.emailaddress.PlayJsonFormats._
 
 class PhoneNumber private(val number:String)
 
@@ -48,18 +52,6 @@ object PhoneNumber {
     }
   }
 }
-
-case class EtmpAddress(addressLine1: String,
-                       addressLine2: Option[String],
-                       addressLine3: Option[String],
-                       addressLine4: Option[String],
-                       postalCode: Option[String],
-                       countryCode: String)
-
-object EtmpAddress {
-  implicit val formats = Json.format[EtmpAddress]
-}
-
 
 case class ContactDetails(emailAddress:EmailAddress, phoneNumber:PhoneNumber)
 
@@ -98,6 +90,10 @@ object SubscriptionRequestResponse{
       "processingDate" -> o.processingDate.format(formatter),
       "cbcSubscriptionID" -> o.cbcSubscriptionID
     )
-
   }
+
+  implicit val reads: Reads[SubscriptionRequestResponse] =
+    ((JsPath \ "processingDate").read[LocalDateTime] and
+      (JsPath \ "cbcSubscriptionID").read[CBCId])(SubscriptionRequestResponse.apply _)
+
 }

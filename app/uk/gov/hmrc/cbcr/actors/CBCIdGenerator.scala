@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.services
+package uk.gov.hmrc.cbcr.actors
 
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.PersistentActor
 import cats.data.Validated
+import uk.gov.hmrc.cbcr.actors.CBCIdGenCommands.{CBCIdIncrementEvent, GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.models.CBCId
-import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{CBCIdIncrementEvent, GenerateCBCId, GenerateCBCIdResponse}
 
 /**
   * Actor to encapsulate the mutable state of CBCIdCount.

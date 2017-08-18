@@ -16,70 +16,71 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.testkit.{TestKit, TestProbe}
-import cats.data.Validated.Invalid
-import cats.syntax.option._
-import cats.instances.option._
-import com.typesafe.config.ConfigFactory
-import org.scalatest.Matchers
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{BeforeAndAfterEach, Matchers}
+import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
+import play.api.libs.json.Json
+import play.api.mvc.Results._
 import play.api.test.FakeRequest
-import uk.gov.hmrc.cbcr.models.CBCId
-import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.services.{LocalCBCIdGenerator, RemoteCBCIdGenerator}
+import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class CBCIdControllerSpec extends TestKit(ActorSystem("CBCIdControllerSpec",ConfigFactory.parseString("""
-  |akka {
-  | persistence {
-  |   journal.plugin = "inmemory-journal"
-  |   snapshot-store.plugin = "inmemory-snapshot-store"
-  | }
-  |}
-  |CBCId.controller {
-  |  timeout = 2 seconds
-  |  supervisor {
-  |    minBackoff = 3 seconds
-  |    maxBackoff = 10 minutes
-  |  }
-  |}
-""".stripMargin))) with UnitSpec with Matchers with ScalaFutures {
+class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with MockitoSugar with BeforeAndAfterEach with OneAppPerSuite{
 
-  val testCBCIdGenerator = TestProbe("testCBCID")
+  val localGen = mock[LocalCBCIdGenerator]
+  val remoteGen = mock[RemoteCBCIdGenerator]
 
-  class TestCBCIdController(actorSystem: ActorSystem) extends CBCIdController(actorSystem,Configuration(actorSystem.settings.config)) {
-    override val cbcIdGenerator:ActorRef = testCBCIdGenerator.ref
-  }
+  implicit val as = app.injector.instanceOf[ActorSystem]
+  val config = app.injector.instanceOf[Configuration]
 
-  val controller = new TestCBCIdController(system)
   implicit val mat = ActorMaterializer()
 
+  val srb = SubscriptionDetails(
+    BusinessPartnerRecord("SafeID",Some(OrganisationResponse("Name")), EtmpAddress("Some ave",None,None,None,None, "GB")),
+    SubscriberContact("dave","jones",PhoneNumber("123456789").get,EmailAddress("bob@bob.com")),
+    None,
+    Utr("7000000002")
+  )
+
+  val id = CBCId.create(1).getOrElse(fail("Can not generate CBCId"))
+  implicit val hc = HeaderCarrier()
+
+
+
+  override def afterEach(): Unit = {
+    super.afterEach()
+    reset(localGen,remoteGen)
+  }
+
   "The CBCIdController" should {
-    "respond with a 200 and a new CBCId when queried with getCBCId" in {
-      val fakeRequestSubscribe = FakeRequest("GET", "/getCBCId")
-      val response = controller.getCBCId()(fakeRequestSubscribe)
-      testCBCIdGenerator.expectMsg(GenerateCBCId)
-      testCBCIdGenerator.reply(GenerateCBCIdResponse(CBCId("XGCBC0000000001").toValid(new Exception("Test Error generating CBCId"))))
+    "query the localCBCId generator when useDESApi is set to false" in {
+      val controller = new CBCIdController(config ++ Configuration("CBCId.useDESApi" -> false),localGen,remoteGen)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
+      when(localGen.generateCBCId()(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
+      val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
-      bodyOf(response).futureValue shouldEqual "XGCBC0000000001"
+      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XGCBC0000000001")
     }
-    "respond with a 500 if the CBCIdGenerator service fails" in {
-      val fakeRequestSubscribe = FakeRequest("GET", "/getCBCId")
-      val response = controller.getCBCId()(fakeRequestSubscribe)
-      testCBCIdGenerator.expectMsg(GenerateCBCId)
-      testCBCIdGenerator.reply(GenerateCBCIdResponse(Invalid(new Exception("Failed to generate CBCId"))))
-      status(response) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-    "respond with a 500 if the CBCIdGenerator service fails to respond" in {
-      val fakeRequestSubscribe = FakeRequest("GET", "/getCBCId")
-      val response = controller.getCBCId()(fakeRequestSubscribe)
-      testCBCIdGenerator.expectMsg(GenerateCBCId)
-      status(response) shouldBe Status.INTERNAL_SERVER_ERROR
+    "query the remoteCBCId generator when useDESApi is set to true" in {
+      val controller = new CBCIdController(config ++ Configuration("CBCId.useDESApi" -> true),localGen,remoteGen)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
+      when(remoteGen.generateCBCId(any())(any(),any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
+      val response = controller.subscribe()(fakeRequestSubscribe)
+      status(response) shouldBe Status.OK
+      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XGCBC0000000001")
     }
   }
 

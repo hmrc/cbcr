@@ -17,12 +17,12 @@
 package uk.gov.hmrc.cbcr.models
 import play.api.libs.json.Json
 
-case class EtmpAddress(addressLine1: Option[String],
+case class EtmpAddress(addressLine1: String,
                        addressLine2: Option[String],
                        addressLine3: Option[String],
                        addressLine4: Option[String],
                        postalCode: Option[String],
-                       countryCode: Option[String])
+                       countryCode: String)
 
 object EtmpAddress {
   implicit val formats = Json.format[EtmpAddress]

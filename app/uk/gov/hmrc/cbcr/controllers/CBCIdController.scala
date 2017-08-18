@@ -17,67 +17,31 @@
 package uk.gov.hmrc.cbcr.controllers
 import javax.inject._
 
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.pattern.{Backoff, BackoffSupervisor, ask}
-import akka.util.Timeout
 import configs.syntax._
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import play.api.mvc.{Action, Result}
-import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
-import uk.gov.hmrc.cbcr.services.CBCIdGenerator
+import uk.gov.hmrc.cbcr.services.{LocalCBCIdGenerator, RemoteCBCIdGenerator}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
-import scala.util.control.NonFatal
 
 @Singleton
-class CBCIdController @Inject()(system: ActorSystem,config:Configuration, des:DESConnector)(implicit ec:ExecutionContext) extends BaseController with ServicesConfig{
+class CBCIdController @Inject()(config:Configuration,
+                                localGen: LocalCBCIdGenerator,
+                                remoteGen: RemoteCBCIdGenerator)(implicit ec:ExecutionContext) extends BaseController with ServicesConfig{
 
   val conf = config.underlying.getConfig("CBCId")
   val useDESApi = conf.get[Boolean]("useDESApi").value
-  implicit val timeoutValue:Timeout = Timeout(conf.get[FiniteDuration]("controller.timeout").value)
-  val minBackoff: FiniteDuration = conf.get[FiniteDuration]("controller.supervisor.minBackoff").value
-  val maxBackoff: FiniteDuration = conf.get[FiniteDuration]("controll.ersupervisor.maxBackoff").value
-
-  val supervisor: Props = BackoffSupervisor.props(
-    Backoff.onStop(
-      childProps = CBCIdGenerator.props,
-      childName = "cbc-id-generator",
-      minBackoff = minBackoff,
-      maxBackoff = maxBackoff,
-      randomFactor = 0.0
-    )
-  )
-
-  lazy val cbcIdGenerator: ActorRef = system.actorOf(supervisor,"cbc-id-generator-supervisor")
 
   def subscribe = Action.async(parse.json) { implicit request =>
     request.body.validate[SubscriptionDetails].fold[Future[Result]](
-      _     => Future.successful(BadRequest),
-      srb   => if (useDESApi) {
-        des.subscribeToCBC(srb).map{response =>
-          val json = response.json
-          json.validate[SubscriptionRequestResponse].fold(
-            error    => {
-
-              Logger.error(s"Invalid response from DES: $error")
-              InternalServerError(error)
-            },
-            response => Ok(response.cbcSubscriptionID)
-          )
-
-        }
+      _   => Future.successful(BadRequest),
+      srb => if (useDESApi) {
+        remoteGen.generateCBCId(srb)
       } else {
-        (cbcIdGenerator ? GenerateCBCId).mapTo[GenerateCBCIdResponse].map(_.value.fold(
-          (error: Throwable) => InternalServerError(error.getMessage),
-          (id: CBCId) => Ok(id.value)
-        )).recover {
-          case NonFatal(e) => InternalServerError(e.getMessage)
-        }
+        localGen.generateCBCId()
       }
     )
   }
