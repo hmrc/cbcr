@@ -23,6 +23,7 @@ import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
+import uk.gov.hmrc.cbcr.models.SubscriptionRequestBody
 import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -33,6 +34,7 @@ import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 
   @ImplementedBy(classOf[DESConnectorImpl])
@@ -43,6 +45,8 @@ import scala.concurrent.{ExecutionContext, Future}
     def serviceUrl: String
 
     def orgLookupURI: String
+
+    def cbcSubscribeURI: String
 
     def urlHeaderEnvironment: String
 
@@ -69,6 +73,11 @@ import scala.concurrent.{ExecutionContext, Future}
       }
     }
 
+    def subscribeToCBC(sub:SubscriptionRequestBody) : Future[HttpResponse] = {
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub))
+    }
+
+
     def createHeaderCarrier: HeaderCarrier =
       HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
 
@@ -86,6 +95,7 @@ import scala.concurrent.{ExecutionContext, Future}
   class DESConnectorImpl @Inject() (val ec: ExecutionContext, val auditConnector:AuditConnectorI) extends DESConnector {
     lazy val serviceUrl: String = baseUrl("etmp-hod")
     lazy val orgLookupURI: String = "registration/organisation"
+    lazy val cbcSubscribeURI: String = "country-by-country/subscription/create"
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
     val audit = new Audit("known-fact-checking", auditConnector)
