@@ -25,6 +25,7 @@ import uk.gov.hmrc.cbcr.models.SubscriptionRequestBody
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
+import uk.gov.hmrc.play.http.logging.Authorization
 import uk.gov.hmrc.play.http.ws.WSPost
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
@@ -57,7 +58,11 @@ import scala.concurrent.{ExecutionContext, Future}
       "isAnAgent" -> false
     )
 
-    def lookup(utr: String)(implicit hc:HeaderCarrier): Future[HttpResponse] = {
+    private def createHeaderCarrier: HeaderCarrier =
+      HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
+
+    def lookup(utr: String): Future[HttpResponse] = {
+      implicit val hc: HeaderCarrier = createHeaderCarrier
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
