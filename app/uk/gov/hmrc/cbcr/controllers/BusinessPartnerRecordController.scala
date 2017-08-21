@@ -32,7 +32,7 @@ class BusinessPartnerRecordController @Inject() (connector:DESConnector)(implici
       case response if response.status == OK          => Ok(response.json)
       case response if response.status == BAD_REQUEST => BadRequest(response.json)
       case response if response.status == NOT_FOUND   => NotFound
-      case response                                   => InternalServerError(response.body)
+      case _                                          => InternalServerError
     }
   }
 
