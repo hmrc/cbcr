@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.services
+package uk.gov.hmrc.cbcr.actors
 
 import akka.actor.{ActorIdentity, ActorSystem, Identify, PoisonPill}
 import akka.persistence.inmemory.extension.{InMemoryJournalStorage, StorageExtension}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{Matchers, WordSpecLike}
-import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
+import uk.gov.hmrc.cbcr.actors.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 
 class CBCIdGeneratorSpec extends TestKit(
   ActorSystem("CBCIdGeneratorSpec",ConfigFactory.parseString(

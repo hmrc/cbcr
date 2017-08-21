@@ -10,7 +10,7 @@ GET       /subscription-data/utr/:utr               uk.gov.hmrc.cbcr.controllers
 
 GET       /business-partner-record/:utr             uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
 
-GET       /cbc-id                                   uk.gov.hmrc.cbcr.controllers.CBCIdController.getCBCId
+POST      /cbc-id                                   uk.gov.hmrc.cbcr.controllers.CBCIdController.subscribe
 
 PUT       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
 GET       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)

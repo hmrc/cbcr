@@ -19,15 +19,12 @@ package uk.gov.hmrc.cbcr.connectors
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import play.api.Logger
-import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.play.audit.AuditExtensions._
-import uk.gov.hmrc.play.audit.model.{Audit, DataEvent}
+import uk.gov.hmrc.cbcr.models.SubscriptionRequestBody
+import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.logging.Authorization
 import uk.gov.hmrc.play.http.ws.WSPost
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
@@ -44,6 +41,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
     def orgLookupURI: String
 
+    def cbcSubscribeURI: String
+
     def urlHeaderEnvironment: String
 
     def urlHeaderAuthorization: String
@@ -58,34 +57,25 @@ import scala.concurrent.{ExecutionContext, Future}
       "isAnAgent" -> false
     )
 
-    def lookup(utr: String): Future[HttpResponse] = {
-      implicit val hc: HeaderCarrier = createHeaderCarrier
-      http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).map { response =>
-        if(response.status != OK) {
-          Logger.warn(s"[DESConnector][lookup] - status: ${response.status}")
-          doFailedAudit("lookupFailed", lookupData.toString, response.body)
-        }
-        response
+    def lookup(utr: String)(implicit hc:HeaderCarrier): Future[HttpResponse] = {
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
     }
 
-    def createHeaderCarrier: HeaderCarrier =
-      HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
-
-    def doFailedAudit(auditType: String, request: String, response: String)(implicit hc:HeaderCarrier): Unit = {
-      val auditDetails = Map("request" -> request,
-        "response" -> response)
-
-      audit.sendDataEvent(DataEvent("business-matching", auditType,
-        tags = hc.toAuditTags("", "N/A"),
-        detail = hc.toAuditDetails(auditDetails.toSeq: _*)))
+    def subscribeToCBC(sub:SubscriptionRequestBody)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
+      }
     }
+
   }
 
   @Singleton
   class DESConnectorImpl @Inject() (val ec: ExecutionContext, val auditConnector:AuditConnectorI) extends DESConnector {
     lazy val serviceUrl: String = baseUrl("etmp-hod")
     lazy val orgLookupURI: String = "registration/organisation"
+    lazy val cbcSubscribeURI: String = "country-by-country/subscription/create"
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
     val audit = new Audit("known-fact-checking", auditConnector)
