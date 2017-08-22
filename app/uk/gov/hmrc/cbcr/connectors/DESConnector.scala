@@ -80,7 +80,7 @@ import scala.concurrent.{ExecutionContext, Future}
   class DESConnectorImpl @Inject() (val ec: ExecutionContext, val auditConnector:AuditConnectorI) extends DESConnector {
     lazy val serviceUrl: String = baseUrl("etmp-hod")
     lazy val orgLookupURI: String = "registration/organisation"
-    lazy val cbcSubscribeURI: String = "country-by-country/subscription/create"
+    lazy val cbcSubscribeURI: String = "country-by-country/subscription"
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
     val audit = new Audit("known-fact-checking", auditConnector)
