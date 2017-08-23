@@ -17,6 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 import javax.inject._
 
+//import com.oracle.tools.packager.Log.Logger
 import configs.syntax._
 import play.api.Configuration
 import play.api.mvc.{Action, Result}
@@ -26,6 +27,8 @@ import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.{ExecutionContext, Future}
+
+import play.api.Logger
 
 @Singleton
 class CBCIdController @Inject()(config:Configuration,
@@ -39,6 +42,7 @@ class CBCIdController @Inject()(config:Configuration,
     request.body.validate[SubscriptionDetails].fold[Future[Result]](
       _   => Future.successful(BadRequest),
       srb => if (useDESApi) {
+        Logger.info(s"************* About to call DES $srb")
         remoteGen.generateCBCId(srb)
       } else {
         localGen.generateCBCId()
