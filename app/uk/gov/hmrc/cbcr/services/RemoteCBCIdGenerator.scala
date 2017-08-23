@@ -38,7 +38,9 @@ class RemoteCBCIdGenerator @Inject() (val des:DESConnector) {
         _   => response.status match {
           case FORBIDDEN             => Forbidden
           case BAD_REQUEST           => BadRequest
-          case INTERNAL_SERVER_ERROR => InternalServerError
+          case INTERNAL_SERVER_ERROR =>
+            Logger.error("its all a load of B*****ks")
+            InternalServerError
           case SERVICE_UNAVAILABLE   => ServiceUnavailable
           case other                 =>
             Logger.error(s"DES returned an undocumented ErrorCode: $other")
