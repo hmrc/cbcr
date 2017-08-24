@@ -44,7 +44,7 @@ class CBCIdController @Inject()(config:Configuration,
       sd => if (useDESApi) {
         Logger.info(s"************* About to transform subDetails $sd")
         val srb = subscriptionDetailsToSubscriptionRequestBody(sd)
-        Logger.info(s"************* About to call DES with srb: $srb")
+        Logger.info(s"************* About to call DES interface with srb: $srb")
 
         remoteGen.generateCBCId(srb)
       } else {
