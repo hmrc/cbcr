@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.{SubscriptionDetails, SubscriptionRequestBody}
+import uk.gov.hmrc.cbcr.models.SubscriptionRequestBody
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
@@ -63,7 +63,7 @@ import scala.concurrent.{ExecutionContext, Future}
       }
     }
 
-    def subscribeToCBC(sub:SubscriptionDetails)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
+    def subscribeToCBC(sub:SubscriptionRequestBody)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }

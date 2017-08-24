@@ -43,14 +43,15 @@ class CBCIdController @Inject()(config:Configuration,
       _   => Future.successful(BadRequest),
       srb => if (useDESApi) {
         Logger.info(s"************* About to call DES $srb")
-        remoteGen.generateCBCId(srb)
+        remoteGen.generateCBCId(subscriptionDetailsToSubscriptionRequestBody(srb))
       } else {
         localGen.generateCBCId()
       }
     )
   }
 
-  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody ={
+//  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody ={
+    private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody ={
     SubscriptionRequestBody(
       s.businessPartnerRecord.safeId,
       false,

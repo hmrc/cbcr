@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.cbcr.models.{SubscriptionDetails, SubscriptionRequestBody, SubscriptionRequestResponse}
+import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody, SubscriptionRequestResponse}
 import play.api.Logger
 import play.api.mvc.Results._
 import play.api.http.Status._
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class RemoteCBCIdGenerator @Inject() (val des:DESConnector) {
 
-  def generateCBCId(sub:SubscriptionDetails)(implicit hc:HeaderCarrier, ec:ExecutionContext): Future[Result] = {
+  def generateCBCId(sub:SubscriptionRequestBody)(implicit hc:HeaderCarrier, ec:ExecutionContext): Future[Result] = {
     des.subscribeToCBC(sub).map(response =>
       response.json.validate[SubscriptionRequestResponse].fold(
         _   => response.status match {
