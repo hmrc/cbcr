@@ -42,7 +42,7 @@ class RemoteCBCIdGenerator @Inject() (val des:DESConnector) {
           case FORBIDDEN             => Forbidden
           case BAD_REQUEST           => BadRequest
           case INTERNAL_SERVER_ERROR =>
-            Logger.error("its all a load of B*****ks")
+            Logger.error("internal server error")
             InternalServerError
           case SERVICE_UNAVAILABLE   => ServiceUnavailable
           case other                 =>

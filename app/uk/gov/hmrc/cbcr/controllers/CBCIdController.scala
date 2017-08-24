@@ -58,7 +58,7 @@ class CBCIdController @Inject()(config:Configuration,
     SubscriptionRequestBody(
       s.businessPartnerRecord.safeId,
       false,
-      None,
+      "XECBC0000000000",
       CorrespondenceDetails(
         s.businessPartnerRecord.address,
         ContactDetails(s.subscriberContact.email,s.subscriberContact.phoneNumber),
