@@ -29,10 +29,13 @@ import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import play.api.Logger
+
 @Singleton
 class RemoteCBCIdGenerator @Inject() (val des:DESConnector) {
 
   def generateCBCId(sub:SubscriptionRequestBody)(implicit hc:HeaderCarrier, ec:ExecutionContext): Future[Result] = {
+    Logger.info("in generateCBCId")
     des.subscribeToCBC(sub).map(response =>
       response.json.validate[SubscriptionRequestResponse].fold(
         _   => response.status match {

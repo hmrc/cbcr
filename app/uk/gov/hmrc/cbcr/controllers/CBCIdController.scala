@@ -41,9 +41,12 @@ class CBCIdController @Inject()(config:Configuration,
   def subscribe = Action.async(parse.json) { implicit request =>
     request.body.validate[SubscriptionDetails].fold[Future[Result]](
       _   => Future.successful(BadRequest),
-      srb => if (useDESApi) {
+      sd => if (useDESApi) {
+        Logger.info(s"************* About to transform subDetails $sd")
+        val srb = subscriptionDetailsToSubscriptionRequestBody(sd)
         Logger.info(s"************* About to call DES $srb")
-        remoteGen.generateCBCId(subscriptionDetailsToSubscriptionRequestBody(srb))
+
+        remoteGen.generateCBCId(srb)
       } else {
         localGen.generateCBCId()
       }
