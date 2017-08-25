@@ -81,13 +81,14 @@ import play.api.Logger
     )
 
     def lookup(utr: String)(implicit hc:HeaderCarrier): Future[HttpResponse] = {
-      Logger.info(s"srb json: $srb")
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
     }
 
     def subscribeToCBC(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
+      val tempJson = Json.toJson(srb).toString()
+      Logger.info(s"srb json: $tempJson")
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(srb)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
