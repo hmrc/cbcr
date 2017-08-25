@@ -43,12 +43,12 @@ class CBCIdController @Inject()(config:Configuration,
   def subscribe = Action.async(parse.json) { implicit request =>
     request.body.validate[SubscriptionDetails].fold[Future[Result]](
       _   => Future.successful(BadRequest),
-      sd => if (useDESApi) {
-        Logger.info(s"************* About to transform subDetails $sd")
-        val srb = subscriptionDetailsToSubscriptionRequestBody(sd)
-        val srbJson = Json.toJson(srb.toString)
-        Logger.info(s"************* About to call DES interface with srb: $srbJson")
-
+      srb => if (useDESApi) {
+//        Logger.info(s"************* About to transform subDetails $sd")
+//        val srb = subscriptionDetailsToSubscriptionRequestBody(sd)
+//        val srbJson = Json.toJson(srb.toString)
+//        Logger.info(s"************* About to call DES interface with srb: $srbJson")
+//
         remoteGen.generateCBCId(srb)
       } else {
         localGen.generateCBCId()
@@ -56,8 +56,7 @@ class CBCIdController @Inject()(config:Configuration,
     )
   }
 
-//  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody ={
-    private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody2 ={
+  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody2 ={
     SubscriptionRequestBody2(
       s.businessPartnerRecord.safeId,
       false,
