@@ -44,13 +44,10 @@ class CBCIdController @Inject()(config:Configuration,
     request.body.validate[SubscriptionDetails].fold[Future[Result]](
       _   => Future.successful(BadRequest),
       srb => if (useDESApi) {
-//        Logger.info(s"************* About to transform subDetails $sd")
-//        val srb = subscriptionDetailsToSubscriptionRequestBody(sd)
-//        val srbJson = Json.toJson(srb.toString)
-//        Logger.info(s"************* About to call DES interface with srb: $srbJson")
-//
+        Logger.info(s"************* Use DESAPI $srb")
         remoteGen.generateCBCId(srb)
       } else {
+        Logger.info("************* Don't use DES")
         localGen.generateCBCId()
       }
     )
