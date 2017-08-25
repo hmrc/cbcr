@@ -17,6 +17,8 @@
 package uk.gov.hmrc.cbcr.controllers
 import javax.inject._
 
+import play.api.libs.json.Json
+
 //import com.oracle.tools.packager.Log.Logger
 import configs.syntax._
 import play.api.Configuration
@@ -44,7 +46,7 @@ class CBCIdController @Inject()(config:Configuration,
       sd => if (useDESApi) {
         Logger.info(s"************* About to transform subDetails $sd")
         val srb = subscriptionDetailsToSubscriptionRequestBody(sd)
-        Logger.info(s"************* About to call DES interface with srb: $srb")
+        Logger.info(s"************* About to call DES interface with srb: $Json.toJson(srb.toString)")
 
         remoteGen.generateCBCId(srb)
       } else {
