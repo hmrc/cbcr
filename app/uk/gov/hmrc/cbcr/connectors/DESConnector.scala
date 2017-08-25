@@ -32,6 +32,8 @@ import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
+import play.api.Logger
+
 
   @ImplementedBy(classOf[DESConnectorImpl])
   trait DESConnector extends ServicesConfig with RawResponseReads {
@@ -58,6 +60,26 @@ import scala.concurrent.{ExecutionContext, Future}
       "isAnAgent" -> false
     )
 
+    val srb: JsObject = Json.obj(
+      "safeId" -> "XA0000000012345",
+      "isMigrationRecord" -> false,
+      "correspondenceDetails" -> Json.obj(
+        "contactAddress" -> Json.obj(
+          "addressLine1" -> "Matheson House 56",
+          "addressLine2" -> "Grange Central 56",
+          "postalCode" -> "TF3 4ER",
+          "countryCode" -> "GB")
+        ,
+        "contactDetails" -> Json.obj(
+          "emailAddress" -> "fred_flintstone@hotmail.com",
+          "phoneNumber" -> "011 555 30440")
+        ,
+        "contactName"-> Json.obj(
+          "name1" -> "Fred",
+          "name2" -> "Flintstone")
+      )
+    )
+
     private def createHeaderCarrier: HeaderCarrier =
       HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
 
@@ -69,7 +91,9 @@ import scala.concurrent.{ExecutionContext, Future}
     }
 
     def subscribeToCBC(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
-      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
+      val tempJson = Json.toJson(srb).toString()
+      Logger.info(s"JsObject sent to DES: $tempJson")
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(srb)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
     }
