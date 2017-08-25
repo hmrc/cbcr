@@ -44,10 +44,10 @@ class RemoteCBCIdGeneratorSpec extends UnitSpec with MockitoSugar with OneAppPer
   implicit val mat = ActorMaterializer()
 
   val generator = new RemoteCBCIdGenerator(desConnector)
-  val srb = SubscriptionRequestBody(
+  val srb = SubscriptionRequestBody2(
     "SAFEID",
     false,
-    None,
+//    None,
     CorrespondenceDetails(
       EtmpAddress("18 Baxter Street",None,None,None,None,"GB"),
       ContactDetails(EmailAddress("blagh@blagh.com"),PhoneNumber("0207654322").get),

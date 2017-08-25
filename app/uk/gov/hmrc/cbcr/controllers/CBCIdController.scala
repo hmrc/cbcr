@@ -54,11 +54,10 @@ class CBCIdController @Inject()(config:Configuration,
   }
 
 //  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody ={
-    private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody ={
-    SubscriptionRequestBody(
+    private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequestBody2 ={
+    SubscriptionRequestBody2(
       s.businessPartnerRecord.safeId,
       false,
-      CBCId("XECBC0000000001"),
       CorrespondenceDetails(
         s.businessPartnerRecord.address,
         ContactDetails(s.subscriberContact.email,s.subscriberContact.phoneNumber),

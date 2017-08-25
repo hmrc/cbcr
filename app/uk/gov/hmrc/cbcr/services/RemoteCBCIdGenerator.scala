@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import javax.inject.{Inject, Singleton}
 
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody, SubscriptionRequestResponse}
+import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody2, SubscriptionRequestResponse}
 import play.api.Logger
 import play.api.mvc.Results._
 import play.api.http.Status._
@@ -34,7 +34,7 @@ import play.api.Logger
 @Singleton
 class RemoteCBCIdGenerator @Inject() (val des:DESConnector) {
 
-  def generateCBCId(sub:SubscriptionRequestBody)(implicit hc:HeaderCarrier, ec:ExecutionContext): Future[Result] = {
+  def generateCBCId(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier, ec:ExecutionContext): Future[Result] = {
     Logger.info("in generateCBCId")
     des.subscribeToCBC(sub).map(response =>
       response.json.validate[SubscriptionRequestResponse].fold(
