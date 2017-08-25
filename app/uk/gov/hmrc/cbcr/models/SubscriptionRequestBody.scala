@@ -80,6 +80,12 @@ object SubscriptionRequestBody{
   implicit val format = Json.format[SubscriptionRequestBody]
 }
 
+case class SubscriptionRequestBody2(safeID:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
+
+object SubscriptionRequestBody2{
+  implicit val format = Json.format[SubscriptionRequestBody2]
+}
+
 
 case class SubscriptionRequestResponse(processingDate:LocalDateTime, cbcSubscriptionID:CBCId)
 
