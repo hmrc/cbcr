@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.connectors
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
+//import com.oracle.tools.packager.Log.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody, SubscriptionRequestBody2}
