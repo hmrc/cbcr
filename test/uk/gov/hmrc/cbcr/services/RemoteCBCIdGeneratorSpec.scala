@@ -88,4 +88,10 @@ class RemoteCBCIdGeneratorSpec extends UnitSpec with MockitoSugar with OneAppPer
     }
   }
 
+  "The CBCId" should {
+    "construct base on a string of the corect pattern" in {
+      CBCId("XFCBC1000000035")
+    }
+  }
+
 }

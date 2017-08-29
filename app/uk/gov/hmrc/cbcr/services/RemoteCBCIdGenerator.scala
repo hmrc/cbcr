@@ -18,38 +18,44 @@ package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
 
-import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody2, SubscriptionRequestResponse}
 import play.api.Logger
-import play.api.mvc.Results._
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.mvc.Result
+import play.api.mvc.Results._
+import uk.gov.hmrc.cbcr.connectors.DESConnector
+import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody2, SubscriptionRequestResponse}
 import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-import play.api.Logger
-
 @Singleton
-class RemoteCBCIdGenerator @Inject() (val des:DESConnector) {
+class RemoteCBCIdGenerator @Inject()(val des: DESConnector) {
 
-  def generateCBCId(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier, ec:ExecutionContext): Future[Result] = {
+  def generateCBCId(sub: SubscriptionRequestBody2)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     Logger.info("in generateCBCId")
-    des.subscribeToCBC(sub).map(response =>
-      response.json.validate[SubscriptionRequestResponse].fold(
-        _   => response.status match {
-          case FORBIDDEN             => Forbidden
-          case BAD_REQUEST           => BadRequest
-          case INTERNAL_SERVER_ERROR => InternalServerError
-          case SERVICE_UNAVAILABLE   => ServiceUnavailable
-          case other                 =>
-            Logger.error(s"DES returned an undocumented ErrorCode: $other")
-            InternalServerError
-        },
-        response => Ok(Json.obj("cbc-id" -> response.cbcSubscriptionID.value))
-      )
-    )
+
+    des.subscribeToCBC(sub).map { response =>
+      try {
+        response.json.validate[SubscriptionRequestResponse].fold(
+          _ => response.status match {
+            case FORBIDDEN => Forbidden
+            case BAD_REQUEST => BadRequest
+            case INTERNAL_SERVER_ERROR => InternalServerError
+            case SERVICE_UNAVAILABLE => ServiceUnavailable
+            case other =>
+              Logger.error(s"DES returned an undocumented ErrorCode: $other")
+              InternalServerError
+          },
+          response => Ok(Json.obj("cbc-id" -> response.cbcSubscriptionID.value))
+        )
+      } catch {
+        case e => {
+          Logger.error(s"Error calling DES: ${response.body}")
+          throw e
+        }
+      }
+    }
   }
 
 
