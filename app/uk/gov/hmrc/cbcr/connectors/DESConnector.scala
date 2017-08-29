@@ -72,7 +72,8 @@ import play.api.Logger
       }
     }
 
-    def subscribeToCBC(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
+    def subscribeToCBC(sub:SubscriptionRequestBody2): Future[HttpResponse] = {
+      implicit val hc: HeaderCarrier = createHeaderCarrier  
       Logger.info(s"JsObject sent to DES: ${Json.toJson(sub)}")
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))

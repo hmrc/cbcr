@@ -36,6 +36,7 @@ class RemoteCBCIdGenerator @Inject()(val des: DESConnector) {
     Logger.info("in generateCBCId")
 
     des.subscribeToCBC(sub).map { response =>
+
       try {
         response.json.validate[SubscriptionRequestResponse].fold(
           _ => response.status match {
