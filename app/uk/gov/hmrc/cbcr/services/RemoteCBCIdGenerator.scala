@@ -51,7 +51,7 @@ class RemoteCBCIdGenerator @Inject()(val des: DESConnector) {
         )
       } catch {
         case e => {
-          Logger.error(s"Error calling DES: ${response.body}")
+          Logger.error(s"Error calling DES: Body: [${response.body}] Status: ${response.status} Headers: ${response.allHeaders}")
           throw e
         }
       }
