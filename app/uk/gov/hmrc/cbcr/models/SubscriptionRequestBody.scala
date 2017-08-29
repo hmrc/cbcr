@@ -80,7 +80,7 @@ object SubscriptionRequestBody{
   implicit val format = Json.format[SubscriptionRequestBody]
 }
 
-case class SubscriptionRequestBody2(safeID:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
+case class SubscriptionRequestBody2(safeId:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
 
 object SubscriptionRequestBody2{
   implicit val format: Format[SubscriptionRequestBody2] = Json.format[SubscriptionRequestBody2]
