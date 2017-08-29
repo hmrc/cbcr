@@ -74,7 +74,7 @@ object CorrespondenceDetails{
   implicit val format = Json.format[CorrespondenceDetails]
 }
 
-case class SubscriptionRequestBody(safeID:String, isMigrationRecord:Boolean, cbcRegNumber:Option[CBCId], correspondenceDetails: CorrespondenceDetails )
+case class SubscriptionRequestBody(safeId:String, isMigrationRecord:Boolean, cbcRegNumber:Option[CBCId], correspondenceDetails: CorrespondenceDetails )
 
 object SubscriptionRequestBody{
   implicit val format = Json.format[SubscriptionRequestBody]
