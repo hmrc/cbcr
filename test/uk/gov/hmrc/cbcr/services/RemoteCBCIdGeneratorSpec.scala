@@ -45,7 +45,7 @@ class RemoteCBCIdGeneratorSpec extends UnitSpec with MockitoSugar with OneAppPer
 
   val generator = new RemoteCBCIdGenerator(desConnector)
   val srb = SubscriptionRequestBody2(
-    "SAFEID",
+    "safeId",
     false,
 //    None,
     CorrespondenceDetails(
