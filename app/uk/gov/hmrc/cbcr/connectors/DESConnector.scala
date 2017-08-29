@@ -61,25 +61,6 @@ import play.api.Logger
       "isAnAgent" -> false
     )
 
-    val srb: JsObject = Json.obj(
-      "safeId" -> "XA0000000012345",
-      "isMigrationRecord" -> false,
-      "correspondenceDetails" -> Json.obj(
-        "contactAddress" -> Json.obj(
-          "addressLine1" -> "Matheson House 56",
-          "addressLine2" -> "Grange Central 56",
-          "postalCode" -> "TF3 4ER",
-          "countryCode" -> "GB")
-        ,
-        "contactDetails" -> Json.obj(
-          "emailAddress" -> "fred_flintstone@hotmail.com",
-          "phoneNumber" -> "011 555 30440")
-        ,
-        "contactName"-> Json.obj(
-          "name1" -> "Fred",
-          "name2" -> "Flintstone")
-      )
-    )
 
     private def createHeaderCarrier: HeaderCarrier =
       HeaderCarrier(extraHeaders = Seq("Environment" -> urlHeaderEnvironment), authorization = Some(Authorization(urlHeaderAuthorization)))
@@ -92,21 +73,12 @@ import play.api.Logger
     }
 
     def subscribeToCBC(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
-      val tempJson = Json.toJson(srb)
-      Logger.info(s"JsObject sent to DES: $tempJson")
+      Logger.info(s"JsObject sent to DES: ${Json.toJson(sub)}")
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
     }
 
-//    def subscribeToCBC(sub:SubscriptionRequestBody2)(implicit hc:HeaderCarrier) : Future[HttpResponse] = {
-//      Logger.info(s"JsObject sent to DES: $sub")
-//      http.POST[SubscriptionRequestBody2, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover{
-//        case e:HttpException =>
-//          Logger.info(s"Subscribe returned an exception: ${e.getMessage}")
-//          HttpResponse(e.responseCode,responseString = Some(e.message))
-//      }
-//    }
 
   }
 
