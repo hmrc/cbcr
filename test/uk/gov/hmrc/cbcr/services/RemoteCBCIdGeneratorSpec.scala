@@ -31,7 +31,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
 import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsResult, JsValue, Json}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,10 +44,9 @@ class RemoteCBCIdGeneratorSpec extends UnitSpec with MockitoSugar with OneAppPer
   implicit val mat = ActorMaterializer()
 
   val generator = new RemoteCBCIdGenerator(desConnector)
-  val srb = SubscriptionRequestBody2(
+  val srb = SubscriptionRequest(
     "safeId",
     false,
-//    None,
     CorrespondenceDetails(
       EtmpAddress("18 Baxter Street",None,None,None,None,"GB"),
       ContactDetails(EmailAddress("blagh@blagh.com"),PhoneNumber("0207654322").get),
@@ -55,9 +54,15 @@ class RemoteCBCIdGeneratorSpec extends UnitSpec with MockitoSugar with OneAppPer
     )
   )
 
+  private val subscriptionRequestRsponse =
+    """
+      |{"processingDate":"2017-08-29T18:13:08Z",
+      |"cbcSubscriptionID":"XHCBC1000000037"}
+    """.stripMargin
+
   implicit val hc = new HeaderCarrier()
 
-  val srr = SubscriptionRequestResponse(LocalDateTime.now(),CBCId.create(1).getOrElse(fail("Could not generate CBCID")))
+  val srr = SubscriptionResponse(LocalDateTime.now(),CBCId.create(1).getOrElse(fail("Could not generate CBCID")))
   "The remoteCBCIdGenerator" should {
 
     "return a 200 with a cbcid when the submission is successful" in {
@@ -89,8 +94,21 @@ class RemoteCBCIdGeneratorSpec extends UnitSpec with MockitoSugar with OneAppPer
   }
 
   "The CBCId" should {
-    "construct base on a string of the corect pattern" in {
-      CBCId("XFCBC1000000035")
+    "construct a remote Etmp CbcId based on a string of the correct pattern" in {
+      val id: Option[CBCId] = CBCId("XHCBC1000000037")
+      id.isDefined shouldBe true
+
+    }
+
+    "Parse a Json SubscriptionRquestResponse " in {
+      val result = Json.fromJson[SubscriptionResponse](Json.parse(subscriptionRequestRsponse))
+      println(result)
+      result.isInstanceOf[JsError] shouldNot equal(true)
+
+      val decisionRequest: SubscriptionResponse =
+        result.getOrElse(srr)
+      println(decisionRequest)
+      decisionRequest shouldNot equal(srr)
     }
   }
 

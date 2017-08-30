@@ -74,32 +74,32 @@ object CorrespondenceDetails{
   implicit val format = Json.format[CorrespondenceDetails]
 }
 
-case class SubscriptionRequestBody(safeId:String, isMigrationRecord:Boolean, cbcRegNumber:Option[CBCId], correspondenceDetails: CorrespondenceDetails )
+//case class SubscriptionRequestBody(safeId:String, isMigrationRecord:Boolean, cbcRegNumber:Option[CBCId], correspondenceDetails: CorrespondenceDetails )
+//
+//object SubscriptionRequestBody{
+//  implicit val format = Json.format[SubscriptionRequestBody]
+//}
 
-object SubscriptionRequestBody{
-  implicit val format = Json.format[SubscriptionRequestBody]
+case class SubscriptionRequest(safeId:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
+
+object SubscriptionRequest{
+  implicit val format: Format[SubscriptionRequest] = Json.format[SubscriptionRequest]
 }
 
-case class SubscriptionRequestBody2(safeId:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
 
-object SubscriptionRequestBody2{
-  implicit val format: Format[SubscriptionRequestBody2] = Json.format[SubscriptionRequestBody2]
-}
+case class SubscriptionResponse(processingDate:LocalDateTime, cbcSubscriptionID:CBCId)
 
-
-case class SubscriptionRequestResponse(processingDate:LocalDateTime, cbcSubscriptionID:CBCId)
-
-object SubscriptionRequestResponse{
+object SubscriptionResponse{
   val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
-  implicit val format = new Writes[SubscriptionRequestResponse] {
-    override def writes(o: SubscriptionRequestResponse) = Json.obj(
+  implicit val format = new Writes[SubscriptionResponse] {
+    override def writes(o: SubscriptionResponse) = Json.obj(
       "processingDate" -> o.processingDate.format(formatter),
       "cbcSubscriptionID" -> o.cbcSubscriptionID
     )
   }
 
-  implicit val reads: Reads[SubscriptionRequestResponse] =
+  implicit val reads: Reads[SubscriptionResponse] =
     ((JsPath \ "processingDate").read[LocalDateTime] and
-      (JsPath \ "cbcSubscriptionID").read[CBCId])(SubscriptionRequestResponse.apply _)
+      (JsPath \ "cbcSubscriptionID").read[CBCId])(SubscriptionResponse.apply _)
 
 }

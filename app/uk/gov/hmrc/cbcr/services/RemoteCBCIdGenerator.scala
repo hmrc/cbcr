@@ -20,41 +20,45 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.Logger
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody2, SubscriptionRequestResponse}
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.cbcr.models.{SubscriptionRequest, SubscriptionResponse}
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RemoteCBCIdGenerator @Inject()(val des: DESConnector) {
 
-  def generateCBCId(sub: SubscriptionRequestBody2)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
+  def generateCBCId(sub: SubscriptionRequest)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] = {
     Logger.info("in generateCBCId")
+
+    def checkErrorStatus(response: HttpResponse) = {
+      Logger.error(s"Error calling DES: Body: [${response.body}] Status: ${response.status} Headers: ${response.allHeaders}")
+      response.status match {
+        case FORBIDDEN => Forbidden
+        case BAD_REQUEST => BadRequest
+        case INTERNAL_SERVER_ERROR => InternalServerError
+        case SERVICE_UNAVAILABLE => ServiceUnavailable
+        case other =>
+          InternalServerError
+      }
+    }
+
 
     des.subscribeToCBC(sub).map { response =>
 
-      try {
-        response.json.validate[SubscriptionRequestResponse].fold(
-          _ => response.status match {
-            case FORBIDDEN => Forbidden
-            case BAD_REQUEST => BadRequest
-            case INTERNAL_SERVER_ERROR => InternalServerError
-            case SERVICE_UNAVAILABLE => ServiceUnavailable
-            case other =>
-              Logger.error(s"DES returned an undocumented ErrorCode: $other")
-              InternalServerError
-          },
+      if (response.json != null) {
+        response.json.validate[SubscriptionResponse].fold(errors => {
+          Logger.error(s"JsonErrors found validating SubscriptionRequestResponse ${errors}")
+          checkErrorStatus(response)},
           response => Ok(Json.obj("cbc-id" -> response.cbcSubscriptionID.value))
         )
-      } catch {
-        case e => {
-          Logger.error(s"Error calling DES: Body: [${response.body}] Status: ${response.status} Headers: ${response.allHeaders}")
-          throw e
-        }
+
+      } else {
+        checkErrorStatus(response)
       }
     }
   }
