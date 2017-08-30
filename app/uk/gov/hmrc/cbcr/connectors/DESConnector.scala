@@ -19,10 +19,10 @@ package uk.gov.hmrc.cbcr.connectors
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-//import com.oracle.tools.packager.Log.Logger
+import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.{SubscriptionRequestBody, SubscriptionRequestBody2}
+import uk.gov.hmrc.cbcr.models.SubscriptionRequest
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
@@ -32,8 +32,6 @@ import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-
-import play.api.Logger
 
 
   @ImplementedBy(classOf[DESConnectorImpl])
@@ -72,8 +70,8 @@ import play.api.Logger
       }
     }
 
-    def subscribeToCBC(sub:SubscriptionRequestBody2): Future[HttpResponse] = {
-      implicit val hc: HeaderCarrier = createHeaderCarrier  
+    def subscribeToCBC(sub:SubscriptionRequest): Future[HttpResponse] = {
+      implicit val hc: HeaderCarrier = createHeaderCarrier
       Logger.info(s"JsObject sent to DES: ${Json.toJson(sub)}")
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
