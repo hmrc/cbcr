@@ -42,6 +42,16 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
     )
   }
 
+  def updateSubscriptionData(cbcId:CBCId) = Action.async(parse.json) { implicit request =>
+    request.body.validate[SubscriptionDetails].fold(
+      error    => Future.successful(BadRequest(JsError.toJson(error))),
+      response => repo.update(cbcId,response).map {
+        case result if !result.ok => InternalServerError(result.writeErrors.mkString)
+        case _ => Ok
+      }
+    )
+  }
+
   def clearSubscriptionData(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
     repo.clear(cbcId).cata[Result](
       NotFound,

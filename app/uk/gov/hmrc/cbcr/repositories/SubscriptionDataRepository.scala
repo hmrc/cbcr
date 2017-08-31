@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.repositories
 import javax.inject.{Inject, Singleton}
 
 import cats.data.OptionT
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.collection.JSONCollection
@@ -44,17 +44,24 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     } yield result
   }
 
+  def update(cbcId:CBCId,s:SubscriptionDetails) : Future[WriteResult] = {
+    val criteria = Json.obj("cbcId" -> cbcId)
+    repository.flatMap(_.update(criteria, s, upsert = true))
+  }
+
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
-  def get(cbcId:CBCId) : OptionT[Future,SubscriptionDetails] = {
-    val criteria = Json.obj("cbcId" -> cbcId.value)
-    OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
-  }
+  def get(safeId:String) : OptionT[Future,SubscriptionDetails] =
+    getGeneric(Json.obj("safeId" -> safeId))
 
-  def get(utr:Utr): OptionT[Future,SubscriptionDetails] = {
-    val criteria = Json.obj("utr" -> utr.utr)
+  def get(cbcId:CBCId) : OptionT[Future,SubscriptionDetails] =
+    getGeneric(Json.obj("cbcId" -> cbcId.value))
+
+  def get(utr:Utr): OptionT[Future,SubscriptionDetails] =
+    getGeneric(Json.obj("utr" -> utr.utr))
+
+  private def getGeneric(criteria:JsObject) =
     OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
-  }
 
 }

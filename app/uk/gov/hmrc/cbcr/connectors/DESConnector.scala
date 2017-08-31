@@ -22,12 +22,12 @@ import com.google.inject.ImplementedBy
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.SubscriptionRequest
+import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.logging.Authorization
-import uk.gov.hmrc.play.http.ws.WSPost
+import uk.gov.hmrc.play.http.ws.{WSHttp, WSPost}
 import uk.gov.hmrc.play.http.{HeaderCarrier, _}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -49,7 +49,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
     def urlHeaderAuthorization: String
 
-    def http: HttpPost
+    def http: HttpPost with HttpGet with HttpPut
 
     val audit:Audit
 
@@ -70,10 +70,26 @@ import scala.concurrent.{ExecutionContext, Future}
       }
     }
 
-    def subscribeToCBC(sub:SubscriptionRequest): Future[HttpResponse] = {
+    def createSubscription(sub:SubscriptionRequest): Future[HttpResponse] = {
       implicit val hc: HeaderCarrier = createHeaderCarrier
-      Logger.info(s"JsObject sent to DES: ${Json.toJson(sub)}")
-      http.POST[JsValue, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", Json.toJson(sub)).recover{
+      Logger.info(s"Create Request sent to DES: ${Json.toJson(sub)} for safeID: ${sub.safeId}")
+      http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
+      }
+    }
+
+    def updateSubscription(safeId:String,cor:CorrespondenceDetails) : Future[HttpResponse] = {
+      implicit val hc: HeaderCarrier = createHeaderCarrier
+      Logger.info(s"Update Request sent to DES: ${Json.toJson(cor)} for safeID: $safeId")
+      http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
+      }
+    }
+
+    def getSubscription(safeId:String):Future[HttpResponse] = {
+      implicit val hc: HeaderCarrier = createHeaderCarrier
+      Logger.info(s"Get Request sent to DES for safeID: $safeId")
+      http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId").recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
     }
@@ -89,7 +105,7 @@ import scala.concurrent.{ExecutionContext, Future}
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
     val audit = new Audit("known-fact-checking", auditConnector)
-    val http:WSPost = new WSPost {
+    val http = new WSHttp{
       override val hooks: Seq[HttpHook] = NoneRequired
     }
   }
