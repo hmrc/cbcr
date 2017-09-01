@@ -21,20 +21,23 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.{Backoff, BackoffSupervisor, ask}
 import akka.util.Timeout
 import configs.syntax._
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.actors.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.actors.CBCIdGenerator
 import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
+import cats.instances.future._
 
 @Singleton
-class LocalCBCIdGenerator @Inject()(config:Configuration)(implicit system:ActorSystem) {
+class LocalSubscription @Inject()(config:Configuration, repo:SubscriptionDataRepository)(implicit system:ActorSystem, ec:ExecutionContext) extends SubscriptionHandler{
 
   private val conf = config.underlying.getConfig("CBCId")
   private implicit val timeoutValue: Timeout = Timeout(conf.get[FiniteDuration]("controller.timeout").value)
@@ -53,13 +56,30 @@ class LocalCBCIdGenerator @Inject()(config:Configuration)(implicit system:ActorS
 
   private [services] lazy val cbcIdGenerator: ActorRef = system.actorOf(supervisor, "cbc-id-generator-supervisor")
 
-
-  def generateCBCId()(implicit ec:ExecutionContext): Future[Result] = {
+  override def createSubscription(sub:SubscriptionRequest)(implicit hc:HeaderCarrier): Future[Result] = {
     (cbcIdGenerator ? GenerateCBCId).mapTo[GenerateCBCIdResponse].map(_.value.fold(
-      (error: Throwable) => InternalServerError(error.getMessage),
+      error              => {
+        Logger.error("Failed to generate a Local CBCId",error)
+        InternalServerError
+      },
       (id: CBCId)        => Ok(Json.obj("cbc-id" -> id.value))
     )).recover {
       case NonFatal(e) => InternalServerError(e.getMessage)
     }
   }
+
+  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) = Future.successful(Ok)
+
+  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) = repo.get(safeId).map(sd =>
+    GetResponse(
+      safeId,
+      ContactName(sd.subscriberContact.firstName,sd.subscriberContact.lastName),
+      ContactDetails(sd.subscriberContact.email,sd.subscriberContact.phoneNumber),
+      sd.businessPartnerRecord.address
+    )
+  ).cata(
+    BadRequest,
+    (response: GetResponse) => Ok(Json.toJson(response))
+  )
+
 }

@@ -102,4 +102,21 @@ object SubscriptionResponse{
     ((JsPath \ "processingDate").read[LocalDateTime] and
       (JsPath \ "cbcSubscriptionID").read[CBCId])(SubscriptionResponse.apply _)
 
+
+}
+case class UpdateResponse(processingDate:LocalDateTime)
+object UpdateResponse{
+  val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+  implicit val format = new Writes[UpdateResponse] {
+    override def writes(o: UpdateResponse) = Json.obj(
+      "processingDate" -> o.processingDate.format(formatter)
+    )
+  }
+
+  implicit val reads: Reads[UpdateResponse] = (JsPath \ "processingDate").read[LocalDateTime].map(UpdateResponse(_))
+}
+
+case class GetResponse(safeId:String, names:ContactName,contact:ContactDetails,address:EtmpAddress)
+object GetResponse{
+  implicit val format = Json.format[GetResponse]
 }
