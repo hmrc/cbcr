@@ -100,6 +100,21 @@ object CorrespondenceDetails{
 case class SubscriptionRequest(safeId:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
 
 object SubscriptionRequest{
+  val subscriptionWriter = new Writes[SubscriptionRequest] {
+    override def writes(o: SubscriptionRequest) = {Json.obj(
+      "safeId" -> o.safeId,
+      "isMigrationRecord" -> o.isMigrationRecord,
+      "correspondenceDetails"-> Json.obj(
+        "contactAddress" -> EtmpAddress.formats.writes(o.correspondenceDetails.contactAddress),
+        "contactDetails" -> Json.obj(
+          "emailAddress" -> o.correspondenceDetails.contactDetails.email.value,
+          "phoneNumber"  -> o.correspondenceDetails.contactDetails.phoneNumber.number
+        ),
+        "contactName"    -> ContactName.format.writes(o.correspondenceDetails.contactName)
+      )
+    )}
+
+  }
   implicit val format: Format[SubscriptionRequest] = Json.format[SubscriptionRequest]
 }
 
