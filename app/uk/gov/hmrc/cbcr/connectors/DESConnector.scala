@@ -22,7 +22,7 @@ import com.google.inject.ImplementedBy
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
+import uk.gov.hmrc.cbcr.models.{ContactDetails, CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
@@ -80,7 +80,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
     def updateSubscription(safeId:String,cor:CorrespondenceDetails) : Future[HttpResponse] = {
       implicit val hc: HeaderCarrier = createHeaderCarrier
-      Logger.info(s"Update Request sent to DES: ${Json.toJson(cor)} for safeID: $safeId")
+      implicit val format = CorrespondenceDetails.updateWriter
+      Logger.info(s"Update Request sent to DES: $cor for safeID: $safeId")
       http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }

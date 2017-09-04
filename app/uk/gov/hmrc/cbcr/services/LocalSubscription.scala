@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.cbcr.services
+import java.time.LocalDateTime
 import javax.inject._
 
 import akka.actor.{ActorRef, ActorSystem, Props}
@@ -68,18 +69,21 @@ class LocalSubscription @Inject()(config:Configuration, repo:SubscriptionDataRep
     }
   }
 
-  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) = Future.successful(Ok)
+  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) =
+    Future.successful(Ok(Json.toJson(UpdateResponse(LocalDateTime.now))))
 
-  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) = repo.get(safeId).map(sd =>
-    GetResponse(
-      safeId,
-      ContactName(sd.subscriberContact.firstName,sd.subscriberContact.lastName),
-      ContactDetails(sd.subscriberContact.email,sd.subscriberContact.phoneNumber),
-      sd.businessPartnerRecord.address
+  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) ={
+    repo.get(safeId).map(sd =>
+      GetResponse(
+        safeId,
+        ContactName(sd.subscriberContact.firstName,sd.subscriberContact.lastName),
+        ContactDetails(sd.subscriberContact.email,sd.subscriberContact.phoneNumber),
+        sd.businessPartnerRecord.address
+      )
+    ).cata(
+      NotFound,
+      (response: GetResponse) => Ok(Json.toJson(response))
     )
-  ).cata(
-    BadRequest,
-    (response: GetResponse) => Ok(Json.toJson(response))
-  )
+  }
 
 }

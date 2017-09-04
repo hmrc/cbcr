@@ -19,13 +19,15 @@ package uk.gov.hmrc.cbcr.repositories
 import javax.inject.{Inject, Singleton}
 
 import cats.data.OptionT
+import cats.instances.future._
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
-import cats.instances.future._
-import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails, Utr}
+import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.play.json.commands.JSONFindAndModifyCommand
+import uk.gov.hmrc.cbcr.models.{CBCId, SubscriberContact, SubscriptionDetails, Utr}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,16 +46,20 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     } yield result
   }
 
-  def update(cbcId:CBCId,s:SubscriptionDetails) : Future[WriteResult] = {
-    val criteria = Json.obj("cbcId" -> cbcId)
-    repository.flatMap(_.update(criteria, s, upsert = true))
+  def update(cbcId:CBCId,s:SubscriberContact): Future[Boolean] = {
+    val criteria = BSONDocument("cbcId" -> cbcId.value)
+    val modifier = Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
+    for {
+      collection <- repository
+      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+    } yield update.value.isDefined
   }
 
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
   def get(safeId:String) : OptionT[Future,SubscriptionDetails] =
-    getGeneric(Json.obj("safeId" -> safeId))
+    getGeneric(Json.obj("businessPartnerRecord.safeId" -> safeId))
 
   def get(cbcId:CBCId) : OptionT[Future,SubscriptionDetails] =
     getGeneric(Json.obj("cbcId" -> cbcId.value))
