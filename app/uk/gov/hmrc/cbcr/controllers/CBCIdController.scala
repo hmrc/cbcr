@@ -17,6 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 import javax.inject._
 
+import play.api.Logger
 import play.api.mvc.{Action, Result}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
@@ -43,7 +44,7 @@ class CBCIdController @Inject()(gen:SubscriptionHandlerImpl)
     )
   }
 
-  def getSubscription(safeId:String) = Action.async(parse.json){ implicit request =>
+  def getSubscription(safeId:String) = Action.async{ implicit request =>
     gen.getSubscription(safeId)
   }
 

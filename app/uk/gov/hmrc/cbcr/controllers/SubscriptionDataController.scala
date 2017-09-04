@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
-import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.models.{CBCId, SubscriberContact, SubscriptionDetails, Utr}
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import cats.instances.future._
@@ -42,12 +42,12 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) ext
     )
   }
 
-  def updateSubscriptionData(cbcId:CBCId) = Action.async(parse.json) { implicit request =>
-    request.body.validate[SubscriptionDetails].fold(
+  def updateSubscriberContactDetails(cbcId:CBCId) = Action.async(parse.json) { implicit request =>
+    request.body.validate[SubscriberContact].fold(
       error    => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.update(cbcId,response).map {
-        case result if !result.ok => InternalServerError(result.writeErrors.mkString)
-        case _ => Ok
+        case result if !result => InternalServerError
+        case _                 => Ok
       }
     )
   }

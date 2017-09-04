@@ -53,9 +53,20 @@ object PhoneNumber {
   }
 }
 
-case class ContactDetails(emailAddress:EmailAddress, phoneNumber:PhoneNumber)
+case class ContactDetails(email:EmailAddress, phoneNumber:PhoneNumber)
 
 object ContactDetails{
+
+  val emailFormat = new Format[EmailAddress] {
+    override def writes(o: EmailAddress) = Json.obj("emailAddress" -> o.value)
+
+    override def reads(json: JsValue) = json match {
+      case JsObject(m) => m.get("emailAddress").flatMap(_.asOpt[String].map(EmailAddress(_))).fold[JsResult[EmailAddress]](
+        JsError("Unable to serialise emailAddress")
+      )(emailAddress => JsSuccess(emailAddress))
+      case other => JsError(s"Unable to serialise emailAddress: $other")
+    }
+  }
   implicit val format = Json.format[ContactDetails]
 }
 
@@ -72,13 +83,19 @@ case class CorrespondenceDetails(contactAddress: EtmpAddress,
 
 object CorrespondenceDetails{
   implicit val format = Json.format[CorrespondenceDetails]
+  implicit val updateWriter = new Writes[CorrespondenceDetails] {
+    override def writes(o: CorrespondenceDetails) = Json.obj(
+      "correspondenceDetails"-> Json.obj(
+        "contactAddress" -> EtmpAddress.formats.writes(o.contactAddress),
+        "contactDetails" -> Json.obj(
+          "emailAddress" -> o.contactDetails.email.value,
+          "phoneNumber"  -> o.contactDetails.phoneNumber.number
+        ),
+        "contactName"    -> ContactName.format.writes(o.contactName)
+      )
+    )
+  }
 }
-
-//case class SubscriptionRequestBody(safeId:String, isMigrationRecord:Boolean, cbcRegNumber:Option[CBCId], correspondenceDetails: CorrespondenceDetails )
-//
-//object SubscriptionRequestBody{
-//  implicit val format = Json.format[SubscriptionRequestBody]
-//}
 
 case class SubscriptionRequest(safeId:String, isMigrationRecord:Boolean, correspondenceDetails: CorrespondenceDetails )
 
@@ -118,5 +135,38 @@ object UpdateResponse{
 
 case class GetResponse(safeId:String, names:ContactName,contact:ContactDetails,address:EtmpAddress)
 object GetResponse{
-  implicit val format = Json.format[GetResponse]
+
+  implicit val contactReads: Reads[ContactDetails] =((JsPath \ "email").read[EmailAddress] and (JsPath \ "phoneNumber").read[PhoneNumber])(ContactDetails.apply _)
+
+  val grReads: Reads[GetResponse] = ((JsPath \ "safeId").read[String] and
+    (JsPath \ "names").read[ContactName] and
+    (JsPath \ "contact").read[ContactDetails] and
+    (JsPath \ "address" \ "line1").read[String] and
+    (JsPath \ "address" \ "line2").readNullable[String] and
+    (JsPath \ "address" \ "line3").readNullable[String] and
+    (JsPath \ "address" \ "line4").readNullable[String] and
+    (JsPath \ "address" \ "postalCode").readNullable[String] and
+    (JsPath \ "address" \ "countryCode").read[String])((safeId,names,contact,line1,line2,line3,line4,postalCode,countryCode) =>
+    GetResponse(safeId,names,contact,EtmpAddress(line1,line2,line3,line4,postalCode,countryCode))
+  )
+
+  implicit val format = new Format[GetResponse] {
+    override def writes(o: GetResponse) = Json.obj(
+      "safeId" -> o.safeId,
+      "names" -> ContactName.format.writes(o.names),
+      "contact" -> ContactDetails.format.writes(o.contact),
+      "address" -> Json.obj(
+        "line1" -> o.address.addressLine1,
+        "line2" -> o.address.addressLine2,
+        "line3" -> o.address.addressLine3,
+        "line4" -> o.address.addressLine4,
+        "postalCode" -> o.address.postalCode,
+        "countryCode" -> o.address.countryCode
+      )
+    )
+
+    override def reads(json: JsValue): JsResult[GetResponse] = grReads.reads(json)
+  }
+
+
 }

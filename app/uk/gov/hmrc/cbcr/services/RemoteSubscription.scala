@@ -33,9 +33,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionContext: ExecutionContext) extends SubscriptionHandler {
 
   def checkResponse[T:Reads](response:HttpResponse)(f: T => Result) : Result = {
+    Logger.error(s"Response body: ${response.body}" )
     response.status match {
       case OK                     =>
         if(response.json != null) {
+          Logger.error(s"Response body: ${response.body}" )
           response.json.validate[T].fold[Result](
             errors => {
               Logger.error(s"Unable to de-serialise response: $response\nErrors: $errors")
@@ -67,8 +69,8 @@ class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionCont
     )
 
   override def getSubscription(safeId: String)(implicit headerCarrier: HeaderCarrier) : Future[Result] =
-    des.getSubscription(safeId).map( response =>
+    des.getSubscription(safeId).map { response =>
       checkResponse[GetResponse](response)(r => Ok(GetResponse.format.writes(r)))
-    )
+    }
 
 }
