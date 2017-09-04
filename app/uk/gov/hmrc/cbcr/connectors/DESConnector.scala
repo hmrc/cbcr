@@ -72,6 +72,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
     def createSubscription(sub:SubscriptionRequest): Future[HttpResponse] = {
       implicit val hc: HeaderCarrier = createHeaderCarrier
+      implicit val writes = SubscriptionRequest.subscriptionWriter
       Logger.info(s"Create Request sent to DES: ${Json.toJson(sub)} for safeID: ${sub.safeId}")
       http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
