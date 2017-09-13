@@ -26,7 +26,7 @@ import play.api.{Configuration, Logger}
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import uk.gov.hmrc.cbcr.actors.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
+import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.http.HeaderCarrier
