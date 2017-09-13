@@ -19,13 +19,15 @@ package uk.gov.hmrc.cbcr.repositories
 import javax.inject.{Inject, Singleton}
 
 import cats.data.OptionT
-import play.api.libs.json.Json
+import cats.instances.future._
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
-import cats.instances.future._
-import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails, Utr}
+import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.play.json.commands.JSONFindAndModifyCommand
+import uk.gov.hmrc.cbcr.models.{CBCId, SubscriberContact, SubscriptionDetails, Utr}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,26 +37,37 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
 
-  def clear(cbcId:String): OptionT[Future,WriteResult] = {
-    val criteria = Json.obj("cbcId" -> cbcId)
+  def clear(cbcId:CBCId): OptionT[Future,WriteResult] = {
+    val criteria = Json.obj("cbcId" -> cbcId.value)
     for {
       repo   <- OptionT.liftF(repository)
       _      <- OptionT(repo.find(criteria).one[SubscriptionDetails])
-      result <- OptionT.liftF(repo.remove(criteria))
+      result <- OptionT.liftF(repo.remove(criteria, firstMatchOnly = true))
     } yield result
+  }
+
+  def update(cbcId:CBCId,s:SubscriberContact): Future[Boolean] = {
+    val criteria = BSONDocument("cbcId" -> cbcId.value)
+    val modifier = Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
+    for {
+      collection <- repository
+      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+    } yield update.value.isDefined
   }
 
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
-  def get(cbcId:CBCId) : Future[Option[SubscriptionDetails]] = {
-    val criteria = Json.obj("cbcId" -> cbcId.value)
-    repository.flatMap(_.find(criteria).one[SubscriptionDetails])
-  }
+  def get(safeId:String) : OptionT[Future,SubscriptionDetails] =
+    getGeneric(Json.obj("businessPartnerRecord.safeId" -> safeId))
 
-  def get(utr:Utr): Future[Option[SubscriptionDetails]] = {
-    val criteria = Json.obj("utr" -> utr.utr)
-    repository.flatMap(_.find(criteria).one[SubscriptionDetails])
-  }
+  def get(cbcId:CBCId) : OptionT[Future,SubscriptionDetails] =
+    getGeneric(Json.obj("cbcId" -> cbcId.value))
+
+  def get(utr:Utr): OptionT[Future,SubscriptionDetails] =
+    getGeneric(Json.obj("utr" -> utr.utr))
+
+  private def getGeneric(criteria:JsObject) =
+    OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
 
 }

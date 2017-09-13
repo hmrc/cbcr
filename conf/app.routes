@@ -1,23 +1,26 @@
 # microservice specific routes
 
-POST      /saveFileUploadResponse                   uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.saveFileUploadResponse
-GET       /retrieveFileUploadResponse/:envelopeId   uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.retrieveFileUploadResponse(envelopeId: String)
+POST      /file-upload-response                     uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.saveFileUploadResponse
+GET       /file-upload-response/:envelopeId         uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.retrieveFileUploadResponse(envelopeId: String)
 
-POST      /saveSubscriptionData                     uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.saveSubscriptionData()
-POST      /clearSubscriptionData                    uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcId:String)
-GET       /subscription-data/cbc-id/:cbcId           uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataCBCId(cbcId:uk.gov.hmrc.cbcr.models.CBCId)
+POST      /subscription-data                        uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.saveSubscriptionData()
+DELETE    /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
+PUT       /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.updateSubscriberContactDetails(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
+GET       /subscription-data/cbc-id/:cbcid          uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataCBCId(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 GET       /subscription-data/utr/:utr               uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataUtr(utr:uk.gov.hmrc.cbcr.models.Utr)
 
-GET       /getBusinessPartnerRecord/:utr            uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
+GET       /business-partner-record/:utr             uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
 
-GET       /getCBCId                                 uk.gov.hmrc.cbcr.controllers.CBCIdController.getCBCId
+POST      /subscription                             uk.gov.hmrc.cbcr.controllers.CBCIdController.subscribe
+GET       /subscription/:safeId                     uk.gov.hmrc.cbcr.controllers.CBCIdController.getSubscription(safeId:String)
+PUT       /subscription/:safeId                     uk.gov.hmrc.cbcr.controllers.CBCIdController.updateSubscription(safeId:String)
 
 PUT       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
 GET       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)
 
 PUT       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
-PUT       /corr-doc-ref-id/:cid/:id                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
+PUT       /corr-doc-ref-id/:cid/:id                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
 
 
 

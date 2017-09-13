@@ -17,49 +17,47 @@
 package uk.gov.hmrc.cbcr.controllers
 import javax.inject._
 
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.pattern.{Backoff, BackoffSupervisor, ask}
-import akka.util.Timeout
-import configs.syntax._
-import play.api.Configuration
-import play.api.mvc.Action
-import uk.gov.hmrc.cbcr.models.CBCId
-import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
-import uk.gov.hmrc.cbcr.services.CBCIdGenerator
+import play.api.Logger
+import play.api.mvc.{Action, Result}
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import scala.util.control.NonFatal
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CBCIdController @Inject() (system: ActorSystem,config:Configuration)(implicit ec:ExecutionContext) extends BaseController with ServicesConfig{
+class CBCIdController @Inject()(gen:SubscriptionHandlerImpl)
+                               (implicit ec:ExecutionContext) extends BaseController with ServicesConfig{
 
-  val conf = config.underlying.getConfig("CBCId.controller")
-  implicit val timeoutValue:Timeout = Timeout(conf.get[FiniteDuration]("timeout").value)
-  val minBackoff: FiniteDuration = conf.get[FiniteDuration]("supervisor.minBackoff").value
-  val maxBackoff: FiniteDuration = conf.get[FiniteDuration]("supervisor.maxBackoff").value
-
-  val supervisor: Props = BackoffSupervisor.props(
-    Backoff.onStop(
-      childProps = CBCIdGenerator.props,
-      childName = "cbc-id-generator",
-      minBackoff = minBackoff,
-      maxBackoff = maxBackoff,
-      randomFactor = 0.0
+  def subscribe = Action.async(parse.json) { implicit request =>
+    request.body.validate[SubscriptionDetails].fold[Future[Result]](
+      _   => Future.successful(BadRequest),
+      srb => gen.createSubscription(srb)
     )
-  )
+  }
 
-  val cbcIdGenerator: ActorRef = system.actorOf(supervisor,"cbc-id-generator-supervisor")
+  def updateSubscription(safeId:String) = Action.async(parse.json) { implicit request =>
+    request.body.validate[CorrespondenceDetails].fold[Future[Result]](
+      _       => Future.successful(BadRequest),
+      details => gen.updateSubscription(safeId,details)
+    )
+  }
 
-  def getCBCId = Action.async {
-    (cbcIdGenerator ? GenerateCBCId).mapTo[GenerateCBCIdResponse].map(_.value.fold(
-      (error: Throwable) => InternalServerError(error.getMessage),
-      (id: CBCId)        => Ok(id.value)
-    )).recover{
-      case NonFatal(e) => InternalServerError(e.getMessage)
-    }
+  def getSubscription(safeId:String) = Action.async{ implicit request =>
+    gen.getSubscription(safeId)
+  }
+
+  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s:SubscriptionDetails):SubscriptionRequest ={
+    SubscriptionRequest(
+      s.businessPartnerRecord.safeId,
+      false,
+      CorrespondenceDetails(
+        s.businessPartnerRecord.address,
+        ContactDetails(s.subscriberContact.email,s.subscriberContact.phoneNumber),
+        ContactName(s.subscriberContact.firstName,s.subscriberContact.lastName)
+      )
+    )
   }
 
 }

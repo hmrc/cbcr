@@ -42,18 +42,21 @@ class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks{
         val valid3 = "XSCBC0000004521"
         val valid4 = "XVCBC0000026102"
         val valid5 = "XTCBC0000612834"
+        val fromEtmp = "XHCBC1000000037"
 
         CBCId(valid1) shouldBe defined
         CBCId(valid2) shouldBe defined
         CBCId(valid3) shouldBe defined
         CBCId(valid4) shouldBe defined
         CBCId(valid5) shouldBe defined
+        CBCId(fromEtmp) shouldBe defined
 
         val inValid1 = "XGCBC0000000002"
         val inValid2 = "XQCBC0000000762"
         val inValid3 = "XSCBC0000004531"
         val inValid4 = "XVCBC0000026122"
         val inValid5 = "XTCBC0000612830"
+
 
         CBCId(inValid1) shouldBe None
         CBCId(inValid2) shouldBe None
