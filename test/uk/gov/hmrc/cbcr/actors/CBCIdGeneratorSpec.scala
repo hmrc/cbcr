@@ -21,7 +21,8 @@ import akka.persistence.inmemory.extension.{InMemoryJournalStorage, StorageExten
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{Matchers, WordSpecLike}
-import uk.gov.hmrc.cbcr.actors.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
+import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
+import uk.gov.hmrc.cbcr.services.CBCIdGenerator
 
 class CBCIdGeneratorSpec extends TestKit(
   ActorSystem("CBCIdGeneratorSpec",ConfigFactory.parseString(
