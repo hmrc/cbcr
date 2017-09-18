@@ -39,7 +39,7 @@ class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionCont
         if(response.json != null) {
           response.json.validate[T].fold[Result](
             errors => {
-              Logger.error(s"Unable to de-serialise response: $response\nErrors: $errors")
+              Logger.error(s"Unable to de-serialise response: ${response.body}\nErrors: $errors")
               InternalServerError
             },
             (t: T) => f(t)
