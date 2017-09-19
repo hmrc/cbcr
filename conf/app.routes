@@ -26,5 +26,5 @@ GET       /reporting-entity/:id                     uk.gov.hmrc.cbcr.controllers
 POST      /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
 PUT       /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.update
 
-
+POST      /email                                    uk.gov.hmrc.cbcr.controllers.CBCREmailController.sendEmail
 
