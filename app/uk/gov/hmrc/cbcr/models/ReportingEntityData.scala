@@ -18,6 +18,9 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json.Json
 
+case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
+object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
+
 case class ReportingEntityData(cbcReportsDRI:DocRefId,
                                additionalInfoDRI:DocRefId,
                                reportingEntityDRI:DocRefId,
@@ -25,6 +28,13 @@ case class ReportingEntityData(cbcReportsDRI:DocRefId,
                                ultimateParentEntity: UltimateParentEntity,
                                reportingRole: ReportingRole)
 
-object ReportingEntityData{
-  implicit val format = Json.format[ReportingEntityData]
-}
+object ReportingEntityData{ implicit val format = Json.format[ReportingEntityData] }
+
+case class PartialReportingEntityData(cbcReportsDRI:Option[DocRefIdPair],
+                                      additionalInfoDRI:Option[DocRefIdPair],
+                                      reportingEntityDRI:DocRefIdPair,
+                                      utr:Utr,
+                                      ultimateParentEntity: UltimateParentEntity,
+                                      reportingRole: ReportingRole)
+
+object PartialReportingEntityData{ implicit val format = Json.format[PartialReportingEntityData] }
