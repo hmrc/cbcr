@@ -21,7 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
-import uk.gov.hmrc.cbcr.models.{DocRefId, ReportingEntityData}
+import uk.gov.hmrc.cbcr.models.{DocRefId, PartialReportingEntityData, ReportingEntityData}
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
@@ -43,6 +43,19 @@ class ReportingEntityDataController@Inject() (repo:ReportingEntityDataRepo)(impl
         case result                     => InternalServerError(result.writeErrors.mkString)
       }
 
+    )
+  }
+
+  def update() = Action.async(parse.json) { implicit request =>
+    request.body.validate[PartialReportingEntityData].fold(
+      error                       => {
+        Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
+        Future.successful(BadRequest)
+      },
+      (data: PartialReportingEntityData) => repo.update(data).map{
+        case true  => Ok
+        case false => NotModified
+      }
     )
   }
 

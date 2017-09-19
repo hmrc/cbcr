@@ -39,11 +39,15 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val red = ReportingEntityData(docRefId,docRefId,docRefId,Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
 
+  val pred = PartialReportingEntityData(Some(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
+
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
   val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
 
   val fakePostRequest : FakeRequest[JsValue]= FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
+
+  val fakePutRequest : FakeRequest[JsValue]= FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.toJson(pred))
 
   val fakeGetRequest = FakeRequest(Helpers.GET, "/reporting-entity/myDocRefId")
 
@@ -81,6 +85,18 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
       val result = controller.query(DocRefId("docrefid"))(fakeGetRequest)
       status(result) shouldBe Status.OK
       Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+    }
+
+    "respond with a 303(NOT_MODIFIED) when asked to update a nonexistant ReportingEntityData" in {
+      when(repo.update(any())) thenReturn Future.successful(false)
+      val result = controller.update()(fakePutRequest)
+      status(result) shouldBe Status.NOT_MODIFIED
+    }
+
+    "respond with a 200 when successfully updated a ReportingEntityData field" in {
+      when(repo.update(any())) thenReturn Future.successful(true)
+      val result = controller.update()(fakePutRequest)
+      status(result) shouldBe Status.OK
     }
 
   }
