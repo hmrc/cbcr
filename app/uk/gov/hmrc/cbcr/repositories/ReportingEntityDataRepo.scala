@@ -18,6 +18,7 @@ package uk.gov.hmrc.cbcr.repositories
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.Logger
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi

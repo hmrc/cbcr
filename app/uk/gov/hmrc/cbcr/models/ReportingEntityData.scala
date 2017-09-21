@@ -22,7 +22,7 @@ case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
 
 case class ReportingEntityData(cbcReportsDRI:DocRefId,
-                               additionalInfoDRI:DocRefId,
+                               additionalInfoDRI:Option[DocRefId],
                                reportingEntityDRI:DocRefId,
                                utr:Utr,
                                ultimateParentEntity: UltimateParentEntity,
