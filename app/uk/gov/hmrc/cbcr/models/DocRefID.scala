@@ -46,16 +46,21 @@ object CorrDocRefId {
   }
 
   implicit val format = new Format[CorrDocRefId] {
-    override def writes(o: CorrDocRefId): JsValue = Json.obj("CorrDocRefId" -> o.cid.id)
-
-    override def reads(json: JsValue): JsResult[CorrDocRefId] = json match {
-      case JsObject(u) => u.get("CorrDocRefId").flatMap(_.asOpt[String]).fold[JsResult[CorrDocRefId]](
-        JsError(s"Unable to deserialise $json as a CorrDocRefId"))(
-        id  => JsSuccess(CorrDocRefId(DocRefId(id)))
-      )
-      case other => JsError(s"Unable to deserialise $other as a CorreDocRefId")
-    }
+    override def writes(o: CorrDocRefId): JsValue = JsString(o.cid.id)
+    override def reads(json: JsValue): JsResult[CorrDocRefId] = DocRefId.format.reads(json).map(CorrDocRefId(_))
   }
+
+//  implicit val format = new Format[CorrDocRefId] {
+//    override def writes(o: CorrDocRefId): JsValue = Json.obj("CorrDocRefId" -> o.cid.id)
+//
+//    override def reads(json: JsValue): JsResult[CorrDocRefId] = json match {
+//      case JsObject(u) => u.get("CorrDocRefId").flatMap(_.asOpt[String]).fold[JsResult[CorrDocRefId]](
+//        JsError(s"Unable to deserialise $json as a CorrDocRefId"))(
+//        id  => JsSuccess(CorrDocRefId(DocRefId(id)))
+//      )
+//      case other => JsError(s"Unable to deserialise $other as a CorrDocRefId")
+//    }
+//  }
 }
 
 
