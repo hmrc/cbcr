@@ -22,5 +22,9 @@ PUT       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers
 GET       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
 PUT       /corr-doc-ref-id/:cid/:id                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
 
+GET       /reporting-entity/:id                     uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
+POST      /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
+PUT       /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.update
 
+POST      /email                                    uk.gov.hmrc.cbcr.controllers.CBCREmailController.sendEmail
 
