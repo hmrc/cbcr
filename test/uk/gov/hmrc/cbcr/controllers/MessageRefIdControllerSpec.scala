@@ -31,7 +31,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
-class MessageRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures {
+class MessageRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -48,7 +48,7 @@ class MessageRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFu
 
   val repo = mock[MessageRefIdRepository]
 
-  val controller = new MessageRefIdController(repo)
+  val controller = new MessageRefIdController(repo,cBCRAuth)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a MessageRefId" in {

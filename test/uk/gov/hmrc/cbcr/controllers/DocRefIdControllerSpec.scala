@@ -31,7 +31,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
-class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures {
+class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -47,7 +47,7 @@ class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFuture
 
   val repo = mock[DocRefIdRepository]
 
-  val controller = new DocRefIdController(repo)
+  val controller = new DocRefIdController(repo,cBCRAuth)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
