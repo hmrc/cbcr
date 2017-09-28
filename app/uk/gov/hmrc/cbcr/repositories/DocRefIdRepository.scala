@@ -26,6 +26,7 @@ import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models._
 import cats.instances.future._
 import play.api.Logger
+import reactivemongo.api.commands.WriteResult
 import reactivemongo.bson.BSONDocument
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 
@@ -36,6 +37,14 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
+
+  def delete(d:DocRefId): Future[WriteResult] = {
+    val criteria = Json.obj("id" -> d.id)
+    for {
+      repo <- repository
+      x    <- repo.remove(criteria)
+    } yield  x
+  }
 
   def save(f:DocRefId) : Future[DocRefIdSaveResponse] = {
     val criteria = Json.obj("id" -> f.id)
