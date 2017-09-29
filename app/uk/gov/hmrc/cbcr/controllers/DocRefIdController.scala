@@ -20,45 +20,45 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.Configuration
 import play.api.mvc.Action
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.{DocRefIdResponses, _}
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class DocRefIdController @Inject()(repo:DocRefIdRepository, config:Configuration)(implicit ec:ExecutionContext) extends BaseController{
+class DocRefIdController @Inject()(repo: DocRefIdRepository,config:Configuration, auth: CBCRAuth)(implicit ec: ExecutionContext) extends BaseController {
 
-
-  def query(docRefId:DocRefId) = Action.async { implicit request =>
-    repo.query(docRefId).map{
-      case DocRefIdResponses.Valid        => Ok
-      case DocRefIdResponses.Invalid      => Conflict
+  def query(docRefId: DocRefId) = auth.authCBCR { implicit request =>
+    repo.query(docRefId).map {
+      case DocRefIdResponses.Valid => Ok
+      case DocRefIdResponses.Invalid => Conflict
       case DocRefIdResponses.DoesNotExist => NotFound
     }
   }
 
-  def saveDocRefId(docRefId: DocRefId) = Action.async{ implicit request =>
-    repo.save(docRefId).map{
-      case DocRefIdResponses.Ok            => Ok
+  def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { implicit request =>
+    repo.save(docRefId).map {
+      case DocRefIdResponses.Ok => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
-      case DocRefIdResponses.Failed        => InternalServerError
+      case DocRefIdResponses.Failed => InternalServerError
     }
   }
 
-  def saveCorrDocRefId(corrDocRefId: CorrDocRefId, docRefId: DocRefId) = Action.async{ implicit request =>
-    repo.save(corrDocRefId,docRefId).map {
-      case (DocRefIdResponses.Invalid, _)                                   => BadRequest
-      case (DocRefIdResponses.DoesNotExist, _)                              => NotFound
-      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok))            => Ok
-      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Failed))        => InternalServerError
+  def saveCorrDocRefId(corrDocRefId: CorrDocRefId, docRefId: DocRefId) = auth.authCBCR { implicit request =>
+    repo.save(corrDocRefId, docRefId).map {
+      case (DocRefIdResponses.Invalid, _) => BadRequest
+      case (DocRefIdResponses.DoesNotExist, _) => NotFound
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok)) => Ok
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Failed)) => InternalServerError
       case (DocRefIdResponses.Valid, Some(DocRefIdResponses.AlreadyExists)) => BadRequest
-      case (DocRefIdResponses.Valid, None)                                  => InternalServerError
+      case (DocRefIdResponses.Valid, None) => InternalServerError
 
     }
   }
 
-  def deleteDocRefId(docRefId: DocRefId) = Action.async{ implicit request =>
+  def deleteDocRefId(docRefId: DocRefId) = auth.authCBCR{ implicit request =>
     if(config.underlying.getBoolean("CBCId.enableTestApis")) {
       repo.delete(docRefId).map {
         case w if w.ok && w.n >= 1 => Ok

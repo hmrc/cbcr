@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.controllers
 import javax.inject.{Inject, Singleton}
 
 import play.api.mvc.Action
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -26,17 +27,17 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class MessageRefIdController @Inject() (repo:MessageRefIdRepository)(implicit ec:ExecutionContext) extends BaseController{
+class MessageRefIdController @Inject()(repo: MessageRefIdRepository, auth: CBCRAuth)(implicit ec: ExecutionContext) extends BaseController {
 
-  def save(messageRefId:String) = Action.async{ implicit request =>
-    repo.save(MessageRefId(messageRefId)).map{ wr =>
-      if(wr.ok) Ok
+  def save(messageRefId: String) = auth.authCBCR { implicit request =>
+    repo.save(MessageRefId(messageRefId)).map { wr =>
+      if (wr.ok) Ok
       else InternalServerError
     }
   }
 
-  def exists(messageRefId:String) = Action.async { implicit request =>
-    repo.exists(messageRefId).map(result => if(result) Ok else NotFound)
+  def exists(messageRefId: String) = auth.authCBCR { implicit request =>
+    repo.exists(messageRefId).map(result => if (result) Ok else NotFound)
   }
 
 }

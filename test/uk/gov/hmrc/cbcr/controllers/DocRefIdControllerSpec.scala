@@ -33,7 +33,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
-class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with OneAppPerSuite{
+class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with OneAppPerSuite with MockAuth{
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -52,7 +52,7 @@ class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFuture
 
   val repo = mock[DocRefIdRepository]
 
-  val controller = new DocRefIdController(repo,config)
+  val controller = new DocRefIdController(repo,config,cBCRAuth)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
@@ -122,7 +122,7 @@ class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFuture
       }
     }
     "be able to delete a DocRefId" when {
-      val controller = new DocRefIdController(repo,config ++ Configuration("CBCId.enableTestApis" -> true))
+      val controller = new DocRefIdController(repo,config ++ Configuration("CBCId.enableTestApis" -> true),cBCRAuth)
       "it exists and return a 200" in {
         when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 1, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)

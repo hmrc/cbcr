@@ -24,6 +24,10 @@ import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.cbcr.auth.{CBCRAuth, MicroServiceAuthConnector}
+import uk.gov.hmrc.play.http.hooks.HttpHook
+import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.play.http.{HttpPost, HttpPut}
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
@@ -64,7 +68,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     if (graphiteEnabled) startGraphite
 
-    Logger.info(s"Starting microservice : $appName : in mode : ${environment.mode}")
+    bind(classOf[HttpPost]).toInstance(new WSHttp{
+      override val hooks: Seq[HttpHook] = NoneRequired
+    })
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
   }
