@@ -22,6 +22,8 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
+import play.api.Configuration
 import play.api.http.Status
 import play.api.test.{FakeRequest, Helpers}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
@@ -31,7 +33,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
-class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
+class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with OneAppPerSuite with MockAuth{
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -39,15 +41,18 @@ class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFuture
 
   val fakePutRequest = FakeRequest(Helpers.PUT, "/DocRefId/myRefIDxx")
 
+  val fakeDeleteRequest = FakeRequest(Helpers.DELETE, "doc-ref-id/mydocref")
+
   val fakeGetRequest = FakeRequest(Helpers.GET, "/DocRefId/myRefIDxx")
 
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
   implicit val as = ActorSystem()
   implicit val mat = ActorMaterializer()
+  val config = app.injector.instanceOf[Configuration]
 
   val repo = mock[DocRefIdRepository]
 
-  val controller = new DocRefIdController(repo,cBCRAuth)
+  val controller = new DocRefIdController(repo,config,cBCRAuth)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
@@ -113,6 +118,24 @@ class DocRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFuture
       "respond with a 500 if mongo fails" in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Failed)))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      }
+    }
+    "be able to delete a DocRefId" when {
+      val controller = new DocRefIdController(repo,config ++ Configuration("CBCId.enableTestApis" -> true),cBCRAuth)
+      "it exists and return a 200" in {
+        when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 1, Seq.empty, None, None, None)))
+        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
+        status(result) shouldBe Status.OK
+      }
+      "it doesn't exist and return a 404" in {
+        when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 0, Seq.empty, None, None, None)))
+        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
+        status(result) shouldBe Status.NOT_FOUND
+      }
+      "something goes wrong return a 500" in {
+        when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(false, 0, Seq.empty, None, None, None)))
+        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
