@@ -24,10 +24,11 @@ import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
-import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.ws.WSHttp
+import uk.gov.hmrc.play.http.ws.{WSGet, WSHttp, WSPost}
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, HttpResponse}
+import uk.gov.hmrc.http.hooks.HttpHook
 
 @ImplementedBy(classOf[EmailConnectorImpl])
 trait EmailConnector extends ServicesConfig {
@@ -40,7 +41,7 @@ trait EmailConnector extends ServicesConfig {
 
 @Singleton
 class EmailConnectorImpl @Inject()(config: Configuration)(implicit ec: ExecutionContext) extends EmailConnector {
-  val http = new WSHttp {
+  val http =  new HttpPost  with WSPost {
     override val hooks: Seq[HttpHook] = NoneRequired
   }
   val conf: Config = config.underlying.getConfig("microservice.services.email")

@@ -29,11 +29,11 @@ import org.mockito.Mockito._
 import org.mockito.Matchers._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsResult, JsValue, Json}
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with ScalaFutures{
 

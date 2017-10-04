@@ -30,7 +30,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 import play.api.mvc.Results._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 class EmailServiceSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with ScalaFutures {
 

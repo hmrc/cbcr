@@ -25,13 +25,14 @@ import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.{ContactDetails, CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.logging.Authorization
-import uk.gov.hmrc.play.http.ws.{WSHttp, WSPost}
-import uk.gov.hmrc.play.http.{HeaderCarrier, _}
+import uk.gov.hmrc.play.http.ws.{WSGet, WSHttp, WSPost, WSPut}
+import uk.gov.hmrc.play.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpGet, HttpPost, HttpPut, HttpResponse}
+import uk.gov.hmrc.http.hooks.HttpHook
+import uk.gov.hmrc.http.logging.Authorization
 
 
   @ImplementedBy(classOf[DESConnectorImpl])
@@ -107,7 +108,7 @@ import scala.concurrent.{ExecutionContext, Future}
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
     val audit = new Audit("known-fact-checking", auditConnector)
-    val http = new WSHttp{
+    val http = new  HttpPost with HttpGet with HttpPut with  WSGet with WSPost with WSPut{
       override val hooks: Seq[HttpHook] = NoneRequired
     }
   }
