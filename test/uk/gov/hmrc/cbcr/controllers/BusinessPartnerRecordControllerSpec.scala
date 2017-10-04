@@ -22,13 +22,13 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import org.mockito.Matchers._
 import org.mockito.Matchers.{eq => EQ}
+import uk.gov.hmrc.http.HttpResponse
 
 /**
   * Created by max on 24/04/17.

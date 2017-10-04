@@ -32,11 +32,11 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, SubscriptionHandlerImpl}
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with MockitoSugar with BeforeAndAfterEach with OneAppPerSuite{
 
