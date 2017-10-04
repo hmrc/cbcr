@@ -22,7 +22,7 @@ import com.google.inject.ImplementedBy
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.{ContactDetails, CorrespondenceDetails, SubscriptionRequest}
+import uk.gov.hmrc.cbcr.models.{ContactDetails, CorrespondenceDetails, MigrationRequest, SubscriptionRequest}
 import uk.gov.hmrc.play.audit.model.Audit
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http.hooks.HttpHook
@@ -77,6 +77,16 @@ import scala.concurrent.{ExecutionContext, Future}
       http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
+    }
+
+    def createMigration(mig:MigrationRequest) : Future[HttpResponse] = {
+      implicit val hc: HeaderCarrier = createHeaderCarrier
+      implicit val writes = MigrationRequest.migrationWriter
+      Logger.info(s"Migration Request sent to DES: ${Json.toJson(mig)} for CBCId: ${mig.cBCId}")
+      http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover{
+        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
+      }
+
     }
 
     def updateSubscription(safeId:String,cor:CorrespondenceDetails) : Future[HttpResponse] = {
