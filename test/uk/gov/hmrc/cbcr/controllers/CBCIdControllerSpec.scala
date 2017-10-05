@@ -38,7 +38,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
 
-class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with MockitoSugar with BeforeAndAfterEach with OneAppPerSuite{
+class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with MockitoSugar with BeforeAndAfterEach with OneAppPerSuite with MockAuth{
 
   val localGen = mock[LocalSubscription]
   val remoteGen = mock[RemoteSubscription]
@@ -67,7 +67,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
   "The CBCIdController" should {
     "query the localCBCId generator when useDESApi is set to false" in {
       val handler = new SubscriptionHandlerImpl(config ++ Configuration("CBCId.useDESApi" -> false),localGen,remoteGen)
-      val controller = new CBCIdController(handler)
+      val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(localGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
       val response = controller.subscribe()(fakeRequestSubscribe)
@@ -76,7 +76,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
     }
     "query the remoteCBCId generator when useDESApi is set to true" in {
       val handler = new SubscriptionHandlerImpl(config ++ Configuration("CBCId.useDESApi" -> true),localGen,remoteGen)
-      val controller = new CBCIdController(handler)
+      val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(remoteGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
       val response = controller.subscribe()(fakeRequestSubscribe)

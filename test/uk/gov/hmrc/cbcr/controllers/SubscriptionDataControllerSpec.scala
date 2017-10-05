@@ -37,7 +37,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
+class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with MockAuth{
 
   val store = mock[SubscriptionDataRepository]
 
@@ -48,7 +48,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
   val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
 
-  val controller = new SubscriptionDataController(store)
+  val controller = new SubscriptionDataController(store,cBCRAuth)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 
