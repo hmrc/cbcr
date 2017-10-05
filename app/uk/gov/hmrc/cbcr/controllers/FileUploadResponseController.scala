@@ -28,11 +28,10 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 @Singleton
 class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: CBCRAuth) extends BaseController {
 
-  def saveFileUploadResponse = auth.authCBCRWithJson({ implicit request =>
+  def saveFileUploadResponse = Action.async(parse.json){ implicit request =>
     request.body.validate[UploadFileResponse].fold(
       error => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.save(response).map {
@@ -40,7 +39,7 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
         case result => InternalServerError(result.writeErrors.mkString)
       }
     )
-  }, parse.json)
+  }
 
   def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { implicit request =>
     repo.get(envelopeId).map {
