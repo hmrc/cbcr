@@ -26,7 +26,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.JsValue
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
@@ -35,13 +35,13 @@ import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.http.HttpResponse
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with OneAppPerSuite{
+class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite{
 
   val store = mock[SubscriptionDataRepository]
 
@@ -55,7 +55,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with One
 
   val desConnector = mock[DESConnector]
   when(store.getAllMigrations()) thenReturn Future.successful(List())
-  val controller = new SubscriptionDataController(store,desConnector,config)
+  val controller = new SubscriptionDataController(store,desConnector,cBCRAuth,config)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 
@@ -136,7 +136,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with One
         when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
         when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
 
-        new SubscriptionDataController(store, desConnector, config ++ Configuration("CBCId.performMigration" -> true))
+        new SubscriptionDataController(store, desConnector,cBCRAuth, config ++ Configuration("CBCId.performMigration" -> true))
 
         verify(desConnector, times(3)).createMigration(any())
 
@@ -148,12 +148,11 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with One
 
         val desConnector = mock[DESConnector]
         when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
-        new SubscriptionDataController(store, desConnector, config)
+        new SubscriptionDataController(store, desConnector,cBCRAuth, config)
 
         verify(desConnector, times(0)).createMigration(any())
       }
 
     }
   }
-
 }

@@ -33,7 +33,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
-class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures {
+class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
 
   val docRefId=DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
 
@@ -59,7 +59,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val repo = mock[ReportingEntityDataRepo]
 
-  val controller = new ReportingEntityDataController(repo)
+  val controller = new ReportingEntityDataController(repo,cBCRAuth)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a ReportingEntityData" in {

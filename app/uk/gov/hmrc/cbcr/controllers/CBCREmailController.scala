@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.controllers
 import javax.inject.{Inject, Singleton}
 
 import play.api.mvc.{Action, Result}
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.cbcr.services.EmailService
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -26,13 +27,13 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import scala.concurrent.Future
 
 @Singleton
-class CBCREmailController @Inject()(email: EmailService) extends BaseController {
+class CBCREmailController @Inject()(email: EmailService, auth: CBCRAuth) extends BaseController {
 
   //todo have email validation?
-  def sendEmail = Action.async(parse.json) { implicit request =>
+  def sendEmail = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[Email].fold[Future[Result]](
       _ => Future.successful(BadRequest),
       emailCBCR => email.sendEmail(emailCBCR)
     )
-  }
+  }, parse.json)
 }

@@ -36,10 +36,10 @@ import CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.HeaderCarrier
 
 class LocalSubscriptionSpec  extends TestKit(ActorSystem("CBCIdControllerSpec",ConfigFactory.parseString("""
   |akka {

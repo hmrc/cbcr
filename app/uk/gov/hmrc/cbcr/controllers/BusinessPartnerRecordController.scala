@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import javax.inject.{Inject,Singleton}
+import javax.inject.{Inject, Singleton}
 
-import play.api.mvc.Action
+import play.api.mvc.{Action, BodyParsers}
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class BusinessPartnerRecordController @Inject() (connector:DESConnector)(implicit val ec:ExecutionContext) extends BaseController{
+class BusinessPartnerRecordController @Inject() (connector:DESConnector, auth:CBCRAuth)(implicit val ec:ExecutionContext) extends BaseController{
 
-  def getBusinessPartnerRecord(utr:String) = Action.async{ implicit request =>
+  def getBusinessPartnerRecord(utr:String) = auth.authCBCR{ implicit request =>
     connector.lookup(utr).map {
       case response if response.status == OK          => Ok(response.json)
       case response if response.status == BAD_REQUEST => BadRequest(response.json)

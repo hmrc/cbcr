@@ -29,12 +29,12 @@ import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.play.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import cats.instances.future._
+import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class LocalSubscription @Inject()(config:Configuration, repo:SubscriptionDataRepository)(implicit system:ActorSystem, ec:ExecutionContext) extends SubscriptionHandler{

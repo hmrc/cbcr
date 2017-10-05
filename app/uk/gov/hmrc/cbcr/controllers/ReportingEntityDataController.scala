@@ -21,6 +21,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.Action
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.{DocRefId, PartialReportingEntityData, ReportingEntityData}
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -29,41 +30,41 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class ReportingEntityDataController@Inject() (repo:ReportingEntityDataRepo)(implicit ec:ExecutionContext) extends BaseController{
+class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, auth: CBCRAuth)(implicit ec: ExecutionContext) extends BaseController {
 
 
-  def save() = Action.async(parse.json) { implicit request =>
+  def save() = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[ReportingEntityData].fold(
-      error                       => {
+      error => {
         Logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
         Future.successful(BadRequest)
       },
-      (data: ReportingEntityData) => repo.save(data).map{
-        case result if result.ok        => Ok
-        case result                     => InternalServerError(result.writeErrors.mkString)
+      (data: ReportingEntityData) => repo.save(data).map {
+        case result if result.ok => Ok
+        case result => InternalServerError(result.writeErrors.mkString)
       }
 
     )
-  }
+  }, parse.json)
 
-  def update() = Action.async(parse.json) { implicit request =>
+  def update() = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[PartialReportingEntityData].fold(
-      error                       => {
+      error => {
         Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
         Future.successful(BadRequest)
       },
-      (data: PartialReportingEntityData) => repo.update(data).map{
-        case true  => Ok
+      (data: PartialReportingEntityData) => repo.update(data).map {
+        case true => Ok
         case false => NotModified
       }
     )
-  }
+  }, parse.json)
 
-  def query(d:DocRefId) = Action.async{ implicit request =>
-    repo.query(d).map{
-      case None       => NotFound
+  def query(d: DocRefId) = auth.authCBCR { implicit request =>
+    repo.query(d).map {
+      case None => NotFound
       case Some(data) => Ok(Json.toJson(data))
-    }.recover{
+    }.recover {
       case NonFatal(t) =>
         Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
         InternalServerError
