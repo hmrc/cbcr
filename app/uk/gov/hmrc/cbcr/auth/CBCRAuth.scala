@@ -18,15 +18,18 @@ package uk.gov.hmrc.cbcr.auth
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.AuthProviders
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.affinityGroup
-import uk.gov.hmrc.http.HttpPost
+import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.HeaderCarrierConverter
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 @Singleton
@@ -54,6 +57,7 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: MicroServiceAuthConnecto
     Action.async(json) { implicit request ⇒ authCommon(action) }
 
   def authCommon[A](action: AuthAction[A])(implicit request:Request[A]):Future[Result] ={
+    implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
     authorised(AuthProvider).retrieve(affinityGroup) {
       case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)
       case _ => Future.successful(Unauthorized)
