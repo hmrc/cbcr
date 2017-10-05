@@ -33,9 +33,6 @@ class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks{
       "they are 15 chars long" in {
         CBCId("XHCBC000000001") shouldBe None
       }
-      "they have a sequence number less than 1000000" in {
-        CBCId("XMCBC0001000000") shouldBe None
-      }
       "they have the correct check digit" in {
         val valid1 = "XGCBC0000000001"
         val valid2 = "XQCBC0000000761"

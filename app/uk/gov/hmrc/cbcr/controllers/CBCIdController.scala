@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 import javax.inject._
 
-import play.api.Logger
 import play.api.mvc.{Action, Result}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
