@@ -23,6 +23,8 @@ import cats.instances.future._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
+import org.scalatestplus.play.OneAppPerSuite
+import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
@@ -39,20 +41,21 @@ import uk.gov.hmrc.play.test.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
+class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with OneAppPerSuite{
 
   val store = mock[SubscriptionDataRepository]
 
   val okResult = DefaultWriteResult(true,0,Seq.empty,None,None,None)
 
   val failResult = DefaultWriteResult(false,1,Seq(WriteError(1,1,"Error")),None,None,Some("Error"))
+  val config = app.injector.instanceOf[Configuration]
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
   val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
 
   val desConnector = mock[DESConnector]
   when(store.getAllMigrations()) thenReturn Future.successful(List())
-  val controller = new SubscriptionDataController(store,desConnector)
+  val controller = new SubscriptionDataController(store,desConnector,config)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 
@@ -125,18 +128,32 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar {
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "attempt to migrate all the Subscription_Details that have been locally generated" in {
+    "attempt to migrate all the Subscription_Details that have been locally generated" when {
 
-      when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData,exampleSubscriptionData,exampleSubscriptionData))
-      when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
+      "performMigration has been set to true " in {
 
-      new SubscriptionDataController(store,desConnector)
+        val desConnector = mock[DESConnector]
+        when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
+        when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
 
-      verify(desConnector, times(3)).createMigration(any())
+        new SubscriptionDataController(store, desConnector, config ++ Configuration("CBCId.performMigration" -> true))
+
+        verify(desConnector, times(3)).createMigration(any())
+
+      }
+    }
+    "not attempt to migrate all the Subscription_Details that have been locally generated" when {
+
+      "performMigration has not been explicitly set to true" in {
+
+        val desConnector = mock[DESConnector]
+        when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
+        new SubscriptionDataController(store, desConnector, config)
+
+        verify(desConnector, times(0)).createMigration(any())
+      }
 
     }
-
   }
-
 
 }

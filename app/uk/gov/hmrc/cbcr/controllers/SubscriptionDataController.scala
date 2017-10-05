@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
 
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.cbcr.models._
@@ -31,9 +31,10 @@ import uk.gov.hmrc.cbcr.connectors.DESConnector
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import configs.syntax._
 
 @Singleton
-class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:DESConnector) extends BaseController {
+class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:DESConnector, configuration:Configuration) extends BaseController {
 
   private def migrationRequest(s:SubscriptionDetails):Option[MigrationRequest] = {
     s.cbcId.map{id =>
@@ -49,19 +50,23 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:
     }
   }
 
-  Await.result(repo.getAllMigrations().map{ list =>
-    Logger.info(s"Got ${list.size} subscriptions to migrate from mongo")
-    list.foreach{ sd =>
-      migrationRequest(sd).fold(Logger.error(s"No cbcID found for $sd")
-      )(mr => Await.result(des.createMigration(mr).map(sd -> _), 1.minute).map{res =>
-        if(res.status != 200) {
-          Logger.error(s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
-        } else {
-          Logger.info (s"${sd.cbcId} -------> Migrated")
-        }
-      })
-    }
-  }, 10.minutes)
+  val doMigration: Boolean = configuration.underlying.get[Boolean]("CBCId.performMigration").valueOr(_ => false)
+
+  if(doMigration) {
+    Await.result(repo.getAllMigrations().map { list =>
+      Logger.info(s"Got ${list.size} subscriptions to migrate from mongo")
+      list.foreach { sd =>
+        migrationRequest(sd).fold(Logger.error(s"No cbcID found for $sd")
+        )(mr => Await.result(des.createMigration(mr).map(sd -> _), 1.minute).map { res =>
+          if (res.status != 200) {
+            Logger.error(s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
+          } else {
+            Logger.info(s"${sd.cbcId} -------> Migrated")
+          }
+        })
+      }
+    }, 10.minutes)
+  }
 
 
   def saveSubscriptionData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
