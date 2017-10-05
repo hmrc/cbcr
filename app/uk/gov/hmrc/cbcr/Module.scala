@@ -74,3 +74,4 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
   }
 }
+
