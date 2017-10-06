@@ -18,15 +18,17 @@ package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.Configuration
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.models.{DocRefIdResponses, _}
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdController @Inject()(repo:DocRefIdRepository)(implicit ec:ExecutionContext) extends BaseController{
+class DocRefIdController @Inject()(repo:DocRefIdRepository, config:Configuration)(implicit ec:ExecutionContext) extends BaseController{
+
 
   def query(docRefId:DocRefId) = Action.async { implicit request =>
     repo.query(docRefId).map{
@@ -53,6 +55,18 @@ class DocRefIdController @Inject()(repo:DocRefIdRepository)(implicit ec:Executio
       case (DocRefIdResponses.Valid, Some(DocRefIdResponses.AlreadyExists)) => BadRequest
       case (DocRefIdResponses.Valid, None)                                  => InternalServerError
 
+    }
+  }
+
+  def deleteDocRefId(docRefId: DocRefId) = Action.async{ implicit request =>
+    if(config.underlying.getBoolean("CBCId.enableTestApis")) {
+      repo.delete(docRefId).map {
+        case w if w.ok && w.n >= 1 => Ok
+        case w if w.ok && w.n == 0 => NotFound
+        case _                     => InternalServerError
+      }
+    } else {
+      Future.successful(NotImplemented)
     }
   }
 

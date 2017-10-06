@@ -3,7 +3,7 @@ import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-
+import play.sbt.PlayImport.PlayKeys.playDefaultPort
 
 trait MicroService {
 
@@ -25,6 +25,7 @@ trait MicroService {
     .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin) ++ plugins : _*)
     .settings(playSettings : _*)
     .settings(scalaSettings: _*)
+    .settings(playDefaultPort := 9797)
     .settings(publishingSettings: _*)
     .settings(defaultSettings(): _*)
     .settings(
