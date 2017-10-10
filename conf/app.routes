@@ -4,7 +4,6 @@ POST      /file-upload-response                     uk.gov.hmrc.cbcr.controllers
 GET       /file-upload-response/:envelopeId         uk.gov.hmrc.cbcr.controllers.FileUploadResponseController.retrieveFileUploadResponse(envelopeId: String)
 
 POST      /subscription-data                        uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.saveSubscriptionData()
-DELETE    /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 PUT       /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.updateSubscriberContactDetails(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 GET       /subscription-data/cbc-id/:cbcid          uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataCBCId(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 GET       /subscription-data/utr/:utr               uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataUtr(utr:uk.gov.hmrc.cbcr.models.Utr)

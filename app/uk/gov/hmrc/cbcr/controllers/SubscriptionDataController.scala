@@ -90,7 +90,7 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:
     )
   }, parse.json)
 
-  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { implicit request =>
+  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = Action.async{ implicit request =>
     repo.clear(cbcId).cata[Result](
       NotFound,
       result => if (!result.ok) InternalServerError(result.writeErrors.mkString) else Ok("ok")
