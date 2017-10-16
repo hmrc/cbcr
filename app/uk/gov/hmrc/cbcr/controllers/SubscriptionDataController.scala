@@ -18,59 +18,96 @@ package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
 
-import play.api.Logger
+import cats.instances.all._
+import cats.syntax.all._
+import configs.syntax._
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
-import uk.gov.hmrc.cbcr.models.{CBCId, SubscriberContact, SubscriptionDetails, Utr}
+import play.api.{Configuration, Logger}
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
+import uk.gov.hmrc.cbcr.connectors.DESConnector
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import cats.instances.future._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 @Singleton
-class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository) extends BaseController {
+class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:DESConnector,auth: CBCRAuth, configuration:Configuration) extends BaseController {
 
-  def saveSubscriptionData(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  private def migrationRequest(s:SubscriptionDetails):Option[MigrationRequest] = {
+    s.cbcId.map{id =>
+      MigrationRequest(
+        s.businessPartnerRecord.safeId,
+        id.value,
+        CorrespondenceDetails(
+          s.businessPartnerRecord.address,
+          ContactDetails(s.subscriberContact.email,s.subscriberContact.phoneNumber),
+          ContactName(s.subscriberContact.firstName,s.subscriberContact.lastName)
+        )
+      )
+    }
+  }
+
+  val doMigration: Boolean = configuration.underlying.get[Boolean]("CBCId.performMigration").valueOr(_ => false)
+
+  if(doMigration) {
+    Await.result(repo.getAllMigrations().map { list =>
+      Logger.info(s"Got ${list.size} subscriptions to migrate from mongo")
+      list.foreach { sd =>
+        migrationRequest(sd).fold(Logger.error(s"No cbcID found for $sd")
+        )(mr => Await.result(des.createMigration(mr).map(sd -> _), 1.minute).map { res =>
+          if (res.status != 200) {
+            Logger.error(s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
+          } else {
+            Logger.info(s"${sd.cbcId} -------> Migrated")
+          }
+        })
+      }
+    }, 10.minutes)
+  }
+
+
+  def saveSubscriptionData(): Action[JsValue] = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[SubscriptionDetails].fold(
-      error    => Future.successful(BadRequest(JsError.toJson(error))),
+      error => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.save(response).map {
         case result if !result.ok => InternalServerError(result.writeErrors.mkString)
         case _ => Ok
       }
     )
-  }
+  }, parse.json)
 
-  def updateSubscriberContactDetails(cbcId:CBCId) = Action.async(parse.json) { implicit request =>
+  def updateSubscriberContactDetails(cbcId: CBCId) = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[SubscriberContact].fold(
-      error    => Future.successful(BadRequest(JsError.toJson(error))),
-      response => repo.update(cbcId,response).map {
+      error => Future.successful(BadRequest(JsError.toJson(error))),
+      response => repo.update(cbcId, response).map {
         case result if !result => InternalServerError
-        case _                 => Ok
+        case _ => Ok
       }
     )
-  }
+  }, parse.json)
 
-  def clearSubscriptionData(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
+  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = Action.async{ implicit request =>
     repo.clear(cbcId).cata[Result](
       NotFound,
-      result => if(!result.ok) InternalServerError(result.writeErrors.mkString) else Ok("ok")
+      result => if (!result.ok) InternalServerError(result.writeErrors.mkString) else Ok("ok")
     )
   }
 
-  def retrieveSubscriptionDataUtr(utr:Utr):Action[AnyContent] = Action.async { implicit request =>
+  def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { implicit request =>
     repo.get(utr).cata(
       NotFound,
       details => Ok(Json.toJson(details))
     )
   }
 
-  def retrieveSubscriptionDataCBCId(cbcId:CBCId):Action[AnyContent] = Action.async{ implicit request =>
+  def retrieveSubscriptionDataCBCId(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { implicit request =>
     repo.get(cbcId).cata(
       NotFound,
       details => Ok(Json.toJson(details))
     )
   }
-
 }

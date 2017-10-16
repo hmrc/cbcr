@@ -21,30 +21,30 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.Action
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.UploadFileResponse
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 @Singleton
-class FileUploadResponseController @Inject() (repo:FileUploadRepository) extends BaseController {
+class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: CBCRAuth) extends BaseController {
 
-  def saveFileUploadResponse  = Action.async(parse.json) { implicit request =>
+  def saveFileUploadResponse = Action.async(parse.json){ implicit request =>
     request.body.validate[UploadFileResponse].fold(
-      error    => Future.successful(BadRequest(JsError.toJson(error))),
-      response => repo.save(response).map{
-        case result if result.ok        => Ok
-        case result                     => InternalServerError(result.writeErrors.mkString)
+      error => Future.successful(BadRequest(JsError.toJson(error))),
+      response => repo.save(response).map {
+        case result if result.ok => Ok
+        case result => InternalServerError(result.writeErrors.mkString)
       }
     )
   }
 
-  def retrieveFileUploadResponse(envelopeId: String) = Action.async { implicit request =>
-    repo.get(envelopeId).map{
+  def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { implicit request =>
+    repo.get(envelopeId).map {
       case Some(obj) => Ok(Json.toJson(obj))
-      case None      => NoContent
+      case None => NoContent
     }
   }
 

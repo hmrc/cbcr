@@ -24,7 +24,7 @@ import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 
 import scala.concurrent.Future
 import configs.syntax._
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.http.HeaderCarrier
 
 trait SubscriptionHandler {
 

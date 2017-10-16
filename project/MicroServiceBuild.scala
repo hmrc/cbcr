@@ -14,17 +14,14 @@ object MicroServiceBuild extends Build with MicroService {
     "org.reactivemongo" %% "reactivemongo-akkastream" % "0.12.0",
     "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "1.4.3",
     ws,
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "5.15.0",
-    "uk.gov.hmrc" %% "play-authorisation" % "4.3.0",
-    "uk.gov.hmrc" %% "play-health" % "2.1.0",
-    "uk.gov.hmrc" %% "play-url-binders" % "2.1.0",
-    "uk.gov.hmrc" %% "play-config" % "4.3.0",
-    "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.2.0",
+    "uk.gov.hmrc" %% "play-auth" % "2.5.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.9.0",
     "uk.gov.hmrc" %% "domain" % "4.1.0",
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
     "com.typesafe.akka" %% "akka-persistence" % "2.4.14",
     "com.github.kxbmap" %% "configs" % "0.4.4",
-    "uk.gov.hmrc" %% "emailaddress" % "2.1.0"
+    "uk.gov.hmrc" %% "emailaddress" % "2.2.0"
   )
 
   def test(scope: String = "test,it") = Seq(

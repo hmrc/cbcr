@@ -21,10 +21,10 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpException, HttpResponse}
 import play.api.mvc.Results._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
 class EmailService @Inject()(emailConnector:EmailConnectorImpl) {

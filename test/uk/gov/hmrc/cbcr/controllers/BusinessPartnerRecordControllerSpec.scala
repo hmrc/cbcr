@@ -16,27 +16,26 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import org.mockito.Matchers.{eq => EQ}
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import org.mockito.Matchers._
-import org.mockito.Matchers.{eq => EQ}
 
 /**
   * Created by max on 24/04/17.
   */
-class BusinessPartnerRecordControllerSpec extends UnitSpec with MockitoSugar {
+class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
   val dc = mock[DESConnector]
-  val controller = new BusinessPartnerRecordController(dc)
+  passAuthMock()
+  val controller = new BusinessPartnerRecordController(dc,cBCRAuth)
 
   "The BusinessPartnerRecordController" should {
     "respond with a 200 if the UTR is matched" in {

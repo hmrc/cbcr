@@ -25,9 +25,9 @@ import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
 
 @Singleton
 class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionContext: ExecutionContext) extends SubscriptionHandler {
