@@ -47,6 +47,15 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     } yield result
   }
 
+  def clear(utr:Utr): Future[WriteResult] = {
+    val criteria = Json.obj("utr" -> utr.utr)
+    for {
+      repo   <- repository
+      _      <- repo.find(criteria).one[SubscriptionDetails]
+      result <- repo.remove(criteria, firstMatchOnly = true)
+    } yield result
+  }
+
   def update(cbcId:CBCId,s:SubscriberContact): Future[Boolean] = {
     val criteria = BSONDocument("cbcId" -> cbcId.value)
     val modifier = Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
