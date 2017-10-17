@@ -24,6 +24,7 @@ import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.cbcr.services.DataMigrationService
 import uk.gov.hmrc.http.HttpPost
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws.WSPost
@@ -72,6 +73,8 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     })
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
+
+    bind(classOf[DataMigrationService]).asEagerSingleton()
   }
 }
 

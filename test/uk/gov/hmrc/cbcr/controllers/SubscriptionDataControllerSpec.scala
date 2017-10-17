@@ -128,31 +128,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "attempt to migrate all the Subscription_Details that have been locally generated" when {
 
-      "performMigration has been set to true " in {
-
-        val desConnector = mock[DESConnector]
-        when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
-        when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
-
-        new SubscriptionDataController(store, desConnector,cBCRAuth, config ++ Configuration("CBCId.performMigration" -> true))
-
-        verify(desConnector, times(3)).createMigration(any())
-
-      }
-    }
-    "not attempt to migrate all the Subscription_Details that have been locally generated" when {
-
-      "performMigration has not been explicitly set to true" in {
-
-        val desConnector = mock[DESConnector]
-        when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
-        new SubscriptionDataController(store, desConnector,cBCRAuth, config)
-
-        verify(desConnector, times(0)).createMigration(any())
-      }
-
-    }
   }
 }
