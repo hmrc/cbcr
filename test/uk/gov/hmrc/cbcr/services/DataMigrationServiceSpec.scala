@@ -34,17 +34,19 @@ import scala.concurrent.Future
 class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite{
 
 
+
   val store = mock[SubscriptionDataRepository]
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
+  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, Some("Dave"), Some("Jones"), PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
   val config = app.injector.instanceOf[Configuration]
+
 
   "attempt to migrate all the Subscription_Details that have been locally generated" when {
 
     "performMigration has been set to true " in {
 
       val desConnector = mock[DESConnector]
-      when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
+      when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
       when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
 
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.performMigration" -> true))
@@ -53,12 +55,13 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
     }
   }
+
   "not attempt to migrate all the Subscription_Details that have been locally generated" when {
 
     "performMigration has not been explicitly set to true" in {
 
       val desConnector = mock[DESConnector]
-      when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
+      when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
       new DataMigrationService(store, desConnector, config)
 
       verify(desConnector, times(0)).createMigration(any())
