@@ -23,7 +23,7 @@ import org.scalatest.mock.MockitoSugar
 import play.api.mvc.Results.{Ok, Unauthorized}
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.auth.core.{AffinityGroup, MissingBearerToken}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -72,6 +72,14 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
       val response: Result = await(cBCRAuth.authCBCR(authAction).apply(FakeRequest()))
 
       response shouldBe Unauthorized
+    }
+    "return Unauthorized for any request with no bearerToken" in {
+      when(mockMicroServiceAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(),any())).thenReturn(Future.failed(MissingBearerToken("Not authorised")))
+
+      val response: Result = await(cBCRAuth.authCBCR(authAction).apply(FakeRequest()))
+
+      response shouldBe Unauthorized
+
     }
   }
 }
