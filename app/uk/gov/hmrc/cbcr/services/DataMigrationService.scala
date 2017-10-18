@@ -21,6 +21,7 @@ import javax.inject.Inject
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
+import play.api.libs.json.Json
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
@@ -43,7 +44,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
         CorrespondenceDetails(
           s.businessPartnerRecord.address,
           ContactDetails(s.subscriberContact.email, s.subscriberContact.phoneNumber),
-          ContactName(s.subscriberContact.firstName, s.subscriberContact.lastName)
+          ContactName(s.subscriberContact.firstName.getOrElse(""), s.subscriberContact.lastName.getOrElse(""))
         )
       )
     }
@@ -52,7 +53,8 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   val doMigration: Boolean = configuration.underlying.get[Boolean]("CBCId.performMigration").valueOr(_ => false)
 
   if (doMigration) {
-    Await.result(repo.getAllMigrations().map { list =>
+
+    Await.result(repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).map { list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
       list.foreach { sd =>
         migrationRequest(sd).fold(Logger.error(s"No cbcID found for $sd")
@@ -65,6 +67,35 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
         })
       }
     }, 10.minutes)
+  }
+
+  val doFirstNameLastNameDataFix: Boolean = configuration.underlying.get[Boolean]("CBCId.doFirstNameLastNameDataFix").valueOr(_ => false)
+
+  def splitName(name: Option[String]): (Option[String], Option[String]) = {
+    name.fold[(Option[String], Option[String])]((None, None))(n => {
+      val lst = n.split(" ").map(_.trim).toList
+      val lastName = lst.last
+      val firstName = lst.filter(f => f != lastName).mkString(" ")
+      if(firstName.isEmpty)
+        (Some(lastName), Some(lastName))
+      else
+        (Some(firstName), Some(lastName))
+    })
+  }
+
+  if(doFirstNameLastNameDataFix) {
+    Await.result(repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).map {
+      list => {
+        Logger.warn(s"Found ${list.size} Subscriptions to be fixed")
+        val fixedList = list.map(sd => SubscriptionDetails(sd.businessPartnerRecord,
+          SubscriberContact(name = None, splitName(sd.subscriberContact.name)._1,
+            splitName(sd.subscriberContact.name)._2, sd.subscriberContact.phoneNumber, sd.subscriberContact.email), sd.cbcId, sd.utr))
+        fixedList.foreach(f => {
+          f.cbcId.fold(())(cbcid => repo.update(cbcid, f.subscriberContact))
+          Logger.warn(s"Fixed ${f.subscriberContact}")
+        })
+      }
+    }, 10.minutes )
   }
 
 }
