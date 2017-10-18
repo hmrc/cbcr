@@ -76,21 +76,7 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     )
   }
 
-//  def commandResult(db: reactivemongo.api.DefaultDB)(implicit ec: ExecutionContext): Future[BSONDocument] = {
-//
-//    val commandSplitName = BSONDocument(
-//      "subscriberContact.name" -> BSONDocument("$exists" -> true),
-//      "subscriberContact.firstName" -> BSONDocument("$exists" -> false)
-//    )
-//
-//
-//    val runner = Command.run(BSONSerializationPack)
-//
-//    runner.apply(db, runner.rawCommand(commandSplitName)).one[BSONDocument]
-//  }
-
-
-  private def getGeneric(criteria:JsObject) =
+ private def getGeneric(criteria:JsObject) =
     OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
 
 }
