@@ -16,25 +16,50 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.json.Json
+import cats.data.NonEmptyList
+import play.api.libs.json._
 
-case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
-object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
-
-case class ReportingEntityData(cbcReportsDRI:DocRefId,
+case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
                                additionalInfoDRI:Option[DocRefId],
                                reportingEntityDRI:DocRefId,
                                utr:Utr,
                                ultimateParentEntity: UltimateParentEntity,
                                reportingRole: ReportingRole)
 
-object ReportingEntityData{ implicit val format = Json.format[ReportingEntityData] }
+object ReportingEntityDataOld{ implicit val format = Json.format[ReportingEntityDataOld] }
 
-case class PartialReportingEntityData(cbcReportsDRI:Option[DocRefIdPair],
+case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
+                               additionalInfoDRI:Option[DocRefId],
+                               reportingEntityDRI:DocRefId,
+                               utr:Utr,
+                               ultimateParentEntity: UltimateParentEntity,
+                               reportingRole: ReportingRole)
+
+case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
+object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
+
+case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
                                       additionalInfoDRI:Option[DocRefIdPair],
                                       reportingEntityDRI:DocRefIdPair,
                                       utr:Utr,
                                       ultimateParentEntity: UltimateParentEntity,
                                       reportingRole: ReportingRole)
 
-object PartialReportingEntityData{ implicit val format = Json.format[PartialReportingEntityData] }
+object PartialReportingEntityData {
+  implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
+    override def writes(o: NonEmptyList[A]) = JsArray(o.map(Json.toJson(_)).toList)
+
+    override def reads(json: JsValue) = json.validate[List[A]].flatMap(l => NonEmptyList.fromList(l) match {
+      case None    => JsError(s"Unable to serialise $json as NonEmptyList")
+      case Some(a) => JsSuccess(a)
+    })
+  }
+
+  implicit val format = Json.format[PartialReportingEntityData]
+}
+
+object ReportingEntityData{
+  import PartialReportingEntityData.formatNEL
+  implicit val format = Json.format[ReportingEntityData]
+
+}
