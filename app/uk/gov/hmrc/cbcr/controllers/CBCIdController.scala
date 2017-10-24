@@ -43,7 +43,7 @@ class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth)
 
   def updateSubscription(safeId: String) = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[CorrespondenceDetails].fold[Future[Result]](
-      _ => Future.successful(BadRequest),
+      e => Future.successful(BadRequest(e.toString)),
       details => gen.updateSubscription(safeId, details)
     )
   }, parse.json)

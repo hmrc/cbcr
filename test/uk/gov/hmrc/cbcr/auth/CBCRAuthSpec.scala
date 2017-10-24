@@ -20,6 +20,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.mock.MockitoSugar
+import play.api.http.Status
 import play.api.mvc.Results.{Ok, Unauthorized}
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.FakeRequest
@@ -74,11 +75,11 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
       response shouldBe Unauthorized
     }
     "return Unauthorized for any request with no bearerToken" in {
-      when(mockMicroServiceAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(),any())).thenReturn(Future.failed(MissingBearerToken("Not authorised")))
+      agentAuthStub(Future.failed(MissingBearerToken("Not authorised")))
 
       val response: Result = await(cBCRAuth.authCBCR(authAction).apply(FakeRequest()))
 
-      response shouldBe Unauthorized
+      response.header.status shouldBe Status.UNAUTHORIZED
 
     }
   }

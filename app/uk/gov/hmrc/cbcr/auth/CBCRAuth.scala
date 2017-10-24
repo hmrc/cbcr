@@ -63,7 +63,7 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: MicroServiceAuthConnecto
       case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)
       case _ => Future.successful(Unauthorized)
     }.recover[Result]{
-      case _:NoActiveSession => Unauthorized
+      case e:NoActiveSession => Unauthorized(e.reason)
     }
   }
 }
