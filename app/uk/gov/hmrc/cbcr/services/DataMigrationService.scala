@@ -27,7 +27,7 @@ import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -53,20 +53,25 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   val doMigration: Boolean = configuration.underlying.get[Boolean]("CBCId.performMigration").valueOr(_ => false)
 
   if (doMigration) {
-
-    Await.result(repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).map { list =>
+    val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap{ list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
-      list.foreach { sd =>
-        migrationRequest(sd).fold(Logger.error(s"No cbcID found for $sd")
-        )(mr => Await.result(des.createMigration(mr).map(sd -> _), 1.minute).map { res =>
-          if (res.status != 200) {
-            Logger.error(s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
-          } else {
-            Logger.warn(s"${sd.cbcId} -------> Migrated")
-          }
+      val result = list.map{ sd =>
+        migrationRequest(sd).fold(
+          Future.successful(s"No cbcID found for $sd")
+        )(mr => des.createMigration(mr).map(sd -> _).map{
+          case (sd,res)  =>
+            if (res.status != 200) {
+              s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}"
+            } else {
+              s"${sd.cbcId} -------> Migrated"
+            }
         })
       }
-    }, 10.minutes)
+      result.sequence[Future,String]
+    }
+
+    output.map(msgs => Logger.info(msgs.mkString("\n")))
+
   }
 
   val doFirstNameLastNameDataFix: Boolean = configuration.underlying.get[Boolean]("CBCId.doFirstNameLastNameDataFix").valueOr(_ => false)
