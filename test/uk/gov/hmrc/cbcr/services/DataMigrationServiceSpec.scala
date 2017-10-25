@@ -18,6 +18,7 @@ package uk.gov.hmrc.cbcr.services
 
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{times, verify, when}
+import org.scalatest.concurrent.Eventually
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
@@ -31,7 +32,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
 
-class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite{
+class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite with Eventually{
 
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
@@ -68,7 +69,10 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.performMigration" -> true))
 
-      verify(desConnector, times(3)).createMigration(any())
+
+      eventually {
+        verify(desConnector, times(3)).createMigration(any())
+      }
 
     }
   }
@@ -82,7 +86,7 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
       when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
       new DataMigrationService(store, desConnector, config)
 
-      verify(desConnector, times(0)).createMigration(any())
+      eventually{verify(desConnector, times(0)).createMigration(any())}
     }
   }
 
@@ -96,8 +100,8 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
 
-      verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)
-      verify(store, times(1)).update(cbcid.get, subscriberContactFixed)
+      eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
+      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed)}
 
 
     }
@@ -113,8 +117,8 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
 
-      verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)
-      verify(store, times(1)).update(cbcid.get, subscriberContactFixed2)
+      eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
+      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed2)}
 
     }
   }
@@ -129,8 +133,8 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
 
-      verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)
-      verify(store, times(1)).update(cbcid.get, subscriberContactFixed3)
+      eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
+      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed3)}
 
     }
   }
