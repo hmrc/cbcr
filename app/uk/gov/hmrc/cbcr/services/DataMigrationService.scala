@@ -21,15 +21,13 @@ import javax.inject.Inject
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
-import play.api.libs.json.Json
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
 
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
@@ -89,7 +87,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   }
 
   if(doFirstNameLastNameDataFix) {
-    Await.result(repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).map {
+    repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).map {
       list => {
         Logger.warn(s"Found ${list.size} Subscriptions to be fixed")
         val fixedList = list.map(sd => SubscriptionDetails(sd.businessPartnerRecord,
@@ -100,7 +98,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
           Logger.warn(s"Fixed ${f.subscriberContact}")
         })
       }
-    }, 10.minutes )
+    }
   }
 
 }
