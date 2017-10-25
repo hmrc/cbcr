@@ -87,6 +87,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   }
 
   if(doFirstNameLastNameDataFix) {
+    Logger.warn("About to do FirstNameLastName Data Fix")
     repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).map {
       list => {
         Logger.warn(s"Found ${list.size} Subscriptions to be fixed")
@@ -99,6 +100,8 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
         })
       }
     }
+  } else {
+    Logger.warn("Not doing FirstNameLastName Data Fix")
   }
 
 }
