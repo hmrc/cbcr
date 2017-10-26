@@ -28,7 +28,7 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-
+import scala.util.{Success, Failure}
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
                                       configuration:Configuration) {
@@ -88,8 +88,8 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
 
   if(doFirstNameLastNameDataFix) {
     Logger.warn("About to do FirstNameLastName Data Fix")
-    repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).map {
-      list => {
+    repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).onComplete{
+      case Success(list) => {
         Logger.warn(s"Found ${list.size} Subscriptions to be fixed")
         val fixedList = list.map(sd => SubscriptionDetails(sd.businessPartnerRecord,
           SubscriberContact(name = None, splitName(sd.subscriberContact.name)._1,
@@ -99,9 +99,11 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
           Logger.warn(s"Fixed ${f.subscriberContact}")
         })
       }
+      case Failure(t) => {
+        Logger.error("Failed to call getSubscriptions: " + t.getMessage(), t)
+      }
     }
   } else {
     Logger.warn("Not doing FirstNameLastName Data Fix")
   }
-
 }
