@@ -32,7 +32,9 @@ class PhoneNumber private(val number:String)
 //https://confluence.tools.tax.service.gov.uk/display/CBC/DES+API+Specifications?preview=/89272679/89272676/API%20%231%20Subscription%20Create-v41-20170731.docx
 object PhoneNumber {
 
-  val pattern = "^[A-Z0-9 )/(-*#]+$"
+  val oldpattern = "^[A-Z0-9 )/(-*#]+$"
+
+  val pattern = ".*"
 
   def apply(number: String): Option[PhoneNumber] =
     if (number.matches(pattern)) {

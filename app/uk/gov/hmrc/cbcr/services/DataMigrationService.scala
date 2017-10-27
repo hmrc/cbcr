@@ -89,16 +89,18 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   if(doFirstNameLastNameDataFix) {
     Logger.warn("About to do FirstNameLastName Data Fix")
     repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).onComplete{
-      case Success(list) => {
+      case Success(list) =>
         Logger.warn(s"Found ${list.size} Subscriptions to be fixed")
-        val fixedList = list.map(sd => SubscriptionDetails(sd.businessPartnerRecord,
-          SubscriberContact(name = None, splitName(sd.subscriberContact.name)._1,
-            splitName(sd.subscriberContact.name)._2, sd.subscriberContact.phoneNumber, sd.subscriberContact.email), sd.cbcId, sd.utr))
-        fixedList.foreach(f => {
-          f.cbcId.fold(())(cbcid => repo.update(cbcid, f.subscriberContact))
-          Logger.warn(s"Fixed ${f.subscriberContact}")
+        list.foreach(x => if(!x.subscriberContact.phoneNumber.number.matches(PhoneNumber.oldpattern)){
+          Logger.warn(s"Phone number is invalid: ${x.subscriberContact.phoneNumber.number.replaceAll("[0-9]","0")}")
         })
-      }
+//        val fixedList = list.map(sd => SubscriptionDetails(sd.businessPartnerRecord,
+//          SubscriberContact(name = None, splitName(sd.subscriberContact.name)._1,
+//            splitName(sd.subscriberContact.name)._2, sd.subscriberContact.phoneNumber, sd.subscriberContact.email), sd.cbcId, sd.utr))
+//        fixedList.foreach(f => {
+//          f.cbcId.fold(())(cbcid => repo.update(cbcid, f.subscriberContact))
+//          Logger.warn(s"Fixed ${f.subscriberContact}")
+//        })
       case Failure(t) => {
         Logger.error("Failed to call getSubscriptions: " + t.getMessage(), t)
       }
