@@ -43,8 +43,15 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     val criteria = Json.obj("cbcId" -> cbcId.value)
     for {
       repo   <- OptionT.liftF(repository)
-      _      <- OptionT(repo.find(criteria).one[SubscriptionDetails])
       result <- OptionT.liftF(repo.remove(criteria, firstMatchOnly = true))
+    } yield result
+  }
+
+  def clear(utr:Utr): Future[WriteResult] = {
+    val criteria = Json.obj("utr" -> utr.utr)
+    for {
+      repo   <- repository
+      result <- repo.remove(criteria, firstMatchOnly = true)
     } yield result
   }
 

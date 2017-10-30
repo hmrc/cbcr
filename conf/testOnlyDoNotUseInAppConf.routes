@@ -11,4 +11,4 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
-->         /cbcr/test-only/                test.Routes
+->         /cbcr/test-only            test.Routes
