@@ -18,17 +18,17 @@ package uk.gov.hmrc.cbcr.repositories
 
 import javax.inject.{Inject, Singleton}
 
-import play.api.Logger
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr._
 
+import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -39,6 +39,17 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
 
   def save(f:ReportingEntityData) : Future[WriteResult] =
     repository.flatMap(_.insert(f))
+
+  def update(p:ReportingEntityData) : Future[Boolean] = {
+
+    val criteria = Json.obj("cbcReportsDRI" -> p.cbcReportsDRI.head.id)
+
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,p)
+    } yield update.ok
+
+  }
 
   def update(p:PartialReportingEntityData) : Future[Boolean] = {
 
@@ -61,23 +72,33 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
     repository.flatMap(_.find(criteria).one[ReportingEntityData])
   }
 
-  private def buildModifier(p:PartialReportingEntityData) : JsObject = Json.obj("$set" -> Json.obj(List(
-    p.additionalInfoDRI.map(_.docRefId).map(i => "additionalInfoDRI" -> i.id),
-    p.cbcReportsDRI.map(_.docRefId).map(i => "cbcReportsDRI" -> i.id),
-    p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> p.reportingEntityDRI.docRefId.id),
-    Some("reportingRole" -> p.reportingRole.toString),
-    Some("utr" -> p.utr.utr),
-    Some("ultimateParentEntity" -> p.ultimateParentEntity.ultimateParentEntity)
-  ).flatten:_*))
+  def getAll: Future[List[ReportingEntityDataOld]] =
+    repository.flatMap(_.find(JsObject(Seq.empty))
+      .cursor[ReportingEntityDataOld]()
+      .collect[List](-1, Cursor.FailOnError[List[ReportingEntityDataOld]]())
+    )
 
-  private def buildUpdateCriteria(p:PartialReportingEntityData) : JsObject = {
-    val l = List(
-      p.additionalInfoDRI.flatMap(_.corrDocRefId.map(c => Json.obj("additionalInfoDRI" -> c.cid.id))),
-      p.cbcReportsDRI.flatMap(_.corrDocRefId.map(c =>     Json.obj("cbcReportsDRI" -> c.cid.id))),
-      p.reportingEntityDRI.corrDocRefId.map(c =>          Json.obj("reportingEntityDRI" -> c.cid.id))
+  private def buildModifier(p:PartialReportingEntityData) : JsObject = {
+    val x: immutable.Seq[(String, JsValue)] = List(
+      p.additionalInfoDRI.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id)),
+      p.cbcReportsDRI.headOption.map { _ => "cbcReportsDRI" -> JsArray(p.cbcReportsDRI.map(d => JsString(d.docRefId.id))) },
+      p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> JsString(p.reportingEntityDRI.docRefId.id)),
+      Some("reportingRole" -> JsString(p.reportingRole.toString)),
+      Some("utr" -> JsString(p.utr.utr)),
+      Some("ultimateParentEntity" -> JsString(p.ultimateParentEntity.ultimateParentEntity))
     ).flatten
 
-    Json.obj("$and" -> Json.arr(l:_*))
+    Json.obj("$set" -> JsObject(x))
+
+  }
+
+  private def buildUpdateCriteria(p:PartialReportingEntityData) : JsObject = {
+    val l: immutable.Seq[JsObject] = List(
+      p.additionalInfoDRI.flatMap(_.corrDocRefId.map(c => Json.obj("additionalInfoDRI" -> c.cid.id))),
+      p.reportingEntityDRI.corrDocRefId.map(c =>          Json.obj("reportingEntityDRI" -> c.cid.id))
+    ).flatten ++ p.cbcReportsDRI.map(_.corrDocRefId.map(c =>     Json.obj("cbcReportsDRI" -> c.cid.id))).flatten
+
+    Json.obj("$and" -> JsArray(l))
   }
 
 }

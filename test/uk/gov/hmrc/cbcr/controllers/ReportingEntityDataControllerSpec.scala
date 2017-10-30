@@ -18,6 +18,7 @@ package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import cats.data.NonEmptyList
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -37,9 +38,9 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val docRefId=DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
 
-  val red = ReportingEntityData(docRefId,Some(docRefId),docRefId,Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
+  val red = ReportingEntityData(NonEmptyList(docRefId,Nil),Some(docRefId),docRefId,Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
 
-  val pred = PartialReportingEntityData(Some(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
+  val pred = PartialReportingEntityData(List(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -88,13 +89,13 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
     }
 
     "respond with a 303(NOT_MODIFIED) when asked to update a nonexistant ReportingEntityData" in {
-      when(repo.update(any())) thenReturn Future.successful(false)
+      when(repo.update(any[PartialReportingEntityData])) thenReturn Future.successful(false)
       val result = controller.update()(fakePutRequest)
       status(result) shouldBe Status.NOT_MODIFIED
     }
 
     "respond with a 200 when successfully updated a ReportingEntityData field" in {
-      when(repo.update(any())) thenReturn Future.successful(true)
+      when(repo.update(any[PartialReportingEntityData])) thenReturn Future.successful(true)
       val result = controller.update()(fakePutRequest)
       status(result) shouldBe Status.OK
     }
