@@ -33,7 +33,7 @@ import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends Purgeable {
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
@@ -45,6 +45,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
       x    <- repo.remove(criteria)
     } yield  x
   }
+
 
   def save(f:DocRefId) : Future[DocRefIdSaveResponse] = {
     val criteria = Json.obj("id" -> f.id)
