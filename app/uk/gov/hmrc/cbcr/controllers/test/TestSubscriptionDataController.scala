@@ -38,7 +38,7 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
           _.ok match {
             case true => Ok("data submitted successfully")
             case false =>
-              Ok("error submitting data")
+              InternalServerError("error submitting data")
           }
         }
       }
