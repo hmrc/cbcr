@@ -47,9 +47,9 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
   def deleteSubscription(utrs: String): Action[AnyContent] = Action.async {
     implicit request => {
       val utr = Utr(utrs)
-      subRepo.clear(utr).map { w =>
-        Logger.error(s"Response : $w")
-        if (w.n > 0) Ok else NotFound
+      subRepo.clear(utr).map {
+        case w if w.ok => Ok
+        case _         => InternalServerError
       }
     }
   }
@@ -57,9 +57,9 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
   def deleteSingleDocRefId(docRefIds: String): Action[AnyContent] = Action.async {
     implicit request => {
       val docRefId = DocRefId(docRefIds)
-      docRefRepo.delete(docRefId).map { w =>
-        Logger.error(s"Response : $w")
-        if (w.n > 0) Ok else NotFound
+      docRefRepo.delete(docRefId).map {
+        case w if w.ok  => Ok
+        case _          => InternalServerError
       }
     }
   }
