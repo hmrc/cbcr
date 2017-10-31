@@ -90,5 +90,67 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
     }
   }
 
+  "attempt to fix the data model for Subscriber Contact splitting name into first name last name and updating the store multiple names Michael John Joseph Junior" when {
+    "CBCId.doFirstNameLastNameDataFix is true" in {
 
+      val desConnector = mock[DESConnector]
+      val store = mock[SubscriptionDataRepository]
+      when(store.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionDataNameOnly))
+      when(store.update(any(), any())).thenReturn(Future.successful(true))
+
+      new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
+
+      eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
+      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed)}
+
+
+    }
+  }
+
+  "attempt to fix the data model for Subscriber Contact splitting name into first name last name and updating the store normal name Michael Joseph" when {
+    "CBCId.doFirstNameLastNameDataFix is true" in {
+
+      val desConnector = mock[DESConnector]
+      val store = mock[SubscriptionDataRepository]
+      when(store.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)) thenReturn Future.successful(List( exampleSubscriptionDataNameOnly2))
+      when(store.update(any(), any())).thenReturn(Future.successful(true))
+
+      new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
+
+      eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
+      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed2)}
+
+    }
+  }
+
+  "attempt to fix the data model for Subscriber Contact splitting name into first name last name and updating the store single name Joseph" when {
+    "CBCId.doFirstNameLastNameDataFix is true" in {
+
+      val desConnector = mock[DESConnector]
+      val store = mock[SubscriptionDataRepository]
+      when(store.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionDataNameOnly3))
+      when(store.update(any(), any())).thenReturn(Future.successful(true))
+
+      new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
+
+      eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
+      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed3)}
+
+    }
+  }
+
+
+    " do not attempt to fix the data model for Subscriber Contact" when {
+    "CBCId.doFirstNameLastNameDataFix is false" in {
+      val desConnector = mock[DESConnector]
+      val store = mock[SubscriptionDataRepository]
+      when(store.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionDataNameOnly, exampleSubscriptionDataNameOnly, exampleSubscriptionDataNameOnly))
+      when(store.update(any(), any())).thenReturn(Future.successful(true))
+
+      new DataMigrationService(store, desConnector, config)
+
+      verify(store, times(0)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)
+      verify(store, times(0)).update(any(), any())
+    }
+  }
 }

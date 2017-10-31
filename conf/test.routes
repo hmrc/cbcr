@@ -1,5 +1,1 @@
 DELETE    /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
-
-POST      /insertSubscriptionData                   @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.insertData
-DELETE    /deleteSubscription/:utr                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSubscription(utr: String)
-DELETE    /deleteDocRefId/:docRefId                 @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleDocRefId(docRefId: String)
