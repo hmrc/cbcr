@@ -75,7 +75,7 @@ class LocalSubscription @Inject()(config:Configuration, repo:SubscriptionDataRep
     repo.get(safeId).map(sd =>
       GetResponse(
         safeId,
-        ContactName(sd.subscriberContact.firstName,sd.subscriberContact.lastName),
+        ContactName(sd.subscriberContact.firstName.getOrElse(""), sd.subscriberContact.lastName.getOrElse("")),
         ContactDetails(sd.subscriberContact.email,sd.subscriberContact.phoneNumber),
         sd.businessPartnerRecord.address
       )

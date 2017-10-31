@@ -34,6 +34,7 @@ import reactivemongo.api.commands.{DefaultWriteResult, WriteError, WriteResult}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.cbcr.services.DataMigrationCriteria
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.play.test.UnitSpec
@@ -51,10 +52,10 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
   val config = app.injector.instanceOf[Configuration]
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact("Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
+  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, Some("Dave"),Some("Jones"),PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
 
   val desConnector = mock[DESConnector]
-  when(store.getAllMigrations()) thenReturn Future.successful(List())
+  when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List())
   val controller = new SubscriptionDataController(store,desConnector,cBCRAuth,config)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
@@ -128,31 +129,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "attempt to migrate all the Subscription_Details that have been locally generated" when {
 
-      "performMigration has been set to true " in {
-
-        val desConnector = mock[DESConnector]
-        when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
-        when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
-
-        new SubscriptionDataController(store, desConnector,cBCRAuth, config ++ Configuration("CBCId.performMigration" -> true))
-
-        verify(desConnector, times(3)).createMigration(any())
-
-      }
-    }
-    "not attempt to migrate all the Subscription_Details that have been locally generated" when {
-
-      "performMigration has not been explicitly set to true" in {
-
-        val desConnector = mock[DESConnector]
-        when(store.getAllMigrations()) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
-        new SubscriptionDataController(store, desConnector,cBCRAuth, config)
-
-        verify(desConnector, times(0)).createMigration(any())
-      }
-
-    }
   }
 }
