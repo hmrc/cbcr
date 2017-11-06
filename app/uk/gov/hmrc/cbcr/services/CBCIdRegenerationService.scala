@@ -83,7 +83,7 @@ class CBCIdRegenerationService @Inject() (emailService:EmailConnectorImpl, repo:
             "cbcrId" -> newId.toString,
             "received_at" -> LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd 'at' HH:mm")),
             "f_name" -> sd.subscriberContact.firstName.getOrElse(""),
-            "l_name" -> sd.subscriberContact.lastName.getOrElse(""))
+            "s_name" -> sd.subscriberContact.lastName.getOrElse(""))
           )
           _     <- EitherT.right[Future,String,HttpResponse](emailService.sendEmail(email))
           _     <- auditCBCIdRegeneration(sd,oldId,newId)
