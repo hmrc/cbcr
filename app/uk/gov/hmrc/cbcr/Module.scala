@@ -78,6 +78,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[DataMigrationService]).asEagerSingleton()
     bind(classOf[ReportingEntityDataMigrationService]).asEagerSingleton()
     bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
+    bind(classOf[CBCIdRegenerationService]).asEagerSingleton()
     bind(classOf[PurgeSubscriptionDataService]).asEagerSingleton()
     bind(classOf[SubscriptionDataUpdateService]).asEagerSingleton()
 
