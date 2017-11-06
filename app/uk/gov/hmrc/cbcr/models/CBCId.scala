@@ -27,7 +27,9 @@ import uk.gov.hmrc.domain.Modulus23Check
   * Digit  1     is an 'X'
   * Digit  2     is the check digit
   * Digits 3-5   is the short name 'CBC'
-  * Digits 6-9   are '0000'
+  * Digits 6-9   are '0000' for the private beta generated CBCIds
+  * Digits 6-9   are '0100' for the public beta generated CBCIds
+  * Digits 6-9   are '1000' for the ETMP generated CBCIds
   * Digits 10-15 are for the id sequence e.g. '000001' - '999999'
   *
   * Note: This is a hard limit of 999999 unique CBCIds
@@ -69,7 +71,7 @@ object CBCId extends Modulus23Check {
       Invalid(new IllegalArgumentException("CBCId ranges from 0-999999"))
     } else {
       val sequenceNumber = i.formatted("%06d")
-      val id = s"CBC0000$sequenceNumber"
+      val id = s"CBC0100$sequenceNumber"
       val checkChar = calculateCheckCharacter(id)
       CBCId(s"X$checkChar" + id).fold[Validated[Throwable,CBCId]](
         Invalid(new Exception(s"Generated CBCId did not validate: $id"))

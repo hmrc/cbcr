@@ -56,8 +56,12 @@ class LocalSubscription @Inject()(config:Configuration, repo:SubscriptionDataRep
 
   private [services] lazy val cbcIdGenerator: ActorRef = system.actorOf(supervisor, "cbc-id-generator-supervisor")
 
+  def createCBCId:Future[GenerateCBCIdResponse] = {
+    (cbcIdGenerator ? GenerateCBCId).mapTo[GenerateCBCIdResponse]
+  }
+
   override def createSubscription(sub:SubscriptionRequest)(implicit hc:HeaderCarrier): Future[Result] = {
-    (cbcIdGenerator ? GenerateCBCId).mapTo[GenerateCBCIdResponse].map(_.value.fold(
+    createCBCId.map(_.value.fold(
       error              => {
         Logger.error("Failed to generate a Local CBCId",error)
         InternalServerError
