@@ -72,7 +72,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
       when(localGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
       val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
-      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XGCBC0000000001")
+      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
     }
     "query the remoteCBCId generator when useDESApi is set to true" in {
       val handler = new SubscriptionHandlerImpl(config ++ Configuration("CBCId.useDESApi" -> true),localGen,remoteGen)
@@ -81,7 +81,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
       when(remoteGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
       val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
-      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XGCBC0000000001")
+      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
     }
   }
 

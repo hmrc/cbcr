@@ -39,7 +39,7 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
 
-  def clear(cbcId:CBCId): OptionT[Future,WriteResult] = {
+  def clearCBCId(cbcId:CBCId): OptionT[Future,WriteResult] = {
     val criteria = Json.obj("cbcId" -> cbcId.value)
     for {
       repo   <- OptionT.liftF(repository)

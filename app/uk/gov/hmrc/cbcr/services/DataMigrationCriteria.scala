@@ -20,6 +20,8 @@ import play.api.libs.json.Json
 
 object DataMigrationCriteria {
 
+  val PRIVATE_BETA_CRITERIA = Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*"))
+
   val LOCAL_CBCID_CRITERIA = Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC0.*"))
 
   val NAME_SPLIT_CRITERIA = Json.obj("subscriberContact.name" -> Json.obj("$exists" -> true),

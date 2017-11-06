@@ -24,11 +24,13 @@ import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.cbcr.services.{DataMigrationService, PurgeSubscriptionDataService, ReportingEntityDataMigrationService}
+import uk.gov.hmrc.cbcr.services.{CBCIdRegenerationService, DataMigrationService, PurgeSubscriptionDataService, ReportingEntityDataMigrationService}
 import uk.gov.hmrc.http.HttpPost
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws.WSPost
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
+import uk.gov.hmrc.play.config.AppName
+import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
@@ -61,7 +63,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     reporter.start(graphiteConfig.getLong("interval").getOrElse(10L), SECONDS)
   }
-
   def configure(): Unit = {
     Logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
     lazy val appName = configuration.getString("appName").get
@@ -78,6 +79,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[DataMigrationService]).asEagerSingleton()
     bind(classOf[ReportingEntityDataMigrationService]).asEagerSingleton()
     bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
+    bind(classOf[CBCIdRegenerationService]).asEagerSingleton()
     bind(classOf[PurgeSubscriptionDataService]).asEagerSingleton()
   }
 }
