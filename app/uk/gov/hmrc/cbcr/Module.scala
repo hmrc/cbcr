@@ -24,7 +24,7 @@ import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.cbcr.services.{DataMigrationService, DataValidationService, PurgeSubscriptionDataService, ReportingEntityDataMigrationService}
+import uk.gov.hmrc.cbcr.services.{DataMigrationService, SubscriptionDataUpdateService, PurgeSubscriptionDataService, ReportingEntityDataMigrationService}
 import uk.gov.hmrc.http.HttpPost
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws.WSPost
@@ -79,7 +79,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[ReportingEntityDataMigrationService]).asEagerSingleton()
     bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
     bind(classOf[PurgeSubscriptionDataService]).asEagerSingleton()
-    bind(classOf[DataValidationService]).asEagerSingleton()
+    bind(classOf[SubscriptionDataUpdateService]).asEagerSingleton()
   }
 }
 

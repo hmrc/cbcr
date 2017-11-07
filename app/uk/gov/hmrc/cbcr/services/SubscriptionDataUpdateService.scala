@@ -18,19 +18,21 @@ package uk.gov.hmrc.cbcr.services
 
 import javax.inject.Inject
 
+import com.ning.http.util.{Base64 => NingBase64}
 import configs.syntax._
 import play.api.libs.json.{JsObject, Json}
 import play.api.{Configuration, Logger}
+import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.SubscriberContact
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.ExecutionContext
-import com.ning.http.util.{Base64 => NingBase64}
-
 import scala.util.{Failure, Success, Try}
 
-class DataValidationService @Inject() (repo:SubscriptionDataRepository,
-                                       configuration:Configuration)(implicit ec:ExecutionContext)  {
+class SubscriptionDataUpdateService @Inject()(repo:SubscriptionDataRepository,
+                                              configuration:Configuration,
+                                              auditConnector:AuditConnectorI)(implicit ec:ExecutionContext)  {
 
   def decode(str: String): String = {
     Try(NingBase64.decode(str)) match {
@@ -47,16 +49,30 @@ class DataValidationService @Inject() (repo:SubscriptionDataRepository,
     (criteria, sc)
   }
 
-  val doValidation: Boolean = configuration.underlying.get[Boolean]("CBCId.performMValidation").valueOr(_ => false)
+
+
+  val doValidation: Boolean = configuration.underlying.get[Boolean]("CBCId.performDataUpdate").valueOr(_ => false)
 
   if (doValidation) {
     val x: Integer = configuration.underlying.get[Integer]("users.count").valueOr(_ => 0)
     1 to x foreach(n => {
       val usr1 = getSubscriberData(s"user${n}")
 
+      def audit(result:String) = {
+        auditConnector.sendExtendedEvent(ExtendedDataEvent("Country-By-Country", "CBCRSubsriberContactUpdate",
+          tags = Map("result" -> result),
+          detail = Json.toJson(usr1._2)))
+      }
+
       repo.update(usr1._1, usr1._2).map(result =>
-        if (result.booleanValue()) Logger.info(s"validation succeeded for safeId: ${usr1._1}")
-        else Logger.info(s"validation failed for safeId: ${usr1._1}")
+        if (result.booleanValue()) {
+          Logger.info(s"validation succeeded for safeId: ${usr1._1}")
+          audit("success")
+        }
+        else {
+          Logger.info(s"validation failed for safeId: ${usr1._1}")
+          audit("failure")
+        }
       )
     })
   }
