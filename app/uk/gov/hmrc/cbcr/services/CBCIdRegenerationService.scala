@@ -24,6 +24,7 @@ import cats.data.EitherT
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
+import play.api.libs.json.Json
 import play.api.{Configuration, Logger}
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.AuditConnector
@@ -32,7 +33,7 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.audit.model.DataEvent
+import uk.gov.hmrc.play.audit.model.{DataEvent, ExtendedDataEvent}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -60,8 +61,12 @@ class CBCIdRegenerationService @Inject() (emailService:EmailConnectorImpl, repo:
     }
 
   def auditCBCIdRegeneration(sd:SubscriptionDetails,oldCBCId:Option[CBCId],newCBCId:CBCId) : EitherT[Future,String, AuditResult.Success.type] = {
-    EitherT(audit.sendEvent(DataEvent("Country-By-Country-Backend", "CBCIdRegenerated",
-      tags = getCCParams(sd) ++ Map("oldCBCid" -> oldCBCId.toString, "newCBCId" -> newCBCId.toString)
+    EitherT(audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", "CBCIdRegenerated",
+      tags = Map(
+        "oldCBCid" -> oldCBCId.map(_.toString).getOrElse(""),
+        "newCBCId" -> newCBCId.toString
+      ),
+      detail = Json.toJson(sd)
       )).map {
         case AuditResult.Success         => Right(AuditResult.Success)
         case AuditResult.Disabled        => Right(AuditResult.Success)
