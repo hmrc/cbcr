@@ -19,12 +19,14 @@ package uk.gov.hmrc.cbcr.services
 import javax.inject.Inject
 
 import configs.syntax._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.models.SubscriberContact
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+
 import scala.concurrent.ExecutionContext
 import com.ning.http.util.{Base64 => NingBase64}
+
 import scala.util.{Failure, Success, Try}
 
 class DataValidationService @Inject() (repo:SubscriptionDataRepository,
@@ -37,11 +39,12 @@ class DataValidationService @Inject() (repo:SubscriptionDataRepository,
     }
   }
 
-  def getSubscriberData(u: String): (String, SubscriberContact) = {
+  def getSubscriberData(u: String): (JsObject, SubscriberContact) = {
     val safeId: String = configuration.underlying.get[String](s"users.${u}.safeId").valueOr(_ => "")
+    val criteria = Json.obj("businessPartnerRecord.safeId" -> Json.toJson(safeId))
     val decoded: String = decode(configuration.underlying.get[String](s"users.${u}.sc").valueOr(_ => ""))
     val sc: SubscriberContact = Json.fromJson[SubscriberContact](Json.parse(decoded)).get
-    (safeId, sc)
+    (criteria, sc)
   }
 
   val doValidation: Boolean = configuration.underlying.get[Boolean]("CBCId.performMValidation").valueOr(_ => false)
