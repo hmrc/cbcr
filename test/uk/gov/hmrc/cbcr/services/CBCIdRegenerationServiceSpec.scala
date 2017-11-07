@@ -73,7 +73,7 @@ class CBCIdRegenerationServiceSpec  extends UnitSpec with MockitoSugar with Mock
     when(subDataRepo.clear(any())) thenReturn Future.successful(DefaultWriteResult(true,1,Seq.empty,None,None,None))
     when(subDataRepo.save(any())) thenReturn Future.successful(DefaultWriteResult(true,1,Seq.empty,None,None,None))
     when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(200,None,Map.empty,None))
-    when(auditMock.sendEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
+    when(auditMock.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
 
     new CBCIdRegenerationService(mockEmailConnector,subDataRepo,des,config ++ Configuration("CBCId.regenerate" -> true),local){
       override lazy val audit: Auditing = auditMock
@@ -84,7 +84,7 @@ class CBCIdRegenerationServiceSpec  extends UnitSpec with MockitoSugar with Mock
     eventually{verify(subDataRepo, times(3)).clear(any())}
     eventually{verify(subDataRepo, times(3)).save(any())}
     eventually{verify(mockEmailConnector,times(3)).sendEmail(any())(any())}
-    eventually{verify(auditMock, times(3)).sendEvent(any())(any(),any())}
+    eventually{verify(auditMock, times(3)).sendExtendedEvent(any())(any(),any())}
 
   }
 
