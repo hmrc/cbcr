@@ -51,9 +51,10 @@ class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:
   def updateSubscriberContactDetails(cbcId: CBCId) = auth.authCBCRWithJson({ implicit request =>
     request.body.validate[SubscriberContact].fold(
       error => Future.successful(BadRequest(JsError.toJson(error))),
-      response => repo.update(cbcId, response).map {
-        case result if !result => InternalServerError
-        case _ => Ok
+      response =>
+        repo.update(Json.obj("cbcId" -> Json.toJson(cbcId)), response).map {
+          case result if !result => InternalServerError
+          case _ => Ok
       }
     )
   }, parse.json)

@@ -55,14 +55,14 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     } yield result
   }
 
-  def update(cbcId:CBCId,s:SubscriberContact): Future[Boolean] = {
-    val criteria = BSONDocument("cbcId" -> cbcId.value)
+  def update(criteria: JsObject,s: SubscriberContact): Future[Boolean] = {
     val modifier = Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
     for {
       collection <- repository
       update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
     } yield update.value.isDefined
   }
+
 
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
