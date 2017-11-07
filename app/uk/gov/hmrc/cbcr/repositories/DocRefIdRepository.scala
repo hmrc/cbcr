@@ -38,6 +38,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
 
+
   def delete(d:DocRefId): Future[WriteResult] = {
     val criteria = Json.obj("id" -> d.id)
     for {
