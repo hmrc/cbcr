@@ -82,7 +82,7 @@ class SubscriptionDataUpdateServiceSpec extends UnitSpec with MockitoSugar with 
       val audit = mock[AuditConnectorI]
       when(store.update(any(), any())).thenReturn(Future.successful(true))
 
-      val sdus = new SubscriptionDataUpdateService(store, config ++ Configuration("CBCId.performDataUpdate" -> false, "users.count" -> 1),audit)
+      val sdus = new SubscriptionDataUpdateService(store, config, audit)
 
       eventually {
         verify(store, times(0)).update(any(),any())
