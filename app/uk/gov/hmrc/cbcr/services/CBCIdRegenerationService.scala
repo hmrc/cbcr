@@ -47,19 +47,6 @@ class CBCIdRegenerationService @Inject() (emailService:EmailConnectorImpl, repo:
 
   val REGENERATED_CBCID_TEMPLATE_ID: String = "cbcr_cbcid_regeneration"
 
-  def subscriptionRequest(sd:SubscriptionDetails) = SubscriptionRequest("",false,CorrespondenceDetails(
-    sd.businessPartnerRecord.address,
-    ContactDetails(sd.subscriberContact.email,sd.subscriberContact.phoneNumber),
-    ContactName("","")
-  ))
-
-  //Turn a Case class into a map
-  private def getCCParams(cc: AnyRef): Map[String, String] =
-    (Map[String, String]() /: cc.getClass.getDeclaredFields) {(acc, field) =>
-      field.setAccessible(true)
-      acc + (field.getName -> field.get(cc).toString)
-    }
-
   def auditCBCIdRegeneration(sd:SubscriptionDetails,oldCBCId:Option[CBCId],newCBCId:CBCId) : EitherT[Future,String, AuditResult.Success.type] = {
     EitherT(audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", "CBCIdRegenerated",
       tags = Map(
@@ -77,7 +64,7 @@ class CBCIdRegenerationService @Inject() (emailService:EmailConnectorImpl, repo:
 
   if (doRegenerate) {
     implicit val hc = HeaderCarrier()
-    val output = EitherT.right[Future,String,List[SubscriptionDetails]](repo.getSubscriptions(DataMigrationCriteria.PRIVATE_BETA_CRITERIA)).flatMap{ list =>
+    val output = EitherT.right[Future,String,List[SubscriptionDetails]](repo.getSubscriptions(DataMigrationCriteria.PRIVATE_BETA_CRITERIA(configuration))).flatMap{ list =>
       val result = list.map{ sd =>
         for {
           newId <- EitherT[Future,String,CBCId](local.createCBCId.map(_.value.toEither.leftMap(t => s"Failed to generate CBCId: ${t.getMessage}")))

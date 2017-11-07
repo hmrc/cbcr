@@ -26,6 +26,7 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.test.UnitSpec
 import org.mockito.Mockito._
 import org.mockito.Matchers._
+import play.api.libs.json.Json
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.GenerateCBCIdResponse
@@ -85,6 +86,24 @@ class CBCIdRegenerationServiceSpec  extends UnitSpec with MockitoSugar with Mock
     eventually{verify(subDataRepo, times(3)).save(any())}
     eventually{verify(mockEmailConnector,times(3)).sendEmail(any())(any())}
     eventually{verify(auditMock, times(3)).sendExtendedEvent(any())(any(),any())}
+
+  }
+
+  "Only use the CBCId.safeId1 and CBCId.safeId2 keys if they both exist in the config" in {
+
+    DataMigrationCriteria.PRIVATE_BETA_CRITERIA(config) shouldEqual Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*"))
+
+    val safeId1 = "testsafeid1"
+    val safeId2 = "testsafeid2"
+
+    DataMigrationCriteria.PRIVATE_BETA_CRITERIA(config ++ Configuration("CBCId.safeId1" -> safeId1,"CBCId.safeId2" -> safeId2)) shouldEqual Json.obj("$or" ->
+      Json.arr(
+        Json.obj("businessPartnerRecord.safeId" -> safeId1),
+        Json.obj ("businessPartnerRecord.safeId" -> safeId2)
+      )
+    )
+
+    DataMigrationCriteria.PRIVATE_BETA_CRITERIA(config ++ Configuration("CBCId.safeId1" -> safeId1)) shouldEqual Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*"))
 
   }
 
