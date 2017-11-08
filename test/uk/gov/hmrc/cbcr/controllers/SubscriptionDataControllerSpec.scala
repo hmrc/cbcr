@@ -112,19 +112,19 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
     }
 
     "respond with a 200 when asked to clear a record that exists" in {
-      when(store.clear(any(classOf[CBCId]))).thenReturn(OptionT.some[Future, WriteResult](okResult))
+      when(store.clearCBCId(any(classOf[CBCId]))).thenReturn(OptionT.some[Future, WriteResult](okResult))
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 404 when asked to clear a record that doesn't exist" in {
-      when(store.clear(any(classOf[CBCId]))).thenReturn(OptionT.none[Future, WriteResult])
+      when(store.clearCBCId(any(classOf[CBCId]))).thenReturn(OptionT.none[Future, WriteResult])
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "respond with a 500 when asked to clear a record but something goes wrong" in {
-      when(store.clear(any(classOf[CBCId]))).thenReturn(OptionT.some[Future, WriteResult](failResult))
+      when(store.clearCBCId(any(classOf[CBCId]))).thenReturn(OptionT.some[Future, WriteResult](failResult))
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }

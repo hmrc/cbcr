@@ -21,6 +21,7 @@ import akka.persistence.inmemory.extension.{InMemoryJournalStorage, StorageExten
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{Matchers, WordSpecLike}
+import uk.gov.hmrc.cbcr.models.CBCId
 import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.services.CBCIdGenerator
 
@@ -75,7 +76,7 @@ class CBCIdGeneratorSpec extends TestKit(
       //it should start generating ids from 1
       newGenerator ! GenerateCBCId
       val response = expectMsgType[GenerateCBCIdResponse]
-      response.value.exists(_.value == "XGCBC0000000001") shouldBe true
+      response.value.toOption.map(_.value) shouldEqual  CBCId("XTCBC0100000001").map(_.value)
 
       //lets request 4 more
       newGenerator ! GenerateCBCId
