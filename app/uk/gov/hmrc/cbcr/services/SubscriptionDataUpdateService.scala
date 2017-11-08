@@ -23,16 +23,16 @@ import configs.syntax._
 import play.api.libs.json.{JsObject, Json}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.SubscriberContact
+import uk.gov.hmrc.cbcr.models.{SubscriberContact, SubscriptionDetails}
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class SubscriptionDataUpdateService @Inject()(repo:SubscriptionDataRepository,
                                               configuration:Configuration,
-                                              auditConnector:AuditConnectorI)(implicit ec:ExecutionContext)  {
+                                              auditConnector:AuditConnectorI, backupService: BackupService)(implicit ec:ExecutionContext)  {
 
   def decode(str: String): String = {
     Try(NingBase64.decode(str)) match {
@@ -50,10 +50,10 @@ class SubscriptionDataUpdateService @Inject()(repo:SubscriptionDataRepository,
   }
 
 
-
   val doValidation: Boolean = configuration.underlying.get[Boolean]("CBCId.performDataUpdate").valueOr(_ => false)
 
-  if (doValidation) {
+  if (doValidation && backupService.backup) {
+    Logger.warn(s"Doing Subscription Data Fix")
     val x: Integer = configuration.underlying.get[Integer]("users.count").valueOr(_ => 0)
     1 to x foreach(n => {
       val usr1 = getSubscriberData(s"user${n}")

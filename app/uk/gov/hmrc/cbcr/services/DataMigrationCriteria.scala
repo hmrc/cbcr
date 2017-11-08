@@ -24,4 +24,6 @@ object DataMigrationCriteria {
 
   val NAME_SPLIT_CRITERIA = Json.obj("subscriberContact.name" -> Json.obj("$exists" -> true),
     "subscriberContact.firstName" -> Json.obj("$exists" -> false))
+
+  val ALL_SUBSCRIPTIONS = Json.obj()
 }

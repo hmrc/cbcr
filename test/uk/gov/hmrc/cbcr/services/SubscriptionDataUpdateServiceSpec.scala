@@ -38,16 +38,20 @@ class SubscriptionDataUpdateServiceSpec extends UnitSpec with MockitoSugar with 
   val safeId_1 = "XX0000100094187"
   val safeId_2 = "XG0000100094185"
 
+
+
   "attempt to update Subscription_Details n times" when {
 
     "performMigration has been set to true and count(n) is 0" in {
 
+      val backupSvc = mock[BackupService]
       val store = mock[SubscriptionDataRepository]
       val config = app.injector.instanceOf[Configuration]
       val audit = mock[AuditConnectorI]
       when(store.update(any(), any())).thenReturn(Future.successful(true))
+      when(backupSvc.backup).thenReturn(true)
 
-      val sdus = new SubscriptionDataUpdateService(store, config ++ Configuration("CBCId.performDataUpdate" -> true, "users.count" -> 0),audit)
+      val sdus = new SubscriptionDataUpdateService(store, config ++ Configuration("CBCId.performDataUpdate" -> true, "users.count" -> 0),audit, backupSvc)
 
       eventually {
         verify(store, times(0)).update(any(),any())
@@ -56,10 +60,12 @@ class SubscriptionDataUpdateServiceSpec extends UnitSpec with MockitoSugar with 
 
     "performMigration has been set to true and count and count(n) is 2" in  {
 
+      val backupSvc = mock[BackupService]
       val store = mock[SubscriptionDataRepository]
       val config = app.injector.instanceOf[Configuration]
       val audit = mock[AuditConnectorI]
       when(store.update(any(), any())).thenReturn(Future.successful(true))
+      when(backupSvc.backup).thenReturn(true)
 
       new SubscriptionDataUpdateService(store, config ++ Configuration("CBCId.performDataUpdate" -> true,
                                                                        "users.count" -> 2,
@@ -67,7 +73,7 @@ class SubscriptionDataUpdateServiceSpec extends UnitSpec with MockitoSugar with 
                                                                        "user1.sc" -> encodedSC_1,
                                                                        "user2.safeId" -> safeId_2,
                                                                        "user2.sc" -> encodedSC_2
-                                                                       ),audit)
+                                                                       ),audit, backupSvc)
 
       eventually {
         verify(store, times(2)).update(any(),any())
@@ -75,14 +81,38 @@ class SubscriptionDataUpdateServiceSpec extends UnitSpec with MockitoSugar with 
 
     }
 
+    "do not performMigration if backup fails" in  {
+
+      val backupSvc = mock[BackupService]
+      val store = mock[SubscriptionDataRepository]
+      val config = app.injector.instanceOf[Configuration]
+      val audit = mock[AuditConnectorI]
+      when(store.update(any(), any())).thenReturn(Future.successful(true))
+      when(backupSvc.backup).thenReturn(false)
+
+      new SubscriptionDataUpdateService(store, config ++ Configuration("CBCId.performDataUpdate" -> true,
+        "users.count" -> 2,
+        "user1.safeId" -> safeId_1,
+        "user1.sc" -> encodedSC_1,
+        "user2.safeId" -> safeId_2,
+        "user2.sc" -> encodedSC_2
+      ),audit, backupSvc)
+
+      eventually {
+        verify(store, times(0)).update(any(),any())
+      }
+
+    }
+
     "performMigration has been set to false" in {
 
+      val backupSvc = mock[BackupService]
       val store = mock[SubscriptionDataRepository]
       val config = app.injector.instanceOf[Configuration]
       val audit = mock[AuditConnectorI]
       when(store.update(any(), any())).thenReturn(Future.successful(true))
 
-      val sdus = new SubscriptionDataUpdateService(store, config, audit)
+      val sdus = new SubscriptionDataUpdateService(store, config, audit, backupSvc)
 
       eventually {
         verify(store, times(0)).update(any(),any())
@@ -91,3 +121,5 @@ class SubscriptionDataUpdateServiceSpec extends UnitSpec with MockitoSugar with 
 
   }
 }
+
+
