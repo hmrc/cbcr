@@ -80,7 +80,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
     bind(classOf[PurgeSubscriptionDataService]).asEagerSingleton()
     bind(classOf[SubscriptionDataUpdateService]).asEagerSingleton()
-//    bind(classOf[BackupService]).asEagerSingleton()
 
   }
 }
