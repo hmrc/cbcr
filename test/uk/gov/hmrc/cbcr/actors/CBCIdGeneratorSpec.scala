@@ -20,6 +20,7 @@ import akka.actor.{ActorIdentity, ActorSystem, Identify, PoisonPill}
 import akka.persistence.inmemory.extension.{InMemoryJournalStorage, StorageExtension}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.typesafe.config.ConfigFactory
+import org.scalatest.concurrent.Eventually
 import org.scalatest.{Matchers, WordSpecLike}
 import uk.gov.hmrc.cbcr.models.CBCId
 import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
@@ -34,7 +35,7 @@ class CBCIdGeneratorSpec extends TestKit(
     |   snapshot-store.plugin = "inmemory-snapshot-store"
     | }
     |}
-  """.stripMargin))) with WordSpecLike with ImplicitSender with Matchers {
+  """.stripMargin))) with WordSpecLike with ImplicitSender with Matchers with Eventually {
 
 
   val generator = system.actorOf(CBCIdGenerator.props)
@@ -74,9 +75,11 @@ class CBCIdGeneratorSpec extends TestKit(
       val newGenerator = system.actorOf(CBCIdGenerator.props)
 
       //it should start generating ids from 1
-      newGenerator ! GenerateCBCId
-      val response = expectMsgType[GenerateCBCIdResponse]
-      response.value.toOption.map(_.value) shouldEqual  CBCId("XTCBC0100000001").map(_.value)
+      eventually {
+        newGenerator ! GenerateCBCId
+        val response = expectMsgType[GenerateCBCIdResponse]
+        response.value.toOption.map(_.value) shouldEqual CBCId("XTCBC0100000001").map(_.value)
+      }
 
       //lets request 4 more
       newGenerator ! GenerateCBCId

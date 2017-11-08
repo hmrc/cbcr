@@ -32,7 +32,7 @@ import scala.util.{Failure, Success, Try}
 
 class SubscriptionDataUpdateService @Inject()(repo:SubscriptionDataRepository,
                                               configuration:Configuration,
-                                              auditConnector:AuditConnectorI, backupService: BackupService)(implicit ec:ExecutionContext)  {
+                                              auditConnector:AuditConnectorI)(implicit ec:ExecutionContext)  {
 
   def decode(str: String): String = {
     Try(NingBase64.decode(str)) match {
@@ -52,7 +52,7 @@ class SubscriptionDataUpdateService @Inject()(repo:SubscriptionDataRepository,
 
   val doValidation: Boolean = configuration.underlying.get[Boolean]("CBCId.performDataUpdate").valueOr(_ => false)
 
-  if (doValidation && backupService.backup) {
+  if (doValidation) {
     Logger.warn(s"Doing Subscription Data Fix")
     val x: Integer = configuration.underlying.get[Integer]("users.count").valueOr(_ => 0)
     1 to x foreach(n => {

@@ -22,24 +22,37 @@ import play.api.libs.json.Json
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.models.SubscriptionDetails
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import cats.syntax.all._
+import cats.instances.all._
+import reactivemongo.api.commands.WriteResult
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
+import configs.syntax._
 
-class BackupService @Inject()(configuration:Configuration, subscriptionDetailsRepo: SubscriptionDataRepository) {
+class BackupService @Inject()(configuration:Configuration, subscriptionDetailsRepo: SubscriptionDataRepository)(implicit ec:ExecutionContext) {
 
+  val doBackup: Boolean     = configuration.underlying.get[Boolean]("CBCId.performBackup").valueOr(_ => false)
 
-  def backup: Boolean =  {
+  if(doBackup) {
+    backup()
+  }
+
+  def backup()  =  {
     Logger.warn(s"Backing up Subscription Data to a new Collection")
-    val lsd: List[SubscriptionDetails] = Await.result(subscriptionDetailsRepo.getSubscriptions(Json.obj()), 10 seconds)
-    val result = lsd.size == subscriptionDetailsRepo.backup(lsd).map(f => Await.result(f, 10 seconds)).map(wr => wr.n).sum
-    if(result)
-      Logger.warn("Backup of Subscription data successful")
-    else {
-      Logger.error("Backup of Subscription data failed")
+    subscriptionDetailsRepo.getSubscriptions(Json.obj()).flatMap { lsd =>
+      subscriptionDetailsRepo.backup(lsd).sequence[Future,WriteResult].map { l =>
+        val total = l.map(_.n).sum
+        if(total != lsd.size){
+          "Backup of Subscription data failed"
+        } else {
+          "Backup of Subscription data successful"
+        }
+      }
+    }.onComplete{
+      case Success(s) => Logger.warn(s)
+      case Failure(f) => Logger.error(f.getMessage(), f)
     }
-
-    result
   }
 
 
