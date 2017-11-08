@@ -20,15 +20,16 @@ import javax.inject.{Inject, Singleton}
 
 import cats.data.OptionT
 import cats.instances.future._
+import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{BSONSerializationPack, Cursor}
-import reactivemongo.api.commands.{Command, WriteResult}
-import reactivemongo.bson.{BSONArray, BSONDocument}
+import reactivemongo.api.Cursor
+import reactivemongo.api.commands.WriteResult
+import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
-import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.play.json.collection.{Helpers, JSONCollection}
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
-import uk.gov.hmrc.cbcr.models.{CBCId, SubscriberContact, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.models._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,6 +39,9 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
+
+  private val backupRepo: Future[JSONCollection] =
+    mongo.database.map(_.collection[JSONCollection]("Subscription_Data_Backup"))
 
   def clear(cbcId:CBCId): OptionT[Future,WriteResult] = {
     val criteria = Json.obj("cbcId" -> cbcId.value)
@@ -67,6 +71,9 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
 
+  def backup(s:List[SubscriptionDetails]) : List[Future[WriteResult]] =
+    s.map(sd => backupRepo.flatMap(_.insert[SubscriptionDetails](sd)))
+
   def get(safeId:String) : OptionT[Future,SubscriptionDetails] =
     getGeneric(Json.obj("businessPartnerRecord.safeId" -> safeId))
 
@@ -76,7 +83,7 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   def get(utr:Utr): OptionT[Future,SubscriptionDetails] =
     getGeneric(Json.obj("utr" -> utr.utr))
 
-  def getSubscriptions(criteria: JsObject) = {
+  def getSubscriptions(criteria: JsObject): Future[List[SubscriptionDetails]] = {
     repository.flatMap(_.find(criteria)
       .cursor[SubscriptionDetails]()
       .collect[List](-1, Cursor.FailOnError[List[SubscriptionDetails]]())
