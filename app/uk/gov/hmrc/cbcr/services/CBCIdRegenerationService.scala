@@ -88,14 +88,14 @@ class CBCIdRegenerationService @Inject() (emailService:EmailConnectorImpl, repo:
 
     output.fold(
       e => Logger.error(s"Failed to regenerate all CBCIds: $e"),
-      o => Logger.error(s"Successfully regenerated all CBCIds:\n${o.mkString("\n")}")
+      o => Logger.warn(s"Successfully regenerated all CBCIds:\n${o.mkString("\n")}")
     ).onFailure{
       case NonFatal(e) => Logger.error(s"Failed to regenerate all CBCIds: $e",e)
     }
 
 
   } else {
-    Logger.error("Not doing regeneration")
+    Logger.warn("Not doing regeneration")
   }
 
 }
