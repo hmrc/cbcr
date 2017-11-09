@@ -22,6 +22,7 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
+import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.controllers.{MockAuth, SubscriptionDataController}
 import uk.gov.hmrc.cbcr.models._
@@ -101,7 +102,7 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
 
       eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
-      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed)}
+      eventually{verify(store, times(1)).update(Json.obj("cbcId" -> Json.toJson(cbcid.get)), subscriberContactFixed)}
 
 
     }
@@ -118,7 +119,7 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
 
       eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
-      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed2)}
+      eventually{verify(store, times(1)).update(Json.obj("cbcId" -> Json.toJson(cbcid.get)), subscriberContactFixed2)}
 
     }
   }
@@ -134,7 +135,7 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
       new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.doFirstNameLastNameDataFix" -> true))
 
       eventually{verify(store, times(1)).getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA)}
-      eventually{verify(store, times(1)).update(cbcid.get, subscriberContactFixed3)}
+      eventually{verify(store, times(1)).update(Json.obj("cbcId" -> Json.toJson(cbcid.get)), subscriberContactFixed3)}
 
     }
   }

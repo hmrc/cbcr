@@ -33,10 +33,11 @@ import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends Purgeable {
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
+
 
   def delete(d:DocRefId): Future[WriteResult] = {
     val criteria = Json.obj("id" -> d.id)

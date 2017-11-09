@@ -20,36 +20,74 @@ import javax.inject.{Inject, Singleton}
 
 import cats.data.OptionT
 import cats.instances.future._
+import play.api.Logger
+import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{BSONSerializationPack, Cursor}
-import reactivemongo.api.commands.{Command, WriteResult}
-import reactivemongo.bson.{BSONArray, BSONDocument}
+import reactivemongo.api.Cursor
+import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
+import reactivemongo.api.indexes.{CollectionIndexesManager, Index}
+import reactivemongo.api.indexes.IndexType.{Ascending, Text}
+import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
-import reactivemongo.play.json.collection.JSONCollection
+import reactivemongo.play.json.collection.{Helpers, JSONCollection}
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
-import uk.gov.hmrc.cbcr.models.{CBCId, SubscriberContact, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.models._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 
 @Singleton
 class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext){
 
+
+  val cbcIndexName = "CBCId Index"
+  val utrIndexName = "Utr Index"
+
+  val indexManager: Future[CollectionIndexesManager] = mongo.database.map(_.collection[JSONCollection]("Subscription_Data").indexesManager)
+
+  indexManager.flatMap(m => m.list().flatMap{ l =>
+    for {
+      a <- if (!l.exists(_.name.contains(cbcIndexName))) { createIndex(m, "cbcId",cbcIndexName) } else { Future.successful(true)}
+      b <- if (!l.exists(_.name.contains(utrIndexName))) { createIndex(m, "utr", utrIndexName) } else { Future.successful(true)}
+    } yield a && b
+  }).onComplete{
+    case Success(result) =>
+      Logger.warn(s"Indexes exist or created. Result: $result")
+    case Failure(t) =>
+      Logger.error("Failed to create Indexes",t)
+      throw t
+  }
+
+  private def createIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Boolean] = {
+    manager.create(Index(Seq(fieldName -> Ascending), Some(indexName), unique = true)).map(_.ok)
+  }
+
+
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
 
-  def clear(cbcId:CBCId): OptionT[Future,WriteResult] = {
+  private val backupRepo: Future[JSONCollection] =
+    mongo.database.map(_.collection[JSONCollection]("Subscription_Data_Backup"))
+
+  def clearCBCId(cbcId:CBCId): OptionT[Future,WriteResult] = {
     val criteria = Json.obj("cbcId" -> cbcId.value)
     for {
       repo   <- OptionT.liftF(repository)
-      _      <- OptionT(repo.find(criteria).one[SubscriptionDetails])
       result <- OptionT.liftF(repo.remove(criteria, firstMatchOnly = true))
     } yield result
   }
 
-  def update(cbcId:CBCId,s:SubscriberContact): Future[Boolean] = {
-    val criteria = BSONDocument("cbcId" -> cbcId.value)
+  def clear(utr:Utr): Future[WriteResult] = {
+    val criteria = Json.obj("utr" -> utr.utr)
+    for {
+      repo   <- repository
+      result <- repo.remove(criteria, firstMatchOnly = true)
+    } yield result
+  }
+
+  def update(criteria: JsObject,s: SubscriberContact): Future[Boolean] = {
     val modifier = Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
     for {
       collection <- repository
@@ -57,8 +95,12 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
     } yield update.value.isDefined
   }
 
+
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
+
+  def backup(s:List[SubscriptionDetails]) : List[Future[WriteResult]] =
+    s.map(sd => backupRepo.flatMap(_.insert[SubscriptionDetails](sd)))
 
   def get(safeId:String) : OptionT[Future,SubscriptionDetails] =
     getGeneric(Json.obj("businessPartnerRecord.safeId" -> safeId))
@@ -69,7 +111,7 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
   def get(utr:Utr): OptionT[Future,SubscriptionDetails] =
     getGeneric(Json.obj("utr" -> utr.utr))
 
-  def getSubscriptions(criteria: JsObject) = {
+  def getSubscriptions(criteria: JsObject): Future[List[SubscriptionDetails]] = {
     repository.flatMap(_.find(criteria)
       .cursor[SubscriptionDetails]()
       .collect[List](-1, Cursor.FailOnError[List[SubscriptionDetails]]())

@@ -38,7 +38,7 @@ trait SubscriptionHandler {
 class SubscriptionHandlerImpl @Inject() (configuration: Configuration, localCBCIdGenerator: LocalSubscription, remoteCBCIdGenerator: RemoteSubscription) extends SubscriptionHandler{
 
   val conf      = configuration.underlying.getConfig("CBCId")
-  val useDESApi = conf.get[Boolean]("useDESApi").value
+  val useDESApi = conf.get[Boolean]("useDESApi").valueOr(_ => false)
 
   val handler:SubscriptionHandler = if(useDESApi) remoteCBCIdGenerator else localCBCIdGenerator
 

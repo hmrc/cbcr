@@ -21,6 +21,7 @@ import javax.inject.Inject
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
+import play.api.libs.json.Json
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
@@ -28,7 +29,7 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
                                       configuration:Configuration) {
@@ -95,7 +96,9 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
           SubscriberContact(name = None, splitName(sd.subscriberContact.name)._1,
             splitName(sd.subscriberContact.name)._2, sd.subscriberContact.phoneNumber, sd.subscriberContact.email), sd.cbcId, sd.utr))
         fixedList.foreach(f => {
-          f.cbcId.fold(())(cbcid => repo.update(cbcid, f.subscriberContact))
+          f.cbcId.fold(())(cbcid =>
+            repo.update(Json.obj("cbcId" -> Json.toJson(cbcid)), f.subscriberContact)
+          )
           Logger.warn(s"Fixed ${f.subscriberContact}")
         })
       }
@@ -107,3 +110,4 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
     Logger.warn("Not doing FirstNameLastName Data Fix")
   }
 }
+

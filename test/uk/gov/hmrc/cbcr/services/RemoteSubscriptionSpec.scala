@@ -83,7 +83,7 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
         when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson(srr))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual OK
-        jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XGCBC0000000001")
+        jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
       }
       "returns a 400 when BAD_REQUEST is returned by DES" in {
         when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(BAD_REQUEST, responseJson = Some(Json.obj("bad" -> "request"))))

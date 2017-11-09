@@ -16,12 +16,27 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import play.api.Configuration
 import play.api.libs.json.Json
+import configs.syntax._
 
 object DataMigrationCriteria {
+
+  def PRIVATE_BETA_CRITERIA(configuration: Configuration) = {
+
+    val result = for {
+      safeId1 <- configuration.underlying.get[String]("CBCId.safeId1")
+      safeId2 <- configuration.underlying.get[String]("CBCId.safeId2")
+      key      = "businessPartnerRecord.safeId"
+    } yield Json.obj ("$or" -> Json.arr (Json.obj (key -> safeId1), Json.obj (key -> safeId2)))
+
+    result.valueOrElse(Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*")))
+  }
 
   val LOCAL_CBCID_CRITERIA = Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC0.*"))
 
   val NAME_SPLIT_CRITERIA = Json.obj("subscriberContact.name" -> Json.obj("$exists" -> true),
     "subscriberContact.firstName" -> Json.obj("$exists" -> false))
+
+  val ALL_SUBSCRIPTIONS = Json.obj()
 }

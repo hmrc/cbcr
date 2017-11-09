@@ -27,7 +27,7 @@ import uk.gov.hmrc.cbcr.models.MessageRefId
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends Purgeable{
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("MessageRefId"))
