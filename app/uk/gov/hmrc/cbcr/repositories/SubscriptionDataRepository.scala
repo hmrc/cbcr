@@ -20,11 +20,14 @@ import javax.inject.{Inject, Singleton}
 
 import cats.data.OptionT
 import cats.instances.future._
+import play.api.Logger
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
+import reactivemongo.api.indexes.{CollectionIndexesManager, Index}
+import reactivemongo.api.indexes.IndexType.{Ascending, Text}
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.{Helpers, JSONCollection}
@@ -32,10 +35,35 @@ import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 
 @Singleton
 class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext){
+
+
+  val cbcIndexName = "CBCId Index"
+  val utrIndexName = "Utr Index"
+
+  val indexManager: Future[CollectionIndexesManager] = mongo.database.map(_.collection[JSONCollection]("Subscription_Data").indexesManager)
+
+  indexManager.flatMap(m => m.list().flatMap{ l =>
+    for {
+      a <- if (!l.exists(_.name.contains(cbcIndexName))) { createIndex(m, "cbcId",cbcIndexName) } else { Future.successful(true)}
+      b <- if (!l.exists(_.name.contains(utrIndexName))) { createIndex(m, "utr", utrIndexName) } else { Future.successful(true)}
+    } yield a && b
+  }).onComplete{
+    case Success(result) =>
+      Logger.warn(s"Indexes exist or created. Result: $result")
+    case Failure(t) =>
+      Logger.error("Failed to create Indexes",t)
+      throw t
+  }
+
+  private def createIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Boolean] = {
+    manager.create(Index(Seq(fieldName -> Ascending), Some(indexName), unique = true)).map(_.ok)
+  }
+
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
