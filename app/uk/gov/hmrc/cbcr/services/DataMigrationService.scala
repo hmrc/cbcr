@@ -72,6 +72,6 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
     output.map(msgs => Logger.info(msgs.mkString("\n")))
 
   }
-  
+
 }
 
