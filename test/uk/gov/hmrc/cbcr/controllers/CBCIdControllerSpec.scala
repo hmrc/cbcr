@@ -30,7 +30,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, SubscriptionHandlerImpl}
+import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, RunMode, SubscriptionHandlerImpl}
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -42,6 +42,8 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
 
   val localGen = mock[LocalSubscription]
   val remoteGen = mock[RemoteSubscription]
+  var runMode = mock[RunMode]
+  when(runMode.env) thenReturn "Dev"
 
   implicit val as = app.injector.instanceOf[ActorSystem]
   val config = app.injector.instanceOf[Configuration]
@@ -66,7 +68,8 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
 
   "The CBCIdController" should {
     "query the localCBCId generator when useDESApi is set to false" in {
-      val handler = new SubscriptionHandlerImpl(config ++ Configuration("CBCId.useDESApi" -> false),localGen,remoteGen)
+
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> false),localGen,remoteGen,runMode)
       val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(localGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
@@ -75,7 +78,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
       jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
     }
     "query the remoteCBCId generator when useDESApi is set to true" in {
-      val handler = new SubscriptionHandlerImpl(config ++ Configuration("CBCId.useDESApi" -> true),localGen,remoteGen)
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> true),localGen,remoteGen,runMode)
       val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(remoteGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))

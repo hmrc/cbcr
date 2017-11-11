@@ -65,10 +65,12 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
       val store = mock[SubscriptionDataRepository]
       val desConnector = mock[DESConnector]
+      val runMode = mock[RunMode]
       when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
       when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
+      when(runMode.env) thenReturn "Dev"
 
-      new DataMigrationService(store, desConnector, config ++ Configuration("CBCId.performMigration" -> true))
+      new DataMigrationService(store, desConnector, config ++ Configuration("Dev.CBCId.performMigration" -> true), runMode)
 
 
       eventually {
@@ -84,8 +86,10 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
 
       val desConnector = mock[DESConnector]
       val store = mock[SubscriptionDataRepository]
+      val runMode = mock[RunMode]
       when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List(exampleSubscriptionData, exampleSubscriptionData, exampleSubscriptionData))
-      new DataMigrationService(store, desConnector, config)
+      when(runMode.env) thenReturn "Dev"
+      new DataMigrationService(store, desConnector, config, runMode)
 
       eventually{verify(desConnector, times(0)).createMigration(any())}
     }
