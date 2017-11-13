@@ -35,10 +35,9 @@ trait SubscriptionHandler {
 }
 
 @Singleton
-class SubscriptionHandlerImpl @Inject() (configuration: Configuration, localCBCIdGenerator: LocalSubscription, remoteCBCIdGenerator: RemoteSubscription) extends SubscriptionHandler{
+class SubscriptionHandlerImpl @Inject() (configuration: Configuration, localCBCIdGenerator: LocalSubscription, remoteCBCIdGenerator: RemoteSubscription, runMode: RunMode) extends SubscriptionHandler{
 
-  val conf      = configuration.underlying.getConfig("CBCId")
-  val useDESApi = conf.get[Boolean]("useDESApi").valueOr(_ => false)
+  val useDESApi: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.useDESApi").valueOr(_ => false)
 
   val handler:SubscriptionHandler = if(useDESApi) remoteCBCIdGenerator else localCBCIdGenerator
 

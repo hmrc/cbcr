@@ -32,7 +32,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
-                                      configuration:Configuration) {
+                                      configuration:Configuration,
+                                      runMode: RunMode) {
 
 
   private def migrationRequest(s: SubscriptionDetails): Option[MigrationRequest] = {
@@ -47,9 +48,9 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
         )
       )
     }
-  } 
+  }
 
-  val doMigration: Boolean = configuration.underlying.get[Boolean]("CBCId.performMigration").valueOr(_ => false)
+  val doMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performMigration").valueOr(_ => false)
 
   if (doMigration) {
     val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap{ list =>
