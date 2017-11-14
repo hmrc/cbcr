@@ -52,7 +52,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
 
   val doMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performMigration").valueOr(_ => false)
   Logger.info(s"doMigration set to: $doMigration")
-  
+
   if (doMigration) {
     val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap{ list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
