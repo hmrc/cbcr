@@ -32,7 +32,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
-                                      configuration:Configuration) {
+                                      configuration:Configuration,
+                                      runMode: RunMode) {
 
 
   private def migrationRequest(s: SubscriptionDetails): Option[MigrationRequest] = {
@@ -47,9 +48,10 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
         )
       )
     }
-  } 
+  }
 
-  val doMigration: Boolean = configuration.underlying.get[Boolean]("CBCId.performMigration").valueOr(_ => false)
+  val doMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performMigration").valueOr(_ => false)
+  Logger.info(s"doMigration set to: $doMigration")
 
   if (doMigration) {
     val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap{ list =>
@@ -73,41 +75,5 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
 
   }
 
-  val doFirstNameLastNameDataFix: Boolean = configuration.underlying.get[Boolean]("CBCId.doFirstNameLastNameDataFix").valueOr(_ => false)
-
-  def splitName(name: Option[String]): (Option[String], Option[String]) = {
-    name.fold[(Option[String], Option[String])]((None, None))(n => {
-      val lst = n.split(" ").map(_.trim).toList
-      val lastName = lst.last
-      val firstName = lst.filter(f => f != lastName).mkString(" ")
-      if(firstName.isEmpty)
-        (Some(lastName), Some(lastName))
-      else
-        (Some(firstName), Some(lastName))
-    })
-  }
-
-  if(doFirstNameLastNameDataFix) {
-    Logger.warn("About to do FirstNameLastName Data Fix")
-    repo.getSubscriptions(DataMigrationCriteria.NAME_SPLIT_CRITERIA).onComplete{
-      case Success(list) => {
-        Logger.warn(s"Found ${list.size} Subscriptions to be fixed")
-        val fixedList = list.map(sd => SubscriptionDetails(sd.businessPartnerRecord,
-          SubscriberContact(name = None, splitName(sd.subscriberContact.name)._1,
-            splitName(sd.subscriberContact.name)._2, sd.subscriberContact.phoneNumber, sd.subscriberContact.email), sd.cbcId, sd.utr))
-        fixedList.foreach(f => {
-          f.cbcId.fold(())(cbcid =>
-            repo.update(Json.obj("cbcId" -> Json.toJson(cbcid)), f.subscriberContact)
-          )
-          Logger.warn(s"Fixed ${f.subscriberContact}")
-        })
-      }
-      case Failure(t) => {
-        Logger.error("Failed to call getSubscriptions: " + t.getMessage(), t)
-      }
-    }
-  } else {
-    Logger.warn("Not doing FirstNameLastName Data Fix")
-  }
 }
 
