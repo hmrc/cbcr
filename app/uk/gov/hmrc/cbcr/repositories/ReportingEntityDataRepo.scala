@@ -84,7 +84,7 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
       p.cbcReportsDRI.headOption.map { _ => "cbcReportsDRI" -> JsArray(p.cbcReportsDRI.map(d => JsString(d.docRefId.id))) },
       p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> JsString(p.reportingEntityDRI.docRefId.id)),
       Some("reportingRole" -> JsString(p.reportingRole.toString)),
-      Some("utr" -> JsString(p.utr.utr)),
+      Some("tin" -> JsString(p.tin.value)),
       Some("ultimateParentEntity" -> JsString(p.ultimateParentEntity.ultimateParentEntity))
     ).flatten
 
