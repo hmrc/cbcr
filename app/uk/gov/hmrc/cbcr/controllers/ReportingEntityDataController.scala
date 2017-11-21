@@ -60,7 +60,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
     )
   }, parse.json)
 
-  def query(d: DocRefId) = auth.authCBCR { implicit request =>
+  def query(d: DocRefId) = auth.authCBCR{ implicit request =>
     repo.query(d).map {
       case None => NotFound
       case Some(data) => Ok(Json.toJson(data))
