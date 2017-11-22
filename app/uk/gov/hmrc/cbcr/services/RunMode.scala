@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.repositories
+package uk.gov.hmrc.cbcr.services
 
-import reactivemongo.play.json.collection.JSONCollection
+import javax.inject.{Inject, Singleton}
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.{Configuration, Logger}
+import configs.syntax._
 
-import scala.concurrent.Future
+@Singleton
+class RunMode @Inject() (configuration:Configuration) {
+  private val APP_RUNNING_LOCALY: String = "Dev"
 
-trait Purgeable {
-
-  val repository: Future[JSONCollection]
-
-  def deleteAll(): Future[Boolean] = {
-    for {
-      repo <- repository
-      result <- repo.drop(false)
-    } yield result
-  }
-
+  val env: String = configuration.underlying.get[String]("run.mode").valueOr(_ => APP_RUNNING_LOCALY)
+  Logger.info(s"Current environment run.mode: $env")
 }

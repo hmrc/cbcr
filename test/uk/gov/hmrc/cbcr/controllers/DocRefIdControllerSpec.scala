@@ -29,6 +29,7 @@ import play.api.test.{FakeRequest, Helpers}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
+import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
@@ -52,8 +53,8 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
 
   val repo = mock[DocRefIdRepository]
 
-
-  val controller = new DocRefIdController(repo,config,cBCRAuth)
+  val runMode = mock[RunMode]
+  val controller = new DocRefIdController(repo,config,cBCRAuth, runMode)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
@@ -123,7 +124,9 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
       }
     }
     "be able to delete a DocRefId" when {
-      val controller = new DocRefIdController(repo,config ++ Configuration("CBCId.enableTestApis" -> true),cBCRAuth)
+      val runMode = mock[RunMode]
+      when(runMode.env) thenReturn "Dev"
+      val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> true),cBCRAuth, runMode)
       "it exists and return a 200" in {
         when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 1, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
