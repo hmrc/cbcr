@@ -9,9 +9,9 @@ object MicroServiceBuild extends Build with MicroService {
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val compile = Seq(
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.0",
-    "org.reactivemongo" %% "reactivemongo-bson" % "0.12.0",
-    "org.reactivemongo" %% "reactivemongo-akkastream" % "0.12.0",
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.12.7-play25",
+    "org.reactivemongo" %% "reactivemongo-bson" % "0.12.7-play25",
+    "org.reactivemongo" %% "reactivemongo-akkastream" % "0.12.7",
     "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "1.4.3",
     ws,
     "uk.gov.hmrc" %% "auth-client" % "2.2.0",
