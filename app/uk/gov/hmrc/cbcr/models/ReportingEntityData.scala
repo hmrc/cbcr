@@ -17,21 +17,23 @@
 package uk.gov.hmrc.cbcr.models
 
 import cats.data.NonEmptyList
-import play.api.libs.json._
+import play.api.libs.json._ // JSON library
+import play.api.libs.json.Reads._ // Custom validation helpers
+import play.api.libs.functional.syntax._ // Combinator syntax
 
 case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
-                               additionalInfoDRI:Option[DocRefId],
-                               reportingEntityDRI:DocRefId,
-                               utr:Utr,
-                               ultimateParentEntity: UltimateParentEntity,
-                               reportingRole: ReportingRole)
+                                  additionalInfoDRI:Option[DocRefId],
+                                  reportingEntityDRI:DocRefId,
+                                  tin:TIN,
+                                  ultimateParentEntity: UltimateParentEntity,
+                                  reportingRole: ReportingRole)
 
 object ReportingEntityDataOld{ implicit val format = Json.format[ReportingEntityDataOld] }
 
 case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
                                additionalInfoDRI:Option[DocRefId],
                                reportingEntityDRI:DocRefId,
-                               utr:Utr,
+                               tin:TIN,
                                ultimateParentEntity: UltimateParentEntity,
                                reportingRole: ReportingRole)
 
@@ -41,7 +43,7 @@ object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
 case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
                                       additionalInfoDRI:Option[DocRefIdPair],
                                       reportingEntityDRI:DocRefIdPair,
-                                      utr:Utr,
+                                      tin:TIN,
                                       ultimateParentEntity: UltimateParentEntity,
                                       reportingRole: ReportingRole)
 
@@ -60,6 +62,15 @@ object PartialReportingEntityData {
 
 object ReportingEntityData{
   import PartialReportingEntityData.formatNEL
-  implicit val format = Json.format[ReportingEntityData]
+  implicit val reads:Reads[ReportingEntityData]= (
+    (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
+    (JsPath \ "additionalInfoDRI").readNullable[DocRefId] and
+    (JsPath \ "reportingEntityDRI").read[DocRefId] and
+    (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
+    (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
+    (JsPath \ "reportingRole").read[ReportingRole]
+  )(ReportingEntityData.apply(_,_,_,_,_,_))
+
+  implicit val writes = Json.writes[ReportingEntityData]
 
 }

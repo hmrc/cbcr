@@ -38,9 +38,9 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val docRefId=DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
 
-  val red = ReportingEntityData(NonEmptyList(docRefId,Nil),Some(docRefId),docRefId,Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
+  val red = ReportingEntityData(NonEmptyList(docRefId,Nil),Some(docRefId),docRefId,TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701)
 
-  val pred = PartialReportingEntityData(List(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),Utr("90000000001"),UltimateParentEntity("Foo Corp"),CBC701)
+  val pred = PartialReportingEntityData(List(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701)
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
