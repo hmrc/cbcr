@@ -103,7 +103,7 @@ class UtrCleanupServiceSpec extends UnitSpec with MockitoSugar with MockAuth wit
       when(runMode.env) thenReturn "Dev"
       when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future[AuditResult](AuditResult.Success)
 
-      new UtrCleanupService(store, config ++ Configuration("Dev.UTR.audit" -> true, "Dev.UTR.delete" -> true, "Dev.UTR.utrs" -> "8000000010, 3000000018"), runMode) {
+      new UtrCleanupService(store, config ++ Configuration("Dev.UTR.audit" -> true, "Dev.UTR.delete" -> true, "Dev.UTR.utrs" -> "8000000010_3000000018"), runMode) {
         override lazy val audit: AuditConnector = mockAudit
       }
 
