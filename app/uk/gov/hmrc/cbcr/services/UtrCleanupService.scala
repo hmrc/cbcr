@@ -73,7 +73,7 @@ class UtrCleanupService @Inject() (repo:SubscriptionDataRepository,
 
   if (doUtrAudit) {
     val utrs: String = configuration.underlying.get[String](s"${runMode.env}.UTR.utrs").valueOr(_ => "")
-    for (utr <- utrs.split(",").map(_.trim).toList) {
+    for (utr <- utrs.split("_").map(_.trim).toList) {
       Logger.info(s"utr: $utr")
 
       if (Utr(utr).isValid){
