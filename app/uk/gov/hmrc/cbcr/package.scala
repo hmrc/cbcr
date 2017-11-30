@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector => Auditing}
 
-object AuditConnector extends Auditing with AppName {
+object BackendAuditConnector extends Auditing with AppName {
   override lazy val auditingConfig = LoadAuditingConfig(s"auditing")
 }
 

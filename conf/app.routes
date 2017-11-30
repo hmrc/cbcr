@@ -7,6 +7,7 @@ POST      /subscription-data                        uk.gov.hmrc.cbcr.controllers
 PUT       /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.updateSubscriberContactDetails(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 GET       /subscription-data/cbc-id/:cbcid          uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataCBCId(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 GET       /subscription-data/utr/:utr               uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.retrieveSubscriptionDataUtr(utr:uk.gov.hmrc.cbcr.models.Utr)
+DELETE    /subscription-data/:cbcid                 uk.gov.hmrc.cbcr.controllers.SubscriptionDataController.clearSubscriptionData(cbcid:uk.gov.hmrc.cbcr.models.CBCId)
 
 GET       /business-partner-record/:utr             uk.gov.hmrc.cbcr.controllers.BusinessPartnerRecordController.getBusinessPartnerRecord(utr:String)
 
