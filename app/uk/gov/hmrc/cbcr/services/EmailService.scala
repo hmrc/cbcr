@@ -18,22 +18,53 @@ package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.Logger
+import play.api.libs.json.Json
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
 import play.api.mvc.Results._
+import uk.gov.hmrc.cbcr.audit.AuditConnectorI
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import uk.gov.hmrc.play.audit.AuditExtensions._
+import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 @Singleton
-class EmailService @Inject()(emailConnector:EmailConnectorImpl) {
+class EmailService @Inject()(emailConnector:EmailConnectorImpl, auditConnector:AuditConnectorI) {
+
+  private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY = "**CBCR_EMAIL_FAILURE**"
 
   def sendEmail(email:Email)(implicit hc:HeaderCarrier):Future[Result] = {
     emailConnector.sendEmail(email).map(res => res.status match {
-      case 202 => Accepted
-    }).recover{
-      case _ => BadRequest
+      case 202 =>
+        Logger.info("CBCR Successfully sent email")
+        audit(email, CBCREmailSuccess)
+        Accepted
+    }).recover {
+      case _ =>
+        Logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
+        audit(email, CBCREmailFailure)
+        BadRequest
     }
   }
+
+  def audit(email:Email, auditType:AuditType)(implicit hc:HeaderCarrier) = {
+    auditConnector.sendExtendedEvent(ExtendedDataEvent(auditSource = "Country-By-Country", auditType.toString,
+      tags = hc.toAuditTags(auditType.toString, "N/A") ++ Map("path" -> emailConnector.serviceUrl),
+      detail = Json.toJson(email)
+    )).map {
+      case AuditResult.Success => Logger.info(s"Successfully audited ${auditType.toString}")
+      case AuditResult.Failure(msg, _) => Logger.warn(s"Unable to audit ${auditType.toString} $msg")
+      case AuditResult.Disabled => Logger.warn(s"Auditing is disabled for ${auditType.toString}")
+    }
+  }
+
 }
+
+sealed trait AuditType
+  case object CBCREmailFailure extends AuditType
+  case object CBCREmailSuccess extends AuditType
