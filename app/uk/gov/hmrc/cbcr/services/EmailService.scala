@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
 
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
@@ -34,9 +34,12 @@ import uk.gov.hmrc.play.audit.AuditExtensions._
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 @Singleton
-class EmailService @Inject()(emailConnector:EmailConnectorImpl, auditConnector:AuditConnectorI) {
+class EmailService @Inject()(emailConnector:EmailConnectorImpl, auditConnector:AuditConnectorI,
+                             configuration:Configuration,
+                             runMode: RunMode) {
 
-  private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY = "**CBCR_EMAIL_FAILURE**"
+  private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
+    configuration.getString(s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
 
   def sendEmail(email:Email)(implicit hc:HeaderCarrier):Future[Result] = {
     emailConnector.sendEmail(email).map(res => res.status match {
