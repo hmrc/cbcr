@@ -9,8 +9,6 @@
 
     <logger name="org.asynchttpclient" level="ERROR" />
 
-    <logger name="reactivemongo.core" level="ERROR" />
-
     <logger name="uk.gov" level="DEBUG"/>
 
     <logger name="play" level="DEBUG"/>
