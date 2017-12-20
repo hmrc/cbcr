@@ -66,6 +66,7 @@ import uk.gov.hmrc.http.logging.Authorization
 
     def lookup(utr: String): Future[HttpResponse] = {
       implicit val hc: HeaderCarrier = createHeaderCarrier
+      Logger.info(s"Lookup Request sent to DES: POST $serviceUrl/$orgLookupURI/utr/$utr")
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover{
         case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
       }
