@@ -112,6 +112,11 @@ All endpoints are auth protected and for private use within the CBCR Domain.
 }
 ```
 
+## Running
+
+```sbtshell
+sbt 'run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes'
+```
 
 =======
 
