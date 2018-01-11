@@ -37,6 +37,15 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("ReportingEntityData"))
 
+  def delete(d:DocRefId) = {
+    val criteria = Json.obj("$or" -> Json.arr(
+      Json.obj("cbcReportsDRI"      -> d.id),
+      Json.obj("additionalInfoDRI"  -> d.id),
+      Json.obj("reportingEntityDRI" -> d.id)
+    ))
+    repository.flatMap(_.remove(criteria))
+  }
+
   def save(f:ReportingEntityData) : Future[WriteResult] =
     repository.flatMap(_.insert(f))
 

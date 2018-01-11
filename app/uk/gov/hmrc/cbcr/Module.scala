@@ -77,6 +77,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     bind(classOf[DataMigrationService]).asEagerSingleton()
     bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
+    bind(classOf[DocRefIdClearService]).asEagerSingleton()
 
   }
 }
