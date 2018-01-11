@@ -29,6 +29,7 @@ import org.scalatest.BeforeAndAfterEach
 import reactivemongo.api.commands.DefaultWriteResult
 import org.mockito.Mockito._
 import uk.gov.hmrc.AuditConnector
+import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,7 +42,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
   val runMode                 = mock[RunMode]
   val docRefIdRepo            = mock[DocRefIdRepository]
   val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
-  val mockAudit               = mock[AuditConnector]
+  val mockAudit               = mock[AuditConnectorI]
 
   val testConfig              = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
   val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)
@@ -51,9 +52,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
   when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(writeResult)
 
-  new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode){
-    override lazy val audit = mockAudit
-  }
+  new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode, mockAudit)
 
   "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
     "call delete to the DocRefIdRepo" in {
@@ -75,9 +74,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
       when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
       when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
 
-      new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode){
-        override lazy val audit = mockAudit
-      }
+      new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode, mockAudit)
       eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
       eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(),any()) }
     }

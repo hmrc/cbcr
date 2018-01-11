@@ -24,10 +24,10 @@ import cats.syntax.all._
 import configs.syntax._
 import play.api.libs.json.Json
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.AuditConnector
+import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.DocRefId
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
-import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import uk.gov.hmrc.play.audit.http.connector.AuditResult
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,9 +37,8 @@ import scala.util.{Failure, Success}
 class DocRefIdClearService @Inject()(docRefIdRepo:DocRefIdRepository,
                                      reportingEntityDataRepo: ReportingEntityDataRepo,
                                      configuration:Configuration,
-                                     runMode: RunMode)(implicit ec:ExecutionContext){
-
-  lazy val audit:AuditConnector = AuditConnector
+                                     runMode: RunMode,
+                                     audit: AuditConnectorI)(implicit ec:ExecutionContext){
 
   private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
 
