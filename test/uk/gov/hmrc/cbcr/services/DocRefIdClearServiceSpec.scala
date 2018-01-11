@@ -28,6 +28,8 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import reactivemongo.api.commands.DefaultWriteResult
 import org.mockito.Mockito._
+import uk.gov.hmrc.AuditConnector
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,9 +37,12 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
 
   val config                  = app.injector.instanceOf[Configuration]
   implicit val ec             = app.injector.instanceOf[ExecutionContext]
+
   val runMode                 = mock[RunMode]
   val docRefIdRepo            = mock[DocRefIdRepository]
   val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
+  val mockAudit               = mock[AuditConnector]
+
   val testConfig              = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
   val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)
   val notFoundWriteResult     = DefaultWriteResult(true,0,Seq.empty,None,None,None)
@@ -46,22 +51,35 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
   when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(writeResult)
 
+  new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode){
+    override lazy val audit = mockAudit
+  }
+
   "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
-    new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode)
     "call delete to the DocRefIdRepo" in {
       verify(docRefIdRepo,times(4)).delete(any())
     }
     "call delete to the ReportingEntityDataRepo" in {
       verify(reportingEntityDataRepo,times(4)).delete(any())
     }
+    "make an audit call" in {
+      when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
+      eventually{ verify(mockAudit, times(4)).sendExtendedEvent(any())(any(),any()) }
+    }
   }
 
   "Calls to delete a ReportingEntityData entry that does not exist" should {
     "complete without error" in {
       reset(reportingEntityDataRepo)
+      reset(mockAudit)
       when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
-      new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode)
-      verify(reportingEntityDataRepo,times(4)).delete(any())
+      when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
+
+      new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode){
+        override lazy val audit = mockAudit
+      }
+      eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
+      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(),any()) }
     }
   }
 }
