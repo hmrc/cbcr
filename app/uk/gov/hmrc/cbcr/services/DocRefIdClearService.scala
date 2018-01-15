@@ -42,7 +42,7 @@ class DocRefIdClearService @Inject()(docRefIdRepo:DocRefIdRepository,
 
   private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
 
-  val docRefIds: List[DocRefId] = configuration.underlying.get[String](s"${runMode.env}.DocRefId.clear").valueOr(_ => "").split("_").toList.map(DocRefId.apply)
+  val docRefIds: List[DocRefId] = configuration.underlying.get[String](s"${runMode.env}.DocRefId.clear").valueOr(_ => "").split("__").toList.map(DocRefId.apply)
 
   if (docRefIds.nonEmpty) {
     Logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")

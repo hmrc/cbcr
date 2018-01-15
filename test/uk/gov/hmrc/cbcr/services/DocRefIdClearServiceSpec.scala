@@ -44,7 +44,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
   val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
   val mockAudit               = mock[AuditConnectorI]
 
-  val testConfig              = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
+  val testConfig              = Configuration("Dev.DocRefId.clear" -> "doc_RefId1__docRefId2__docRefId3__docRefId4")
   val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)
   val notFoundWriteResult     = DefaultWriteResult(true,0,Seq.empty,None,None,None)
 
@@ -54,7 +54,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
 
   new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode, mockAudit)
 
-  "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
+  "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '__' separated docrefid, it" should {
     "call delete to the DocRefIdRepo" in {
       verify(docRefIdRepo,times(4)).delete(any())
     }
