@@ -117,7 +117,7 @@ Note: All endpoints use the [standard Http response codes](https://httpstatuses.
 
 ## Running
 
-Use default JVM settings
+Use default JVM settings.
 
 ```sbtshell
 sbt 'run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes'
