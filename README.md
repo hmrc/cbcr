@@ -33,6 +33,9 @@ All endpoints are auth protected and for private use within the CBCR Domain.
 |/email                            |POST         |Create a new CBCR email                                   ||                                     
 
 
+Note: All endpoints use the [standard Http response codes](https://httpstatuses.com)
+
+
 ## Json
 
 ### FileUploadResponse
@@ -113,6 +116,8 @@ All endpoints are auth protected and for private use within the CBCR Domain.
 ```
 
 ## Running
+
+Use default JVM settings
 
 ```sbtshell
 sbt 'run -Dapplication.router=testOnlyDoNotUseInAppConf.Routes'
