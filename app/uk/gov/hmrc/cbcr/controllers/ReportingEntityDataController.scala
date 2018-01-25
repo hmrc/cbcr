@@ -60,6 +60,19 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
     )
   }, parse.json)
 
+  def updateAdditional() = auth.authCBCRWithJson({ implicit request =>
+    request.body.validate[PartialReportingEntityData].fold(
+      error => {
+        Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
+        Future.successful(BadRequest)
+      },
+      (data: PartialReportingEntityData) => repo.updateAdditional(data).map {
+        case true => Ok
+        case false => NotModified
+      }
+    )
+  }, parse.json)
+
   def query(d: DocRefId) = auth.authCBCR{ implicit request =>
     repo.query(d).map {
       case None => NotFound

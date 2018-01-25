@@ -34,6 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
 
+
+
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("ReportingEntityData"))
 
@@ -59,6 +61,8 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
     } yield update.ok
 
   }
+
+  def updateAdditional(p: PartialReportingEntityData): Future[Boolean] = Future.successful(true)
 
   def update(p:PartialReportingEntityData) : Future[Boolean] = {
 
