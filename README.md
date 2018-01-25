@@ -24,7 +24,7 @@ All endpoints are auth protected and for private use within the CBCR Domain.
 |/message-ref-id/:id               |PUT          |Update an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|200,401,500|
 |/message-ref-id/:id               |GET          |Return an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|200,401,404
 |/doc-ref-id/:id                   |PUT         |Update a DocRefId Entity                                  |[DocRefID](#user-content-docrefid)|200,401,409,500|
-|/doc-ref-id/:id                   |DELETE      |Delete a DocRefId Entity if enabled in onfig              |[DocRefID](#user-content-docrefid)|200,400,500,501|
+|/doc-ref-id/:id                   |DELETE      |Delete a DocRefId Entity - if enabled in config              |[DocRefID](#user-content-docrefid)|200,400,500,501|
 |/doc-ref-id/:id                   |GET          |Return an existing DocRefId Entity                        |[DocRefID](#user-content-docrefid)|200,401,404,409|
 |/corr-doc-ref-id/:cid/:id         |PUT          |Update an existing CorrDocRefId Entity                    ||200,400,401,404,500|
 |/reporting-entity/:id             |GET          |Return an existing ReportingEntity                        |[ReportingEntityData](#user-content-reportingentitydata)|200,401,404,500|
