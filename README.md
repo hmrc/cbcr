@@ -40,7 +40,7 @@ We use a subset of the standard Http Response Codes:
 |400     |[Bad Request](https://httpstatuses.com/400)|
 |404     |[Not Found](https://httpstatuses.com/404)|
 |409     |[Conflict](https://httpstatuses.com/409)|
-|500     |[Bad Request](https://httpstatuses.com/500)|
+|500     |[Internal Server Error](https://httpstatuses.com/500)|
 
 ## Json
 
