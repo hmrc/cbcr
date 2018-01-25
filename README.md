@@ -37,6 +37,7 @@ We use a subset of the standard Http Response Codes:
 |Code    |Description |
 |:-------|:-----------|
 |200     |[Ok](https://httpstatuses.com/200)|
+|202     |[Accepted](https://httpstatuses.com/202)|
 |204     |[No Content](https://httpstatuses.com/204)|
 |400     |[Bad Request](https://httpstatuses.com/400)|
 |401     |[Unauthorized](https://httpstatuses.com/401)|
