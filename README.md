@@ -8,33 +8,39 @@ The CBCR Service responsible for interacting with the Country-By-Country-Reporti
 All endpoints are auth protected and for private use within the CBCR Domain.
 
 ## API
-| URI                              | Http Method |Description                                               |Json          |
-|:---------------------------------|:------------|:---------------------------------------------------------|:-------------|
-|/file-upload-response             |POST         |Create a new FileUpload Response                          |[UploadFileResponse](#user-content-fileuploadresponse)|
-|/file-upload-response/:envelopeId |GET          |Returns an existing FileUpload response by its EnvelopeId |[UploadFileResponse](#user-content-fileuploadresponse)|
-|/subscription-data                |POST         |Create a nw SubscriptionData Entity                       |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/subscription-data/:cbcid         |PUT          |Update an existing SubscriptionData Entiy by CBCid        |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/subscription-data/cbc-id/:cbcid  |GET          |Returns an existing SubscriptionData by CBCid             |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/subscription-data/utr/:utr       |GET          |Returns an existing SubscriptionData by Utr               |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/subscription-data/:cbcid         |DELETE       |Delete an existing SubscriptionData by CBCid              |              |
-|/business-partner-record/:utr     |GET          |Returns an existing BusinessPartnerRecord by Utr          |[BusinessPartnerRecord](#user-content-businesspartnerrecord)|
-|/subscription                     |POST         |Create a new Subscription                                 |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/subscription/:safeId             |GET          |Return an existing Subscription                           |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/subscription/:safeId             |PUT          |Update an existing Subscritpion                           |[SubscriptionDetails](#user-content-subscriptiondetails)|
-|/message-ref-id/:id               |PUT          |Update an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|
-|/message-ref-id/:id               |GET          |Return an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|
-|/doc-ref-id/:id                   |POST         |Create a DocRefId Entity                                  |[DocRefID](#user-content-docrefid)|
-|/doc-ref-id/:id                   |GET          |Return an existing DocRefId Entity                        |[DocRefID](#user-content-docrefid)|
-|/doc-ref-id/:id                   |PUT          |Update an existing DocRefId Entity                        |[DocRefID](#user-content-docrefid)|
-|/corr-doc-ref-id/:cid/:id         |PUT          |Update an existing CorrDocRefId Entity                    ||
-|/reporting-entity/:id             |GET          |Return an existing ReportingEntity                        |[ReportingEntityData](#user-content-reportingentitydata)|
-|/reporting-entity                 |POST         |Create a ReportingEntity                                  |[ReportingEntityData](#user-content-reportingentitydata)|
-|/reporting-entity                 |PUT          |Update an existing ReportingEntity                        |[ReportingEntityData](#user-content-reportingentitydata)|
-|/email                            |POST         |Create a new CBCR email                                   ||                                     
+| URI                              | Http Method |Description                                               |Json          |Stauses   |
+|:---------------------------------|:------------|:---------------------------------------------------------|:-------------|----------|
+|/file-upload-response             |POST         |Create a new FileUpload Response                          |[UploadFileResponse](#user-content-fileuploadresponse)|200,400,500|
+|/file-upload-response/:envelopeId |GET          |Returns an existing FileUpload response by its EnvelopeId |[UploadFileResponse](#user-content-fileuploadresponse)|200,404|
+|/subscription-data                |POST         |Create a nw SubscriptionData Entity                       |[SubscriptionDetails](#user-content-subscriptiondetails)|200,204|
+|/subscription-data/:cbcid         |PUT          |Update an existing SubscriptionData Entiy by CBCid        |[SubscriptionDetails](#user-content-subscriptiondetails)|200,400,500|
+|/subscription-data/cbc-id/:cbcid  |GET          |Returns an existing SubscriptionData by CBCid             |[SubscriptionDetails](#user-content-subscriptiondetails)|200,404|
+|/subscription-data/utr/:utr       |GET          |Returns an existing SubscriptionData by Utr               |[SubscriptionDetails](#user-content-subscriptiondetails)|200,404|
+|/subscription-data/:cbcid         |DELETE       |Delete an existing SubscriptionData by CBCid              |              |200,404,500,501|
+|/business-partner-record/:utr     |GET          |Returns an existing BusinessPartnerRecord by Utr          |[BusinessPartnerRecord](#user-content-businesspartnerrecord)|200,404,500|
+|/subscription                     |POST         |Create a new Subscription                                 |[SubscriptionDetails](#user-content-subscriptiondetails)|200,400,500|
+|/subscription/:safeId             |GET          |Return an existing Subscription                           |[SubscriptionDetails](#user-content-subscriptiondetails)|200,404,500|
+|/subscription/:safeId             |PUT          |Update an existing Subscritpion                           |[SubscriptionDetails](#user-content-subscriptiondetails)|200,400,500|
+|/message-ref-id/:id               |PUT          |Update an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|200,500|
+|/message-ref-id/:id               |GET          |Return an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|200,404
+|/doc-ref-id/:id                   |PUT         |Update a DocRefId Entity                                  |[DocRefID](#user-content-docrefid)|200,409,500|
+|/doc-ref-id/:id                   |GET          |Return an existing DocRefId Entity                        |[DocRefID](#user-content-docrefid)|200,404,409|
+|/corr-doc-ref-id/:cid/:id         |PUT          |Update an existing CorrDocRefId Entity                    ||200,400,404,500|
+|/reporting-entity/:id             |GET          |Return an existing ReportingEntity                        |[ReportingEntityData](#user-content-reportingentitydata)|200,404,500|
+|/reporting-entity                 |POST         |Create a ReportingEntity                                  |[ReportingEntityData](#user-content-reportingentitydata)|200,400,500|
+|/reporting-entity                 |PUT          |Update an existing ReportingEntity                        |[ReportingEntityData](#user-content-reportingentitydata)|200,400|
+|/email                            |POST         |Create a new CBCR email                                   | |202,400|                                     
+## Http Response Codes
+We use a subset of the standard Http Response Codes:
 
-
-Note: All endpoints use the [standard Http response codes](https://httpstatuses.com)
-
+|Code    |Description |
+|:-------|:-----------|
+|200     |[Success](https://httpstatuses.com/200)|
+|204     |[No Content](https://httpstatuses.com/204)|
+|400     |[Bad Request](https://httpstatuses.com/400)|
+|404     |[Not Found](https://httpstatuses.com/404)|
+|409     |[Conflict](https://httpstatuses.com/409)|
+|500     |[Bad Request](https://httpstatuses.com/500)|
 
 ## Json
 
