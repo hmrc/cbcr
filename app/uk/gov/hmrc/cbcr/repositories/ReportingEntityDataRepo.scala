@@ -23,6 +23,7 @@ import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.indexes.CollectionIndexesManager
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
@@ -32,12 +33,12 @@ import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends IndexBuilder {
 
+  override protected val collectionName: String = "ReportingEntityData"
+  override protected val cbcIndexes: List[CbcIndex] = List( CbcIndex("Reporting Entity DocRefId", "reportingEntityDRI"))
 
-
-  val repository: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection]("ReportingEntityData"))
+  val repository: Future[JSONCollection] = mongo.database.map(_.collection[JSONCollection](collectionName))
 
   def delete(d:DocRefId) = {
     val criteria = Json.obj("$or" -> Json.arr(
