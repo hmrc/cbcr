@@ -18,6 +18,7 @@ package uk.gov.hmrc.cbcr.repositories
 
 import play.api.Logger
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.commands.DefaultWriteResult
 import reactivemongo.api.indexes.{CollectionIndexesManager, Index}
 import reactivemongo.play.json.collection.JSONCollection
 
@@ -36,27 +37,29 @@ abstract class IndexBuilder(implicit ec:ExecutionContext) {
 
   private val indexManager: Future[CollectionIndexesManager] = mongo.database.map(_.collection[JSONCollection](collectionName).indexesManager)
 
-  indexManager.flatMap(manager => manager.list().flatMap { mongoIndexes =>
-    cbcIndexes.map { cbcIndex =>
+  indexManager.foreach(manager => manager.list().foreach { mongoIndexes =>
+    Future.sequence(cbcIndexes.map { cbcIndex =>
       if (!mongoIndexes.exists(_.name.contains(cbcIndex.name))) {
-        createIndex(manager, cbcIndex.id, cbcIndex.name)
+        createUniqueIndex(manager, cbcIndex.id, cbcIndex.name)
       } else {
-        Future.successful(true)
+        Future.successful(())
       }
-    }.foldRight(Future.successful(true))((result, previous) => result.flatMap(r => previous.map(p => r && p)))
-  }
-  ).onComplete {
-    case Success(result) =>
-      Logger.warn(s"Indexes exist or created. Result: $result")
-    case Failure(t) =>
-      Logger.error("Failed to create Indexes",t)
-      throw t
-  }
+    }).onComplete {
+      case Success(result) =>
+        Logger.warn(s"Indexes exist or created. Result: $result")
+      case Failure(t)      =>
+        Logger.error("Failed to create Indexes", t)
+        throw t
+    }
+  })
 
-  private def createIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Boolean] = {
-    manager.create(Index(Seq(fieldName -> Ascending), Some(indexName), unique = true)).map(_.ok)
-  }
 
+  private def createUniqueIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Unit] = {
+    manager.create(Index(Seq(fieldName -> Ascending), Some(indexName), unique = true)).map {
+      case d: DefaultWriteResult if !d.ok => throw new RuntimeException(s"${d.errmsg}")
+      case _ => ()
+    }
+  }
 }
 
 case class CbcIndex (name:String,id:String)
