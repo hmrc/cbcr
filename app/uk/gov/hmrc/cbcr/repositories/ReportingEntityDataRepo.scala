@@ -23,6 +23,7 @@ import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.indexes.CollectionIndexesManager
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
@@ -32,10 +33,12 @@ import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends IndexBuilder {
 
-  val repository: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection]("ReportingEntityData"))
+  override protected val collectionName: String = "ReportingEntityData"
+  override protected val cbcIndexes: List[CbcIndex] = List( CbcIndex("Reporting Entity DocRefId", "reportingEntityDRI"))
+
+  val repository: Future[JSONCollection] = mongo.database.map(_.collection[JSONCollection](collectionName))
 
   def delete(d:DocRefId) = {
     val criteria = Json.obj("$or" -> Json.arr(
@@ -60,6 +63,8 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
 
   }
 
+  def updateAdditional(p: PartialReportingEntityData): Future[Boolean] = Future.successful(true)
+
   def update(p:PartialReportingEntityData) : Future[Boolean] = {
 
     val criteria = buildUpdateCriteria(p)
@@ -71,6 +76,10 @@ class ReportingEntityDataRepo@Inject()(val mongo: ReactiveMongoApi)(implicit ec:
     } yield update.lastError.exists(_.updatedExisting)
 
   }
+
+  /** Find a reportingEntity that has a reportingEntityDRI with the provided docRefId */
+  def queryReportingEntity(d:DocRefId) : Future[Option[ReportingEntityData]] =
+    repository.flatMap(_.find(Json.obj("reportingEntityDRI" -> d.id)).one[ReportingEntityData])
 
   def query(d:DocRefId) : Future[Option[ReportingEntityData]] = {
     val criteria = Json.obj("$or" -> Json.arr(

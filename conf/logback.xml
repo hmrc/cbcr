@@ -49,13 +49,16 @@
     
     <logger name="uk.gov" level="INFO"/>
 
-    <logger name="application" level="INFO"/>
+    <logger name="application" level="DEBUG"/>
 
-    <logger name="connector" level="TRACE">
+    <logger name="reactivemongo.core" level="ERROR" />
+
+    <logger name="connector" level="ERROR">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="ERROR">
+
+    <root level="DEBUG">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>
