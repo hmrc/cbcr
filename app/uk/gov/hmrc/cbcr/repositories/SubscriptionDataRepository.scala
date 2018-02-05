@@ -39,31 +39,13 @@ import scala.util.{Failure, Success}
 
 
 @Singleton
-class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext){
+class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends IndexBuilder {
 
+  override protected val collectionName: String = "Subscription_Data"
+  override protected val cbcIndexes: List[CbcIndex] = List(CbcIndex("CBCId Index", "cbcId"), CbcIndex("Utr Index", "utr"))
 
   val cbcIndexName = "CBCId Index"
   val utrIndexName = "Utr Index"
-
-  val indexManager: Future[CollectionIndexesManager] = mongo.database.map(_.collection[JSONCollection]("Subscription_Data").indexesManager)
-
-  indexManager.flatMap(m => m.list().flatMap{ l =>
-    for {
-      a <- if (!l.exists(_.name.contains(cbcIndexName))) { createIndex(m, "cbcId",cbcIndexName) } else { Future.successful(true)}
-      b <- if (!l.exists(_.name.contains(utrIndexName))) { createIndex(m, "utr", utrIndexName) } else { Future.successful(true)}
-    } yield a && b
-  }).onComplete{
-    case Success(result) =>
-      Logger.warn(s"Indexes exist or created. Result: $result")
-    case Failure(t) =>
-      Logger.error("Failed to create Indexes",t)
-      throw t
-  }
-
-  private def createIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Boolean] = {
-    manager.create(Index(Seq(fieldName -> Ascending), Some(indexName), unique = true)).map(_.ok)
-  }
-
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("Subscription_Data"))
@@ -120,5 +102,6 @@ class SubscriptionDataRepository @Inject() (private val mongo: ReactiveMongoApi)
 
  private def getGeneric(criteria:JsObject) =
     OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
+
 
 }

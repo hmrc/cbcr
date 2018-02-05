@@ -100,6 +100,18 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
       status(result) shouldBe Status.OK
     }
 
+    "respond with a 200 and a reportingEntityData entry if the  reportingEntityDRI matches that provided DocRefId" in {
+      when(repo.queryReportingEntity(any())) thenReturn Future.successful(Some(red))
+      val result = controller.queryDocRefId(docRefId)(fakeGetRequest)
+      status(result) shouldBe Status.OK
+      Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+    }
+    "respond with a 404 if the reportingEntityDRI matches that provided DocRefId" in {
+      when(repo.queryReportingEntity(any())) thenReturn Future.successful(None)
+      val result = controller.queryDocRefId(docRefId)(fakeGetRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
   }
 
 }
