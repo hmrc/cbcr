@@ -77,6 +77,10 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   }
 
+  /** Find a reportingEntity that has a reportingEntityDRI with the provided docRefId */
+  def queryReportingEntity(d:DocRefId) : Future[Option[ReportingEntityData]] =
+    repository.flatMap(_.find(Json.obj("reportingEntityDRI" -> d.id)).one[ReportingEntityData])
+
   def query(d:DocRefId) : Future[Option[ReportingEntityData]] = {
     val criteria = Json.obj("$or" -> Json.arr(
       Json.obj("cbcReportsDRI"      -> d.id),

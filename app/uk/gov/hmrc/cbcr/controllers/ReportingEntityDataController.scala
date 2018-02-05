@@ -73,9 +73,21 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
     )
   }, parse.json)
 
+  def queryDocRefId(d: DocRefId) = auth.authCBCR{ implicit request =>
+    repo.queryReportingEntity(d).map {
+      case None       => NotFound
+      case Some(data) => Ok(Json.toJson(data))
+    }.recover {
+      case NonFatal(t) =>
+        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+        InternalServerError
+    }
+
+  }
+
   def query(d: DocRefId) = auth.authCBCR{ implicit request =>
     repo.query(d).map {
-      case None => NotFound
+      case None       => NotFound
       case Some(data) => Ok(Json.toJson(data))
     }.recover {
       case NonFatal(t) =>
