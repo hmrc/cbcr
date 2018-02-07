@@ -16,7 +16,7 @@ All endpoints are auth protected and for private use within the CBCR Domain.
 |/subscription-data/:cbcid         |PUT          |Update an existing SubscriptionData Entiy by CBCid        |[SubscriptionDetails](#user-content-subscriptiondetails)|200,400,401,500|
 |/subscription-data/cbc-id/:cbcid  |GET          |Returns an existing SubscriptionData by CBCid             |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,404|
 |/subscription-data/utr/:utr       |GET          |Returns an existing SubscriptionData by Utr               |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,404|
-|/subscription-data/:cbcid         |DELETE       |Delete an existing SubscriptionData by CBCid              |              |200,401,404,500,501|
+|/subscription-data/:cbcid         |DELETE       |Delete an existing SubscriptionData by CBCid              |             |200,401,404,500,501|
 |/business-partner-record/:utr     |GET          |Returns an existing BusinessPartnerRecord by Utr          |[BusinessPartnerRecord](#user-content-businesspartnerrecord)|200,401,404,500|
 |/subscription                     |POST         |Create a new Subscription                                 |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,400,500|
 |/subscription/:safeId             |GET          |Return an existing Subscription                           |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,404,500|
