@@ -16,15 +16,15 @@ All endpoints are auth protected and for private use within the CBCR Domain.
 |/subscription-data/:cbcid         |PUT          |Update an existing SubscriptionData Entiy by CBCid        |[SubscriptionDetails](#user-content-subscriptiondetails)|200,400,401,500|
 |/subscription-data/cbc-id/:cbcid  |GET          |Returns an existing SubscriptionData by CBCid             |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,404|
 |/subscription-data/utr/:utr       |GET          |Returns an existing SubscriptionData by Utr               |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,404|
-|/subscription-data/:cbcid         |DELETE       |Delete an existing SubscriptionData by CBCid              |              |200,404,500,501|
+|/subscription-data/:cbcid         |DELETE       |Delete an existing SubscriptionData by CBCid              |             |200,401,404,500,501|
 |/business-partner-record/:utr     |GET          |Returns an existing BusinessPartnerRecord by Utr          |[BusinessPartnerRecord](#user-content-businesspartnerrecord)|200,401,404,500|
 |/subscription                     |POST         |Create a new Subscription                                 |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,400,500|
 |/subscription/:safeId             |GET          |Return an existing Subscription                           |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,404,500|
 |/subscription/:safeId             |PUT          |Update an existing Subscritpion                           |[SubscriptionDetails](#user-content-subscriptiondetails)|200,401,400,500|
 |/message-ref-id/:id               |PUT          |Update an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|200,401,500|
 |/message-ref-id/:id               |GET          |Return an existing MessageRefId Entity                    |[MessageRefId](#user-content-messagerefid)|200,401,404
-|/doc-ref-id/:id                   |PUT         |Update a DocRefId Entity                                  |[DocRefID](#user-content-docrefid)|200,401,409,500|
-|/doc-ref-id/:id                   |DELETE      |Delete a DocRefId Entity - if enabled in config              |[DocRefID](#user-content-docrefid)|200,400,500,501|
+|/doc-ref-id/:id                   |PUT          |Update a DocRefId Entity                                  |[DocRefID](#user-content-docrefid)|200,401,409,500|
+|/doc-ref-id/:id                   |DELETE       |Delete a DocRefId Entity - if enabled in config              |[DocRefID](#user-content-docrefid)|200,400,500,501|
 |/doc-ref-id/:id                   |GET          |Return an existing DocRefId Entity                        |[DocRefID](#user-content-docrefid)|200,401,404,409|
 |/corr-doc-ref-id/:cid/:id         |PUT          |Update an existing CorrDocRefId Entity                    ||200,400,401,404,500|
 |/reporting-entity/:id             |GET          |Return an existing ReportingEntity                        |[ReportingEntityData](#user-content-reportingentitydata)|200,401,404,500|
