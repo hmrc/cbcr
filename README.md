@@ -8,7 +8,7 @@ The CBCR Service responsible for interacting with the Country-By-Country-Reporti
 All endpoints are auth protected and for private use within the CBCR Domain.
 
 ## API
-| URI                              | Http Method |Description                                               |Json          |Stauses   |
+| URI                              | Http Method |Description                                               |Json          |Statuses   |
 |:---------------------------------|:------------|:---------------------------------------------------------|:-------------|----------|
 |/file-upload-response             |POST         |Create a new FileUpload Response                          |[UploadFileResponse](#user-content-fileuploadresponse)|200,400,500|
 |/file-upload-response/:envelopeId |GET          |Returns an existing FileUpload response by its EnvelopeId |[UploadFileResponse](#user-content-fileuploadresponse)|200,204,401|
