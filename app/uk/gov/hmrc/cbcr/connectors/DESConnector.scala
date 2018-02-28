@@ -96,9 +96,9 @@ import uk.gov.hmrc.cbcr.services.RunMode
           case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
         }
       } else {
-            val delayMigration: Int = configuration.underlying.get[Int](s"${runMode.env}.CBCId.delayMigration").valueOr(_ => 60)
-            Thread.sleep(1000 * delayMigration)
-            Future.successful(HttpResponse(200,responseString = Some(s"migrated ${mig.cBCId}")))
+        val delayMigration: Int = configuration.underlying.get[Int](s"${runMode.env}.CBCId.delayMigration").valueOr(_ => 60)
+        Thread.sleep(1000 * delayMigration)
+        Future.successful(HttpResponse(200,responseString = Some(s"migrated ${mig.cBCId}")))
       }
     }
 
