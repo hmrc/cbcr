@@ -94,10 +94,9 @@ import uk.gov.hmrc.cbcr.services.RunMode
       Logger.warn(s"stubMigration set to: $stubMigration")
       if (!stubMigration) {
         Logger.info("calling ETMP for migration")
-//        http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover {
-//          case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
-//        }
-        Future.successful(HttpResponse(200,responseString = Some(s"in ETMP ${mig.cBCId}")))
+        http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover {
+          case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+        }
       } else {
         Logger.info("in migration stub")
         val delayMigration: Int = configuration.underlying.get[Int](s"${runMode.env}.CBCId.delayMigration").valueOr(_ => 60)
