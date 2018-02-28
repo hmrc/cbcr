@@ -27,7 +27,7 @@ import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 
-import scala.concurrent.Future
+import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
@@ -54,21 +54,23 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   Logger.info(s"doMigration set to: $doMigration")
 
   if (doMigration) {
-    val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap{ list =>
+    val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap { list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
-      val result = list.map{ sd =>
-        migrationRequest(sd).fold(
-          Future.successful(s"No cbcID found for $sd")
-        )(mr => des.createMigration(mr).map(sd -> _).map{
-          case (sd,res)  =>
-            if (res.status != 200) {
-              s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}"
-            } else {
-              s"${sd.cbcId} -------> Migrated"
-            }
-        })
+      blocking {
+        val result = list.map { sd =>
+          migrationRequest(sd).fold(
+            Future.successful(s"No cbcID found for $sd")
+          )(mr => des.createMigration(mr).map(sd -> _).map {
+            case (sd, res) =>
+              if (res.status != 200) {
+                s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}"
+              } else {
+                s"${sd.cbcId} -------> Migrated"
+              }
+          })
+        }
+        result.sequence[Future, String]
       }
-      result.sequence[Future,String]
     }
 
     output.map(msgs => Logger.info(msgs.mkString("\n")))
