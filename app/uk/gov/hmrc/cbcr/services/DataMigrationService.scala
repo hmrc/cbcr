@@ -75,7 +75,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   private def migrate(mr: MigrationRequest, sd: SubscriptionDetails): Future[String] = {
     val mig: Future[HttpResponse] = des.createMigration(mr)
     mig.map(res =>
-      if (res == 200) s"${sd.cbcId} -------> Migrated"
+      if (res.status == 200) s"${sd.cbcId} -------> Migrated"
       else s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
   }
 
