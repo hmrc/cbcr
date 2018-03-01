@@ -57,26 +57,19 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   if (doMigration) {
     val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap { list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
-      //      blocking {
-      val result = list.map { sd =>
-        migrationRequest(sd).fold(
-          Future.successful(s"No cbcID found for $sd")
-        )(mr => {
-          migrate(mr, sd)
-        })
-      }
-      result.sequence[Future, String]
+      list.foldLeft(Future.successful(List.empty[String]))((eventualStrings: Future[List[String]], details: SubscriptionDetails) =>
+        migrationRequest(details).fold(eventualStrings)(mr => eventualStrings.flatMap(ls => migrate(mr).map(s => s::ls)))
+      )
     }
 
     output.map(msgs => Logger.info(msgs.mkString("\n")))
 
   }
 
-  private def migrate(mr: MigrationRequest, sd: SubscriptionDetails): Future[String] = {
-    val mig: Future[HttpResponse] = des.createMigration(mr)
-    mig.map(res =>
-      if (res == 200) s"${sd.cbcId} -------> Migrated"
-      else s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
+  private def migrate(mr: MigrationRequest): Future[String] = {
+    des.createMigration(mr).map(res =>
+      if (res.status == 200) s"${mr.cBCId} -------> Migrated"
+      else s"${mr.cBCId} -------> FAILED with status code ${res.status}\n${res.body}")
   }
 
 }

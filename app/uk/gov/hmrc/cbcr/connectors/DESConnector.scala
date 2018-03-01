@@ -102,9 +102,9 @@ import scala.concurrent.duration.Duration
         if (!stubMigration) {
           Logger.info("calling ETMP for migration")
           Thread.sleep(delayMigration)
-          (http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover{
+          http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover {
             case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
-          }).map(r => res.success(r))
+          }.map(r => res.success(r))
         } else {
           Logger.info("in migration stub")
 
