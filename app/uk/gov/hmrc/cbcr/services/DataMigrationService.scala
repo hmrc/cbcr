@@ -26,10 +26,11 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.http.HttpResponse
 
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
                                       configuration:Configuration,
@@ -56,26 +57,26 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   if (doMigration) {
     val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap { list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
-      blocking {
-        val result = list.map { sd =>
-          migrationRequest(sd).fold(
-            Future.successful(s"No cbcID found for $sd")
-          )(mr => des.createMigration(mr).map(sd -> _).map {
-            case (sd, res) =>
-              if (res.status != 200) {
-                s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}"
-              } else {
-                s"${sd.cbcId} -------> Migrated"
-              }
-          })
-        }
-        result.sequence[Future, String]
+      //      blocking {
+      val result = list.map { sd =>
+        migrationRequest(sd).fold(
+          Future.successful(s"No cbcID found for $sd")
+        )(mr => {
+          migrate(mr, sd)
+        })
       }
+      result.sequence[Future, String]
     }
 
     output.map(msgs => Logger.info(msgs.mkString("\n")))
 
   }
 
-}
+  private def migrate(mr: MigrationRequest, sd: SubscriptionDetails): Future[String] = {
+    val mig: Future[HttpResponse] = des.createMigration(mr)
+    mig.map(res =>
+      if (res == 200) s"${sd.cbcId} -------> Migrated"
+      else s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}")
+  }
 
+}
