@@ -38,6 +38,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
 
 
   private def migrationRequest(s: SubscriptionDetails): Option[MigrationRequest] = {
+    Logger.info(s"in migrationRequest for ${s.cbcId}")
     s.cbcId.map { id =>
       MigrationRequest(
         s.businessPartnerRecord.safeId,
@@ -67,6 +68,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   }
 
   private def migrate(mr: MigrationRequest): Future[String] = {
+    Logger.info(s"in migrate for ${mr.cBCId}")
     des.createMigration(mr).map(res =>
       if (res.status == 200) s"${mr.cBCId} -------> Migrated"
       else s"${mr.cBCId} -------> FAILED with status code ${res.status}\n${res.body}")
