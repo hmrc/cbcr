@@ -26,10 +26,11 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.http.HttpResponse
 
-import scala.concurrent.Future
+import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESConnector,
                                       configuration:Configuration,
@@ -37,6 +38,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
 
 
   private def migrationRequest(s: SubscriptionDetails): Option[MigrationRequest] = {
+    Logger.info(s"in migrationRequest for ${s.cbcId}")
     s.cbcId.map { id =>
       MigrationRequest(
         s.businessPartnerRecord.safeId,
@@ -54,26 +56,22 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   Logger.info(s"doMigration set to: $doMigration")
 
   if (doMigration) {
-    val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap{ list =>
+    val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap { list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
-      val result = list.map{ sd =>
-        migrationRequest(sd).fold(
-          Future.successful(s"No cbcID found for $sd")
-        )(mr => des.createMigration(mr).map(sd -> _).map{
-          case (sd,res)  =>
-            if (res.status != 200) {
-              s"${sd.cbcId} -------> FAILED with status code ${res.status}\n${res.body}"
-            } else {
-              s"${sd.cbcId} -------> Migrated"
-            }
-        })
-      }
-      result.sequence[Future,String]
+      list.foldLeft(Future.successful(List.empty[String]))((eventualStrings: Future[List[String]], details: SubscriptionDetails) =>
+        migrationRequest(details).fold(eventualStrings)(mr => eventualStrings.flatMap(ls => migrate(mr).map(s => s::ls)))
+      )
     }
 
     output.map(msgs => Logger.info(msgs.mkString("\n")))
 
   }
 
-}
+  private def migrate(mr: MigrationRequest): Future[String] = {
+    Logger.info(s"in migrate for ${mr.cBCId}")
+    des.createMigration(mr).map(res =>
+      if (res.status == 200) s"${mr.cBCId} -------> Migrated"
+      else s"${mr.cBCId} -------> FAILED with status code ${res.status}\n${res.body}")
+  }
 
+}
