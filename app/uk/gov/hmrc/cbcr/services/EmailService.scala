@@ -57,8 +57,7 @@ class EmailService @Inject()(emailConnector:EmailConnectorImpl, auditConnector:A
 
   def audit(email:Email, auditType:AuditType)(implicit hc:HeaderCarrier) = {
     auditConnector.sendExtendedEvent(ExtendedDataEvent(auditSource = "Country-By-Country", auditType.toString,
-      tags = hc.toAuditTags(auditType.toString, "N/A") ++ Map("path" -> emailConnector.serviceUrl),
-      detail = Json.toJson(email)
+      detail = Json.toJson(Json.toJson(email).toString() + Json.obj("path" -> emailConnector.serviceUrl).toString())
     )).map {
       case AuditResult.Success => Logger.info(s"Successfully audited ${auditType.toString}")
       case AuditResult.Failure(msg, _) => Logger.warn(s"Unable to audit ${auditType.toString} $msg")
