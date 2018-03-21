@@ -49,8 +49,10 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.remove(criteria))
   }
 
-  def save(f:ReportingEntityData) : Future[WriteResult] =
-    repository.flatMap(_.insert(f))
+  def save(f:ReportingEntityData) : Future[WriteResult] = {
+    val g: ReportingEntityData = ReportingEntityData(f.cbcReportsDRI,f.additionalInfoDRI,f.reportingEntityDRI,f.tin,f.ultimateParentEntity,f.reportingRole,Some("2018-3-21"))
+    repository.flatMap(_.insert(g))
+  }
 
   def update(p:ReportingEntityData) : Future[Boolean] = {
 
