@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -31,6 +30,10 @@ import uk.gov.hmrc.cbcr.models._
 
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+import play.api.Logger
 
 @Singleton
 class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends IndexBuilder {
@@ -50,8 +53,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def save(f:ReportingEntityData) : Future[WriteResult] = {
-    val g: ReportingEntityData = ReportingEntityData(f.cbcReportsDRI,f.additionalInfoDRI,f.reportingEntityDRI,f.tin,f.ultimateParentEntity,f.reportingRole,Some("2018-3-21"))
-    repository.flatMap(_.insert(g))
+    val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+    Logger.info(s"+++++++++++++++ localDateTime.now = ${LocalDateTime.now().format(formatter)}")
+    repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDateTime.now()))))
   }
 
   def update(p:ReportingEntityData) : Future[Boolean] = {

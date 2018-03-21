@@ -20,6 +20,8 @@ import cats.data.NonEmptyList
 import play.api.libs.json._ // JSON library
 import play.api.libs.json.Reads._ // Custom validation helpers
 import play.api.libs.functional.syntax._ // Combinator syntax
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
                                   additionalInfoDRI:Option[DocRefId],
@@ -36,7 +38,7 @@ case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
                                tin:TIN,
                                ultimateParentEntity: UltimateParentEntity,
                                reportingRole: ReportingRole,
-                               creationDate: Option[String])
+                               creationDate: Option[LocalDateTime])
 
 case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
@@ -47,7 +49,7 @@ case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
                                       tin:TIN,
                                       ultimateParentEntity: UltimateParentEntity,
                                       reportingRole: ReportingRole,
-                                      creationDate: Option[String])
+                                      creationDate: Option[LocalDateTime])
 
 object PartialReportingEntityData {
   implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
@@ -71,7 +73,7 @@ object ReportingEntityData{
     (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
     (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
     (JsPath \ "reportingRole").read[ReportingRole] and
-    (JsPath \ "creationDate").readNullable[String]
+    (JsPath \ "creationDate").readNullable[LocalDateTime]
   )(ReportingEntityData.apply(_,_,_,_,_,_,_))
 
   implicit val writes = Json.writes[ReportingEntityData]
