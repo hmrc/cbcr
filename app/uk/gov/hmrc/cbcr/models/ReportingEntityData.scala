@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.cbcr.models
 
+import java.time.LocalDate
+
 import cats.data.NonEmptyList
-import play.api.libs.json._ // JSON library
-import play.api.libs.json.Reads._ // Custom validation helpers
+import play.api.libs.json._
+import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._ // Combinator syntax
 
 case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
@@ -35,7 +37,8 @@ case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
                                reportingEntityDRI:DocRefId,
                                tin:TIN,
                                ultimateParentEntity: UltimateParentEntity,
-                               reportingRole: ReportingRole)
+                               reportingRole: ReportingRole,
+                               creationDate: Option[LocalDate])
 
 case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
@@ -45,7 +48,8 @@ case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
                                       reportingEntityDRI:DocRefIdPair,
                                       tin:TIN,
                                       ultimateParentEntity: UltimateParentEntity,
-                                      reportingRole: ReportingRole)
+                                      reportingRole: ReportingRole,
+                                      creationDate: Option[LocalDate])
 
 object PartialReportingEntityData {
   implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
@@ -68,8 +72,9 @@ object ReportingEntityData{
     (JsPath \ "reportingEntityDRI").read[DocRefId] and
     (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
     (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
-    (JsPath \ "reportingRole").read[ReportingRole]
-  )(ReportingEntityData.apply(_,_,_,_,_,_))
+    (JsPath \ "reportingRole").read[ReportingRole] and
+    (JsPath \ "creationDate").readNullable[LocalDate]
+    )(ReportingEntityData.apply(_,_,_,_,_,_,_))
 
   implicit val writes = Json.writes[ReportingEntityData]
 

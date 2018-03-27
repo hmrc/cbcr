@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
@@ -51,7 +51,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def save(f:ReportingEntityData) : Future[WriteResult] =
-    repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDateTime.now()))))
+    repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDate.now()))))
 
   def update(p:ReportingEntityData) : Future[Boolean] = {
 
