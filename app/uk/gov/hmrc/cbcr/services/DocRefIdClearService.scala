@@ -61,8 +61,11 @@ class DocRefIdClearService @Inject()(docRefIdRepo:DocRefIdRepository,
 
   private def auditDocRefIdClear(docRefId: DocRefId): EitherT[Future,String,Unit] = {
     EitherT[Future,String,Unit](
-      audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", DOCREFID_AUDIT, detail = Json.toJson(docRefId))
-      ).map {
+      audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", DOCREFID_AUDIT,
+        detail = Json.obj(
+          "docRefId" -> Json.toJson(docRefId)
+        )
+      )).map {
         case AuditResult.Success          => Right(())
         case AuditResult.Failure(msg, _)  => Left(s"failed to audit: $msg")
         case AuditResult.Disabled         => Right(())
