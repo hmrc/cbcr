@@ -17,9 +17,8 @@
 package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.{Configuration, Logger}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
@@ -57,7 +56,10 @@ class EmailService @Inject()(emailConnector:EmailConnectorImpl, auditConnector:A
 
   def audit(email:Email, auditType:AuditType)(implicit hc:HeaderCarrier) = {
     auditConnector.sendExtendedEvent(ExtendedDataEvent(auditSource = "Country-By-Country", auditType.toString,
-      detail = Json.toJson(Json.toJson(email).toString() + Json.obj("path" -> emailConnector.serviceUrl).toString())
+      detail = Json.obj(
+        "path" -> JsString(emailConnector.serviceUrl),
+        "email" -> Json.toJson(email)
+      )
     )).map {
       case AuditResult.Success => Logger.info(s"Successfully audited ${auditType.toString}")
       case AuditResult.Failure(msg, _) => Logger.warn(s"Unable to audit ${auditType.toString} $msg")

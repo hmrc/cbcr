@@ -17,12 +17,11 @@
 package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
-
 import cats.data.EitherT
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.DocRefId
@@ -61,8 +60,11 @@ class DocRefIdClearService @Inject()(docRefIdRepo:DocRefIdRepository,
 
   private def auditDocRefIdClear(docRefId: DocRefId): EitherT[Future,String,Unit] = {
     EitherT[Future,String,Unit](
-      audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", DOCREFID_AUDIT, detail = Json.toJson(docRefId))
-      ).map {
+      audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", DOCREFID_AUDIT,
+        detail = Json.obj(
+          "docRefId" -> JsString(docRefId.id)
+        )
+      )).map {
         case AuditResult.Success          => Right(())
         case AuditResult.Failure(msg, _)  => Left(s"failed to audit: $msg")
         case AuditResult.Disabled         => Right(())
