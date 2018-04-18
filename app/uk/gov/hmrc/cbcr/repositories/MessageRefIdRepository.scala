@@ -42,4 +42,11 @@ class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:
     repository.flatMap(_.find(criteria).one[MessageRefId].map(_.isDefined))
   }
 
+  def delete(m:MessageRefId): Future[WriteResult] = {
+    val criteria = Json.obj("id" -> m.id)
+    for {
+      repo <- repository
+      x    <- repo.remove(criteria)
+    } yield  x
+  }
 }
