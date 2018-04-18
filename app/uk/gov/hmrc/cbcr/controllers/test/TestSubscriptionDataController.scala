@@ -17,19 +17,20 @@
 package uk.gov.hmrc.cbcr.controllers.test
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc._
-import uk.gov.hmrc.cbcr.models.{DocRefId, SubscriptionDetails, Utr}
-import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, SubscriptionDataRepository}
+import uk.gov.hmrc.cbcr.models.{DocRefId, MessageRefId, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, SubscriptionDataRepository}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataRepository, docRefRepo: DocRefIdRepository)(implicit ec: ExecutionContext) extends BaseController with ServicesConfig {
+class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataRepository,
+                                               docRefRepo: DocRefIdRepository,
+                                               messageRefIdRepository: MessageRefIdRepository)(implicit ec: ExecutionContext) extends BaseController with ServicesConfig {
 
   def insertData() = Action.async[JsValue](parse.json) {
     implicit request =>
@@ -58,6 +59,16 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     implicit request => {
       val docRefId = DocRefId(docRefIds)
       docRefRepo.delete(docRefId).map {
+        case w if w.ok  => Ok
+        case _          => InternalServerError
+      }
+    }
+  }
+
+  def deleteSingleMessageRefId(messageRefIds: String): Action[AnyContent] = Action.async {
+    implicit request => {
+      val messageRefId = MessageRefId(messageRefIds)
+      messageRefIdRepository.delete(messageRefId).map {
         case w if w.ok  => Ok
         case _          => InternalServerError
       }
