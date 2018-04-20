@@ -1,3 +1,5 @@
 POST      /insertSubscriptionData                   @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.insertData
 DELETE    /deleteSubscription/:utr                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSubscription(utr: String)
 DELETE    /deleteDocRefId/:docRefId                 @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleDocRefId(docRefId: String)
+DELETE    /deleteMessageRefId/:messageRefId         @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleMessageRefId(messageRefId: String)
+DELETE    /reportingEntityData/:docRefId            @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityData(docRefId: String)

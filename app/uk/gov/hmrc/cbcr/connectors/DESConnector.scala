@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.connectors
 import javax.inject.{Inject, Singleton}
 
 import com.google.inject.ImplementedBy
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.{ContactDetails, CorrespondenceDetails, MigrationRequest, SubscriptionRequest}
@@ -29,16 +29,22 @@ import uk.gov.hmrc.play.http.ws.{WSGet, WSHttp, WSPost, WSPut}
 import uk.gov.hmrc.play.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpGet, HttpPost, HttpPut, HttpResponse}
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.http.logging.Authorization
+import configs.syntax._
+import uk.gov.hmrc.cbcr.services.RunMode
+
+import scala.concurrent.duration.Duration
 
 
   @ImplementedBy(classOf[DESConnectorImpl])
   trait DESConnector extends ServicesConfig with RawResponseReads {
 
     implicit val ec:ExecutionContext
+    implicit val configuration:Configuration
+    implicit val runMode:RunMode
 
     def serviceUrl: String
 
@@ -59,6 +65,10 @@ import uk.gov.hmrc.http.logging.Authorization
       "requiresNameMatch" -> false,
       "isAnAgent" -> false
     )
+
+    val stubMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.stubMigration").valueOr(_ => false)
+
+    val delayMigration: Int = 1000 * configuration.underlying.get[Int](s"${runMode.env}.CBCId.delayMigration").valueOr(_ => 60)
 
 
     private def createHeaderCarrier: HeaderCarrier =
@@ -85,10 +95,24 @@ import uk.gov.hmrc.http.logging.Authorization
       implicit val hc: HeaderCarrier = createHeaderCarrier
       implicit val writes = MigrationRequest.migrationWriter
       Logger.info(s"Migration Request sent to DES: ${Json.toJson(mig)} for CBCId: ${mig.cBCId}")
-      http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover{
-        case e:HttpException => HttpResponse(e.responseCode,responseString = Some(e.message))
-      }
 
+      Logger.warn(s"stubMigration set to: $stubMigration")
+      val res = Promise[HttpResponse]()
+      Future {
+        if (!stubMigration) {
+          Logger.info("calling ETMP for migration")
+          Thread.sleep(delayMigration)
+          http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover {
+            case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+          }.map(r => res.success(r))
+        } else {
+          Logger.info("in migration stub")
+
+          Thread.sleep(delayMigration)
+          res.success(HttpResponse(200, responseString = Some(s"migrated ${mig.cBCId}")))
+        }
+      }
+      res.future
     }
 
     def updateSubscription(safeId:String,cor:CorrespondenceDetails) : Future[HttpResponse] = {
@@ -112,7 +136,10 @@ import uk.gov.hmrc.http.logging.Authorization
   }
 
   @Singleton
-  class DESConnectorImpl @Inject() (val ec: ExecutionContext, val auditConnector:AuditConnectorI) extends DESConnector {
+  class DESConnectorImpl @Inject() (val ec: ExecutionContext,
+                                    val auditConnector:AuditConnectorI,
+                                    val configuration:Configuration,
+                                    val runMode:RunMode) extends DESConnector {
     lazy val serviceUrl: String = baseUrl("etmp-hod")
     lazy val orgLookupURI: String = "registration/organisation"
     lazy val cbcSubscribeURI: String = "country-by-country/subscription"

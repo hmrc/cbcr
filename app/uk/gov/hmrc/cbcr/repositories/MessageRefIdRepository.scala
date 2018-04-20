@@ -27,7 +27,9 @@ import uk.gov.hmrc.cbcr.models.MessageRefId
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends IndexBuilder {
+  override protected val collectionName: String = "MessageRefId"
+  override protected val cbcIndexes: List[CbcIndex] = List( CbcIndex("Message Ref MessageRefId", "messageRefId"))
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("MessageRefId"))
@@ -40,4 +42,11 @@ class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:
     repository.flatMap(_.find(criteria).one[MessageRefId].map(_.isDefined))
   }
 
+  def delete(m:MessageRefId): Future[WriteResult] = {
+    val criteria = Json.obj("messageRefId" -> m.id)
+    for {
+      repo <- repository
+      x    <- repo.remove(criteria)
+    } yield  x
+  }
 }
