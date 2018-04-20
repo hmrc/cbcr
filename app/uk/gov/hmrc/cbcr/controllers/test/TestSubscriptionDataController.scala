@@ -70,11 +70,9 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
       val messageRefId = MessageRefId(messageRefIds)
       messageRefIdRepository.delete(messageRefId).map {
         case w if w.ok  => {
-          Logger.info(s"delete of MessageRefId:$messageRefId was successful")
           Ok
         }
         case _          => {
-          Logger.info(s"delete of MessageRefId:$messageRefId failed")
           InternalServerError
         }
       }
