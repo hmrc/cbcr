@@ -116,7 +116,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       p.reportingEntityDRI.corrDocRefId.map(c =>          Json.obj("reportingEntityDRI" -> c.cid.id))
     ).flatten ++ p.cbcReportsDRI.map(_.corrDocRefId.map(c =>     Json.obj("cbcReportsDRI" -> c.cid.id))).flatten
 
-    Json.obj("$and" -> JsArray(l))
+    val test = l//if(l.isEmpty) immutable.Seq(Json.obj("reportingEntityDRI" -> p.reportingEntityDRI.docRefId)) else l
+
+    Json.obj("$and" -> JsArray(test))
   }
 
 }
