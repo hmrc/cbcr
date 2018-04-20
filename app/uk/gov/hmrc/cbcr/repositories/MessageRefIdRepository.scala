@@ -43,7 +43,7 @@ class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:
   }
 
   def delete(m:MessageRefId): Future[WriteResult] = {
-    val criteria = Json.obj("id" -> m.id)
+    val criteria = Json.obj("messageRefId" -> m.id)
     for {
       repo <- repository
       x    <- repo.remove(criteria)

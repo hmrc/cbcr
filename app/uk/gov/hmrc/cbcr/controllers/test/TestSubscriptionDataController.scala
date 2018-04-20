@@ -21,7 +21,7 @@ import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc._
 import uk.gov.hmrc.cbcr.models.{DocRefId, MessageRefId, SubscriptionDetails, Utr}
-import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, SubscriptionDataRepository}
+import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
@@ -30,7 +30,9 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataRepository,
                                                docRefRepo: DocRefIdRepository,
-                                               messageRefIdRepository: MessageRefIdRepository)(implicit ec: ExecutionContext) extends BaseController with ServicesConfig {
+                                               messageRefIdRepository: MessageRefIdRepository,
+                                               reportingEntityDataRepo: ReportingEntityDataRepo
+                                              )(implicit ec: ExecutionContext) extends BaseController with ServicesConfig {
 
   def insertData() = Action.async[JsValue](parse.json) {
     implicit request =>
@@ -69,10 +71,18 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     implicit request => {
       val messageRefId = MessageRefId(messageRefIds)
       messageRefIdRepository.delete(messageRefId).map {
-        case w if w.ok  => Ok
-        case _          => InternalServerError
+        case w if w.ok  => {
+          Ok
+        }
+        case _          => {
+          InternalServerError
+        }
       }
     }
+  }
+
+  def deleteReportingEntityData(docRefId:String) = Action.async{ implicit request =>
+    reportingEntityDataRepo.delete(DocRefId(docRefId)).map(wr => if(wr.n == 0) NotFound else Ok)
   }
 
 }
