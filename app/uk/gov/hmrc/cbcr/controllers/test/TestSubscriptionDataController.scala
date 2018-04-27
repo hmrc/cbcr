@@ -16,16 +16,19 @@
 
 package uk.gov.hmrc.cbcr.controllers.test
 
+import java.time.LocalDate
+
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
-import uk.gov.hmrc.cbcr.models.{DocRefId, MessageRefId, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext
+import scala.util.control.NonFatal
 
 @Singleton
 class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataRepository,
@@ -83,6 +86,29 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
 
   def deleteReportingEntityData(docRefId:String) = Action.async{ implicit request =>
     reportingEntityDataRepo.delete(DocRefId(docRefId)).map(wr => if(wr.n == 0) NotFound else Ok)
+  }
+
+  def updateReportingEntityCreationDate(docRefId:String, creationDate: String) = Action.async {
+    implicit request => {
+      val dri = DocRefId(docRefId)
+      val cd = LocalDate.parse(creationDate)
+
+      reportingEntityDataRepo.updateCreationDate(dri, cd).map {
+        case n if n>0 => Ok
+        case _ => NotModified
+      }
+    }
+  }
+
+  def deleteReportingEntityCreationDate(docRefId:String) = Action.async {
+    implicit request => {
+      val dri = DocRefId(docRefId)
+
+      reportingEntityDataRepo.deleteCreationDate(dri).map {
+        case n if n>0 => Ok
+        case _ => NotModified
+      }
+    }
   }
 
 }

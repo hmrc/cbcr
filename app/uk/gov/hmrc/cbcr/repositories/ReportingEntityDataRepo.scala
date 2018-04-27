@@ -120,4 +120,19 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     Json.obj("$and" -> JsArray(l))
   }
 
+  def updateCreationDate(d:DocRefId, c: LocalDate) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id)
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,Json.obj("$set" -> Json.obj("creationDate" -> c)))
+    } yield update.nModified
+  }
+
+  def deleteCreationDate(d:DocRefId) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id)
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
+    } yield update.nModified
+  }
 }
