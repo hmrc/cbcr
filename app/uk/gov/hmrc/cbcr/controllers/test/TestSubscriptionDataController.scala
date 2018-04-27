@@ -94,8 +94,8 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
       val cd = LocalDate.parse(creationDate)
 
       reportingEntityDataRepo.updateCreationDate(dri, cd).map {
-        case true => Ok
-        case false => NotModified
+        case n if n>0 => Ok
+        case _ => NotModified
       }
     }
   }
@@ -105,8 +105,8 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
       val dri = DocRefId(docRefId)
 
       reportingEntityDataRepo.deleteCreationDate(dri).map {
-        case true => Ok
-        case false => NotModified
+        case n if n>0 => Ok
+        case _ => NotModified
       }
     }
   }
