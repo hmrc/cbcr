@@ -111,4 +111,16 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     }
   }
 
+  def confirmReportingEntityCreationDate(docRefId:String, creationDate: String) = Action.async {
+    implicit request => {
+      val dri = DocRefId(docRefId)
+      val cd = LocalDate.parse(creationDate)
+
+      reportingEntityDataRepo.confirmCreationDate(dri, cd).map {
+        case n if n==1 => Ok
+        case n if n != 1 => NotFound
+      }
+    }
+  }
+
 }

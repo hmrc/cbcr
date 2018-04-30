@@ -135,4 +135,12 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       update     <- collection.update(criteria,Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
     } yield update.nModified
   }
+
+  def confirmCreationDate(d:DocRefId, c:LocalDate) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id, "creationDate" -> c)
+    for {
+      collection <- repository
+      found      <- collection.count(Some(criteria))
+    } yield found
+  }
 }
