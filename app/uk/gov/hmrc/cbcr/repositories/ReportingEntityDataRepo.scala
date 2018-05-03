@@ -24,7 +24,6 @@ import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.indexes.CollectionIndexesManager
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
@@ -64,18 +63,22 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   }
 
-  def updateAdditional(p: PartialReportingEntityData): Future[Boolean] = Future.successful(true)
-
   def update(p:PartialReportingEntityData) : Future[Boolean] = {
+    if(p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
+       p.cbcReportsDRI.flatMap(_.corrDocRefId).isEmpty &&
+       p.reportingEntityDRI.corrDocRefId.isEmpty) {
+      Future.successful(true)
+    } else {
 
-    val criteria = buildUpdateCriteria(p)
-    val modifier = buildModifier(p)
+      val criteria = buildUpdateCriteria(p)
+      val modifier = buildModifier(p)
 
-    for {
-      collection <- repository
-      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
-    } yield update.lastError.exists(_.updatedExisting)
+      for {
+        collection <- repository
+        update <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+      } yield update.lastError.exists(_.updatedExisting)
 
+    }
   }
 
   /** Find a reportingEntity that has a reportingEntityDRI with the provided docRefId */
