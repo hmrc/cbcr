@@ -19,13 +19,11 @@ package uk.gov.hmrc.cbcr.repositories
 import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.indexes.CollectionIndexesManager
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
@@ -64,8 +62,6 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     } yield update.ok
 
   }
-
-  def updateAdditional(p: PartialReportingEntityData): Future[Boolean] = Future.successful(true)
 
   def update(p:PartialReportingEntityData) : Future[Boolean] = {
     if(p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&

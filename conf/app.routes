@@ -27,7 +27,6 @@ GET       /reporting-entity/:id                     uk.gov.hmrc.cbcr.controllers
 GET       /reporting-entity/doc-ref-id/:id          uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 POST      /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
 PUT       /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.update
-PATCH     /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.updateAdditional
 
 POST      /email                                    uk.gov.hmrc.cbcr.controllers.CBCREmailController.sendEmail
 
