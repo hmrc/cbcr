@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import javax.inject.{Inject, Singleton}
+import java.time.LocalDate
 
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.indexes.CollectionIndexesManager
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
@@ -50,7 +50,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def save(f:ReportingEntityData) : Future[WriteResult] =
-    repository.flatMap(_.insert(f))
+    repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDate.now()))))
 
   def update(p:ReportingEntityData) : Future[Boolean] = {
 
@@ -63,18 +63,22 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   }
 
-  def updateAdditional(p: PartialReportingEntityData): Future[Boolean] = Future.successful(true)
-
   def update(p:PartialReportingEntityData) : Future[Boolean] = {
+    if(p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
+       p.cbcReportsDRI.flatMap(_.corrDocRefId).isEmpty &&
+       p.reportingEntityDRI.corrDocRefId.isEmpty) {
+      Future.successful(true)
+    } else {
 
-    val criteria = buildUpdateCriteria(p)
-    val modifier = buildModifier(p)
+      val criteria = buildUpdateCriteria(p)
+      val modifier = buildModifier(p)
 
-    for {
-      collection <- repository
-      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
-    } yield update.lastError.exists(_.updatedExisting)
+      for {
+        collection <- repository
+        update <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+      } yield update.lastError.exists(_.updatedExisting)
 
+    }
   }
 
   /** Find a reportingEntity that has a reportingEntityDRI with the provided docRefId */
@@ -119,4 +123,27 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     Json.obj("$and" -> JsArray(l))
   }
 
+  def updateCreationDate(d:DocRefId, c: LocalDate) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id)
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,Json.obj("$set" -> Json.obj("creationDate" -> c)))
+    } yield update.nModified
+  }
+
+  def deleteCreationDate(d:DocRefId) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id)
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
+    } yield update.nModified
+  }
+
+  def confirmCreationDate(d:DocRefId, c:LocalDate) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id, "creationDate" -> c)
+    for {
+      collection <- repository
+      found      <- collection.count(Some(criteria))
+    } yield found
+  }
 }
