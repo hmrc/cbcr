@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import java.time.LocalDate
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import cats.data.NonEmptyList
@@ -38,9 +40,9 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val docRefId=DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
 
-  val red = ReportingEntityData(NonEmptyList(docRefId,Nil),Some(docRefId),docRefId,TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701)
+  val red = ReportingEntityData(NonEmptyList(docRefId,Nil),Some(docRefId),docRefId,TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701,Some(LocalDate.now()))
 
-  val pred = PartialReportingEntityData(List(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701)
+  val pred = PartialReportingEntityData(List(DocRefIdPair(docRefId,None)),Some(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701,Some(LocalDate.now()))
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 

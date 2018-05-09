@@ -27,6 +27,7 @@ import scala.util.{Failure, Success}
 import reactivemongo.api.indexes.IndexType.Ascending
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 abstract class IndexBuilder(implicit ec:ExecutionContext) {
 
@@ -37,7 +38,7 @@ abstract class IndexBuilder(implicit ec:ExecutionContext) {
 
   private val indexManager: Future[CollectionIndexesManager] = mongo.database.map(_.collection[JSONCollection](collectionName).indexesManager)
 
-  indexManager.foreach(manager => manager.list().foreach { mongoIndexes =>
+  indexManager.map(manager => manager.list().foreach { mongoIndexes =>
     Future.sequence(cbcIndexes.map { cbcIndex =>
       if (!mongoIndexes.exists(_.name.contains(cbcIndex.name))) {
         createUniqueIndex(manager, cbcIndex.id, cbcIndex.name)
@@ -51,7 +52,9 @@ abstract class IndexBuilder(implicit ec:ExecutionContext) {
         Logger.error("Failed to create Indexes", t)
         throw t
     }
-  })
+  }).recover{
+    case NonFatal(e) => Logger.error(s"Unable to create Index: ${e.getMessage}", e)
+  }
 
 
   private def createUniqueIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Unit] = {
