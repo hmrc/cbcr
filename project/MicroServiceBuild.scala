@@ -16,7 +16,7 @@ object MicroServiceBuild extends Build with MicroService {
     ws,
     "uk.gov.hmrc" %% "auth-client" % "2.2.0",
     "uk.gov.hmrc" %% "play-auth" % "2.5.0",
-    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.9.0",
+    "uk.gov.hmrc" %% "microservice-bootstrap" % "6.18.0",
     "uk.gov.hmrc" %% "domain" % "4.1.0",
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
     "com.typesafe.akka" %% "akka-persistence" % "2.4.14",
