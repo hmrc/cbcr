@@ -56,7 +56,17 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   Logger.info(s"doMigration set to: $doMigration")
 
   if (doMigration) {
-    val output = repo.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA).flatMap { list =>
+    val doPartialMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performPartialMigration").valueOr(_ => false)
+    Logger.info(s"doPartialMigration set to: $doPartialMigration")
+
+    val migrationCriteria = if (doPartialMigration) {
+      val cbcIds: List[CBCId] = configuration.underlying.get[String](s"${runMode.env}.CBCId.cbcIds").valueOr(_ => "").split("_").toList.flatMap(CBCId.apply)
+      Json.obj("cbcId" -> Json.obj("$in" -> cbcIds))
+    } else {
+      DataMigrationCriteria.LOCAL_CBCID_CRITERIA
+    }
+
+    val output = repo.getSubscriptions(migrationCriteria).flatMap { list =>
       Logger.warn(s"Migrating old CBCId to ETMP as idempotent function: got ${list.size} subscriptions to migrate from mongo")
       list.foldLeft(Future.successful(List.empty[String]))((eventualStrings: Future[List[String]], details: SubscriptionDetails) =>
         migrationRequest(details).fold(eventualStrings)(mr => eventualStrings.flatMap(ls => migrate(mr).map(s => s::ls)))
