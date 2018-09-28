@@ -94,7 +94,7 @@ import scala.concurrent.duration.Duration
     def createMigration(mig:MigrationRequest) : Future[HttpResponse] = {
       implicit val hc: HeaderCarrier = createHeaderCarrier
       implicit val writes = MigrationRequest.migrationWriter
-      Logger.info(s"Migration Request sent to DES: ${Json.toJson(mig)} for CBCId: ${mig.cBCId}")
+      Logger.info(s"Migration Request sent to DES for safeId: ${mig.safeId} and CBCId: ${mig.cBCId}")
 
       Logger.warn(s"stubMigration set to: $stubMigration")
       val res = Promise[HttpResponse]()
@@ -104,7 +104,10 @@ import scala.concurrent.duration.Duration
           Thread.sleep(delayMigration)
           http.POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig).recover {
             case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
-          }.map(r => res.success(r))
+          }.map(r => {
+            Logger.info(s"Migration Status for safeId: ${mig.safeId} and cBCId: ${mig.cBCId} ${r.status}")
+            res.success(r)
+          })
         } else {
           Logger.info("in migration stub")
 

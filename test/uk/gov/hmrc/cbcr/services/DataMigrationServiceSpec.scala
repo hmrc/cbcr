@@ -70,7 +70,7 @@ class DataMigrationServiceSpec  extends UnitSpec with MockitoSugar with MockAuth
       when(desConnector.createMigration(any())) thenReturn Future.successful(HttpResponse(responseStatus = 200))
       when(runMode.env) thenReturn "Dev"
 
-      new DataMigrationService(store, desConnector, config ++ Configuration("Dev.CBCId.performMigration" -> true), runMode)
+      new DataMigrationService(store, desConnector, config ++ Configuration("Dev.CBCId.performMigration" -> true) ++ Configuration("Dev.CBCId.performPartialMigration" -> false), runMode)
 
 
       eventually {
