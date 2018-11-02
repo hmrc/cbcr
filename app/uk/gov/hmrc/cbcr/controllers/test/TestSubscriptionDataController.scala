@@ -123,4 +123,15 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     }
   }
 
+  def deleteReportingEntityReportingPeriod(docRefId:String) = Action.async {
+    implicit request => {
+      val dri = DocRefId(docRefId)
+
+      reportingEntityDataRepo.deleteReportingPeriod(dri).map {
+        case n if n>0 => Ok
+        case _ => NotModified
+      }
+    }
+  }
+
 }

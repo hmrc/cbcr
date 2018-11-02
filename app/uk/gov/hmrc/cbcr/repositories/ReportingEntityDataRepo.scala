@@ -146,4 +146,13 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       found      <- collection.count(Some(criteria))
     } yield found
   }
+
+  def deleteReportingPeriod(d:DocRefId) : Future[Int] = {
+    val criteria = Json.obj("cbcReportsDRI" -> d.id)
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
+    } yield update.nModified
+  }
+
 }
