@@ -38,7 +38,8 @@ case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
                                tin:TIN,
                                ultimateParentEntity: UltimateParentEntity,
                                reportingRole: ReportingRole,
-                               creationDate: Option[LocalDate])
+                               creationDate: Option[LocalDate],
+                               reportingPeriod: Option[LocalDate])
 
 case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
@@ -49,7 +50,8 @@ case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
                                       tin:TIN,
                                       ultimateParentEntity: UltimateParentEntity,
                                       reportingRole: ReportingRole,
-                                      creationDate: Option[LocalDate])
+                                      creationDate: Option[LocalDate],
+                                      reportingPeriod: Option[LocalDate])
 
 object PartialReportingEntityData {
   implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
@@ -73,8 +75,9 @@ object ReportingEntityData{
     (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
     (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
     (JsPath \ "reportingRole").read[ReportingRole] and
-    (JsPath \ "creationDate").readNullable[LocalDate]
-    )(ReportingEntityData.apply(_,_,_,_,_,_,_))
+    (JsPath \ "creationDate").readNullable[LocalDate] and
+    (JsPath \ "reportingPeriod").readNullable[LocalDate]
+    )(ReportingEntityData.apply(_,_,_,_,_,_,_,_))
 
   implicit val writes = Json.writes[ReportingEntityData]
 
