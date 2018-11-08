@@ -35,6 +35,7 @@ trait EmailConnector extends ServicesConfig {
   val serviceUrl: String
   val port: String
   val host: String
+  val protocol: String
 
   def http: HttpPost
 }
@@ -47,7 +48,8 @@ class EmailConnectorImpl @Inject()(config: Configuration)(implicit ec: Execution
   val conf: Config = config.underlying.getConfig("microservice.services.email")
   val host = conf.getString("host")
   val port = conf.getInt("port").toString
-  val serviceUrl = s"http://$host:$port/hmrc"
+  val protocol = conf.getString("protocol")
+  val serviceUrl = s"$protocol://$host:$port/hmrc"
 
   def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     http.POST[Email, HttpResponse](s"$serviceUrl/email/", email)
