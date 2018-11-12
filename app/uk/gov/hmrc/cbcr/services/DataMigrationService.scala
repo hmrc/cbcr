@@ -51,9 +51,6 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
     }
   }
 
-  val doMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performMigration").valueOr(_ => false)
-  Logger.info(s"doMigration set to: $doMigration")
-
   val updateCountryCode: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.cleanData.performCleanData").valueOr(_ => false)
   Logger.info(s"cleanSubscriptoinData set to: $updateCountryCode")
 
@@ -73,6 +70,9 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
       )
     else Logger.info(s"countryCode $cc is invalid")
   }
+
+  val doMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performMigration").valueOr(_ => false)
+  Logger.info(s"doMigration set to: $doMigration")
 
   if (doMigration) {
     val doPartialMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performPartialMigration").valueOr(_ => false)
