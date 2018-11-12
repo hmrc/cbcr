@@ -77,6 +77,13 @@ class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoAp
     } yield update.value.isDefined
   }
 
+  def update(criteria: JsObject, cc: CountryCode): Future[Boolean] = {
+    val modifier = Json.obj("$set" -> Json.obj("businessPartnerRecord.address.countryCode" -> cc))
+    for {
+      collection <- repository
+      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+    } yield update.value.isDefined
+  }
 
   def save(s:SubscriptionDetails) : Future[WriteResult] =
     repository.flatMap(_.insert(s))
