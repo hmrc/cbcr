@@ -17,11 +17,10 @@
 package uk.gov.hmrc.cbcr.services
 
 import javax.inject.Inject
-
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
@@ -50,6 +49,26 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
         )
       )
     }
+  }
+
+  val updateCountryCode: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.cleanData.performCleanData").valueOr(_ => false)
+  Logger.info(s"cleanSubscriptoinData set to: $updateCountryCode")
+
+  if (updateCountryCode) {
+    val cbcId: String = configuration.underlying.get[String](s"${runMode.env}.CBCId.cleanData.cbcId").valueOr(_ => "")
+    val safeId: String = configuration.underlying.get[String](s"${runMode.env}.CBCId.cleanData.safeId").valueOr(_ => "")
+    val cleanCriteria = {
+      Json.obj("cbcId" -> JsString(cbcId),
+        "businessPartnerRecord.safeId" -> JsString(safeId))
+    }
+
+    val cc: CountryCode = CountryCode(configuration.underlying.get[String](s"${runMode.env}.CBCId.cleanData.countryCode").valueOr(_ => ""))
+    if (cc.isValid)
+      repo.update(cleanCriteria, cc).map(cleaned =>
+        if (cleaned) Logger.info(s"countryCode for Subscription with safeId: $safeId and cbcId: $cbcId set to ${cc.toString}")
+        else Logger.info(s"FAILED to update countryCode for Subscription with safeId: $safeId and cbcId: $cbcId")
+      )
+    else Logger.info(s"countryCode $cc is invalid")
   }
 
   val doMigration: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.performMigration").valueOr(_ => false)
