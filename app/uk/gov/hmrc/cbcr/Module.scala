@@ -79,6 +79,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
     bind(classOf[DocRefIdClearService]).asEagerSingleton()
     bind(classOf[AuditSubscriptionService]).asEagerSingleton()
+    bind(classOf[RetrieveReportingEntityService]).asEagerSingleton()
 
   }
 }
