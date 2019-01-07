@@ -31,6 +31,7 @@ import uk.gov.hmrc.cbcr.models._
 
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.Logger
 
 @Singleton
 class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) extends IndexBuilder {
@@ -92,6 +93,19 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Json.obj("reportingEntityDRI" -> d.id)
     ))
     repository.flatMap(_.find(criteria).one[ReportingEntityData])
+  }
+
+  def query(d:String) : Future[List[ReportingEntityData]] = {
+    val criteria = Json.obj("$or" -> Json.arr(
+      Json.obj("cbcReportsDRI"      -> Json.obj("$regex" -> (".*" + d + ".*" ))),
+      Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + d + ".*" ))),
+      Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + d + ".*" )))
+    ))
+    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
+    repository.flatMap(_.find(criteria)
+      .cursor[ReportingEntityData]()
+      .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]())
+    )
   }
 
   def getAll: Future[List[ReportingEntityDataOld]] =
