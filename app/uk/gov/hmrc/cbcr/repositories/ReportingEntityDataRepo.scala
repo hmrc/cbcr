@@ -101,7 +101,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + d + ".*" ))),
       Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + d + ".*" )))
     ))
-    Logger.info(s"+++++++++++++++++++++  query criteria: $criteria")
+    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
     repository.flatMap(_.find(criteria)
       .cursor[ReportingEntityData]()
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]())
