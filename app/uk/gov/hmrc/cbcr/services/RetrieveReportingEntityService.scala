@@ -31,15 +31,21 @@ class RetrieveReportingEntityService @Inject() (repo:ReportingEntityDataRepo,
                                                 audit: AuditConnectorI) (implicit ex: ExecutionContext) {
 
   val retrieveReportingEntity: Boolean = configuration.getBoolean(s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
-  Logger.info(s"auditSubscriptions set to: $retrieveReportingEntity")
+  Logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
 
   if (retrieveReportingEntity) {
-    val docRefId: DocRefId = DocRefId(configuration.getString(s"${runMode.env}.retrieve.docRefId").getOrElse(""))
-    Logger.info(s"docRefId to retireve = ${docRefId.id}")
+//    val docRefId: DocRefId = DocRefId(configuration.getString(s"${runMode.env}.retrieve.docRefId").getOrElse(""))
+    val docRefId: String = configuration.getString(s"${runMode.env}.retrieve.docRefId").getOrElse("")
+    Logger.info(s"docRefId to retireve = ${docRefId}")
 
-    repo.query(docRefId).map(red => red match {
-      case Some(red) => Logger.info(s"reportingEntityData for docRefId ${docRefId.id} = ${Json.toJson(red)}")
-      case _ => Logger.info(s"No ReportingEntityData found for docRefId ${docRefId.id}")
-    })
+//    repo.query(docRefId).map(red => red match {
+//      case Some(red) => Logger.info(s"reportingEntityData for docRefId ${docRefId} = ${Json.toJson(red)}")
+//      case _ => Logger.info(s"No ReportingEntityData found for docRefId ${docRefId}")
+//    })
+
+    repo.query(docRefId).map(red =>
+      if(red.size > 0) red.foreach(r => Logger.info(s"reportingEntityData for docRefId ${docRefId} = ${Json.toJson(r)}"))
+      else Logger.info(s"no reportingEntityData found for docRefIds matching $docRefId")
+    )
   }
 }
