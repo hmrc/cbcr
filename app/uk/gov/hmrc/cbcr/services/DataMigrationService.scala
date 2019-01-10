@@ -52,7 +52,7 @@ class DataMigrationService @Inject() (repo:SubscriptionDataRepository, des:DESCo
   }
 
   val updateCountryCode: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.cleanData.performCleanData").valueOr(_ => false)
-  Logger.info(s"cleanSubscriptoinData set to: $updateCountryCode")
+  Logger.info(s"updateCountryCode set to: $updateCountryCode")
 
   if (updateCountryCode) {
     val cbcId: String = configuration.underlying.get[String](s"${runMode.env}.CBCId.cleanData.cbcId").valueOr(_ => "")
