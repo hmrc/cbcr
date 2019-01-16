@@ -33,7 +33,7 @@ case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
 object ReportingEntityDataOld{ implicit val format = Json.format[ReportingEntityDataOld] }
 
 case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
-                               additionalInfoDRI:Option[DocRefId],
+                               additionalInfoDRI:List[DocRefId],
                                reportingEntityDRI:DocRefId,
                                tin:TIN,
                                ultimateParentEntity: UltimateParentEntity,
@@ -45,7 +45,7 @@ case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
 
 case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
-                                      additionalInfoDRI:Option[DocRefIdPair],
+                                      additionalInfoDRI:List[DocRefIdPair],
                                       reportingEntityDRI:DocRefIdPair,
                                       tin:TIN,
                                       ultimateParentEntity: UltimateParentEntity,
@@ -70,7 +70,7 @@ object ReportingEntityData{
   import PartialReportingEntityData.formatNEL
   implicit val reads:Reads[ReportingEntityData]= (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
-    (JsPath \ "additionalInfoDRI").readNullable[DocRefId] and
+    (JsPath \ "additionalInfoDRI").read[List[DocRefId]] and
     (JsPath \ "reportingEntityDRI").read[DocRefId] and
     (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
     (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and

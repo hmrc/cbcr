@@ -116,7 +116,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   private def buildModifier(p:PartialReportingEntityData) : JsObject = {
     val x: immutable.Seq[(String, JsValue)] = List(
-      p.additionalInfoDRI.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id)),
+      p.additionalInfoDRI.headOption.map { _ => "additionalInfoDRI" -> JsArray(p.additionalInfoDRI.map(d => JsString(d.docRefId.id)))},
       p.cbcReportsDRI.headOption.map { _ => "cbcReportsDRI" -> JsArray(p.cbcReportsDRI.map(d => JsString(d.docRefId.id))) },
       p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> JsString(p.reportingEntityDRI.docRefId.id)),
       Some("reportingRole" -> JsString(p.reportingRole.toString)),
@@ -130,10 +130,10 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   private def buildUpdateCriteria(p:PartialReportingEntityData) : JsObject = {
-    val l: immutable.Seq[JsObject] = List(
-      p.additionalInfoDRI.flatMap(_.corrDocRefId.map(c => Json.obj("additionalInfoDRI" -> c.cid.id))),
-      p.reportingEntityDRI.corrDocRefId.map(c =>          Json.obj("reportingEntityDRI" -> c.cid.id))
-    ).flatten ++ p.cbcReportsDRI.map(_.corrDocRefId.map(c =>     Json.obj("cbcReportsDRI" -> c.cid.id))).flatten
+    val l: immutable.Seq[JsObject] =
+      p.additionalInfoDRI.map(_.corrDocRefId.map(c => Json.obj("additionalInfoDRI" -> c.cid.id))).flatten ++
+      p.reportingEntityDRI.corrDocRefId.map(c => Json.obj("reportingEntityDRI" -> c.cid.id)) ++
+      p.cbcReportsDRI.map(_.corrDocRefId.map(c =>     Json.obj("cbcReportsDRI" -> c.cid.id))).flatten
 
     Json.obj("$and" -> JsArray(l))
   }
