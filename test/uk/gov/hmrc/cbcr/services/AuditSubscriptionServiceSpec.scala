@@ -31,6 +31,7 @@ import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.audit.http.connector.AuditResult
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
 
 class AuditSubscriptionServiceSpec extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite with Eventually {
   val config = app.injector.instanceOf[Configuration]
@@ -65,7 +66,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockitoSugar with MockA
     }
     "make an audit call" in {
       when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
-      eventually{ verify(mockAudit, times(1)).sendExtendedEvent(any())(any(),any()) }
+      eventually(timeout(6.seconds), interval(15.millis)){ verify(mockAudit, times(1)).sendExtendedEvent(any())(any(),any()) }
     }
   }
 
