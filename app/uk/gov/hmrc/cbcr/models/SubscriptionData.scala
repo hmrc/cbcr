@@ -21,7 +21,7 @@ import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
 import play.api.libs.functional.syntax._ // Combinator syntax
 
-case class SubscriberContact(name: Option[String], firstName:Option[String], lastName:Option[String], phoneNumber:PhoneNumber, email:EmailAddress)
+case class SubscriberContact(name: Option[String], firstName:String, lastName:String, phoneNumber:PhoneNumber, email:EmailAddress)
 object SubscriberContact {
 
   implicit val formats :Format[SubscriberContact] = Json.format[SubscriberContact]
@@ -37,8 +37,8 @@ object SubscriberContact {
 
     implicit val subscriberContactReads: Reads[SubscriberContact] =
       ((JsPath \ "name").readNullable[String] and
-        (JsPath \ "firstName").readNullable[String] and
-        (JsPath \ "lastName").readNullable[String] and
+        (JsPath \ "firstName").read[String] and
+        (JsPath \ "lastName").read[String] and
         (JsPath \ "phoneNumber").read[PhoneNumber] and
         (JsPath \ "email").read[EmailAddress]) (SubscriberContact.apply _)
 

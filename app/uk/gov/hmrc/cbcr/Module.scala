@@ -75,8 +75,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
 
-//    bind(classOf[DataMigrationService]).asEagerSingleton()
-//    bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
+///    bind(classOf[ReportingEntityDataRepo]).asEagerSingleton()
 //    bind(classOf[DocRefIdClearService]).asEagerSingleton()
 //    bind(classOf[AuditSubscriptionService]).asEagerSingleton()
 //    bind(classOf[RetrieveReportingEntityService]).asEagerSingleton()

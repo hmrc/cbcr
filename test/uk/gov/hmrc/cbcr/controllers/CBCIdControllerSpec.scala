@@ -53,7 +53,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
 
   val srb = SubscriptionDetails(
     BusinessPartnerRecord("SafeID",Some(OrganisationResponse("Name")), EtmpAddress("Some ave",None,None,None,None, "GB")),
-    SubscriberContact(name = None, Some("dave"), Some("jones"), PhoneNumber("123456789").get,EmailAddress("bob@bob.com")),
+    SubscriberContact(name = None, "dave", "jones", PhoneNumber("123456789").get,EmailAddress("bob@bob.com")),
     None,
     Utr("7000000002")
   )

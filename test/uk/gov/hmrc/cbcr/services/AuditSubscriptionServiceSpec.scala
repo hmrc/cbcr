@@ -51,8 +51,8 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockitoSugar with MockA
   val testConfigFalse = Configuration("Dev.audit.subscriptions" -> false)
   val testConfigCbcIds = Configuration("Dev.audit.cbcIds" -> "XFCBC0100000026_XGCBC0100000027")
   val bpr = BusinessPartnerRecord("MySafeID", Some(OrganisationResponse("Dave Corp")), EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
-  val subscrptionDetails1 = SubscriptionDetails(bpr, SubscriberContact(name = None, Some("Dave"), Some("Jones"), phoneNumber.get, email), cbcid1, Utr("utr"))
-  val subscrptionDetails2 = SubscriptionDetails(bpr, SubscriberContact(name = None, Some("Bob"), Some("Smith"), phoneNumber.get, email), cbcid2, Utr("utr"))
+  val subscrptionDetails1 = SubscriptionDetails(bpr, SubscriberContact(name = None, "Dave", "Jones", phoneNumber.get, email), cbcid1, Utr("utr"))
+  val subscrptionDetails2 = SubscriptionDetails(bpr, SubscriberContact(name = None, "Bob", "Smith", phoneNumber.get, email), cbcid2, Utr("utr"))
   val sd: List[SubscriptionDetails] = List(subscrptionDetails1, subscrptionDetails2)
 
   when(runMode.env) thenReturn "Dev"

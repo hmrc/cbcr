@@ -52,7 +52,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
   val config = app.injector.instanceOf[Configuration]
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, Some("Dave"),Some("Jones"),PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
+  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
 
   val desConnector = mock[DESConnector]
   when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List())
