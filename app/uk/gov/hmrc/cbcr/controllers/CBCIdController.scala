@@ -59,7 +59,7 @@ class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth)
       CorrespondenceDetails(
         s.businessPartnerRecord.address,
         ContactDetails(s.subscriberContact.email, s.subscriberContact.phoneNumber),
-        ContactName(s.subscriberContact.firstName.getOrElse(""), s.subscriberContact.lastName.getOrElse(""))
+        ContactName(s.subscriberContact.firstName, s.subscriberContact.lastName)
       )
     )
   }

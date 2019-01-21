@@ -70,7 +70,7 @@ class LocalSubscriptionSpec  extends TestKit(ActorSystem("CBCIdControllerSpec",C
   }
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, Some("Dave"), Some("Jones"),PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
+  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave", "Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
 
   val cd = CorrespondenceDetails(
       EtmpAddress("line1",None,None,None,None,"GB"),
@@ -118,7 +118,7 @@ class LocalSubscriptionSpec  extends TestKit(ActorSystem("CBCIdControllerSpec",C
 
         val jResponse = GetResponse(
           bpr.safeId,
-          ContactName(exampleSubscriptionData.subscriberContact.firstName.getOrElse(""),exampleSubscriptionData.subscriberContact.lastName.getOrElse("")),
+          ContactName(exampleSubscriptionData.subscriberContact.firstName,exampleSubscriptionData.subscriberContact.lastName),
           ContactDetails(exampleSubscriptionData.subscriberContact.email,exampleSubscriptionData.subscriberContact.phoneNumber),
           exampleSubscriptionData.businessPartnerRecord.address
         )
