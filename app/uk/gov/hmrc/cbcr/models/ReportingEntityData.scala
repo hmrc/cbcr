@@ -70,7 +70,7 @@ object ReportingEntityData{
   import PartialReportingEntityData.formatNEL
   implicit val reads:Reads[ReportingEntityData]= (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
-    (JsPath \ "additionalInfoDRI").read[List[DocRefId]] and
+    (JsPath \ "additionalInfoDRI").read[List[DocRefId]].orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
     (JsPath \ "reportingEntityDRI").read[DocRefId] and
     (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
     (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
