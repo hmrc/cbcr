@@ -17,11 +17,11 @@
 package uk.gov.hmrc.cbcr.connectors
 
 import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
 import com.typesafe.config.Config
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.Email
+import uk.gov.hmrc.gg.config.GenericAppConfig
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.play.http.ws.{WSGet, WSHttp, WSPost}
@@ -41,9 +41,11 @@ trait EmailConnector extends ServicesConfig {
 }
 
 @Singleton
-class EmailConnectorImpl @Inject()(config: Configuration)(implicit ec: ExecutionContext) extends EmailConnector {
-  val http =  new HttpPost  with WSPost {
+class EmailConnectorImpl @Inject()(config: Configuration)(implicit ec: ExecutionContext) extends EmailConnector with GenericAppConfig {
+  val http =  new HttpPost  with WSPost with GenericAppConfig {
     override val hooks: Seq[HttpHook] = NoneRequired
+
+    override protected def configuration: Option[Config] = Some(runModeConfiguration.underlying)
   }
   val conf: Config = config.underlying.getConfig("microservice.services.email")
   val host = conf.getString("host")

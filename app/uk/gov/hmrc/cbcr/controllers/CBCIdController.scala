@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject._
-
 import play.api.mvc.{Action, Result}
 import play.api.Logger
 import play.api.libs.json.JsValue
@@ -25,6 +24,7 @@ import play.api.mvc.{Action, Request, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
+import uk.gov.hmrc.gg.config.GenericAppConfig
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth)
-                               (implicit ec: ExecutionContext) extends BaseController with ServicesConfig {
+                               (implicit ec: ExecutionContext) extends BaseController with ServicesConfig with GenericAppConfig {
 
   def subscribe = auth.authCBCRWithJson({ implicit request: Request[JsValue] =>
     request.body.validate[SubscriptionDetails].fold[Future[Result]](
