@@ -12,7 +12,7 @@ object MicroServiceBuild extends Build with MicroService {
     "org.reactivemongo" %% "play2-reactivemongo" % "0.16.0-play25",
     "org.reactivemongo" %% "reactivemongo-bson" % "0.16.0-play25",
     "org.reactivemongo" %% "reactivemongo-akkastream" % "0.16.1",
-    "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "1.4.3",
+    "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "2.2.2",
     ws,
     "uk.gov.hmrc" %% "auth-client" % "2.19.0-play-25",
     "uk.gov.hmrc" %% "play-auth" % "2.5.0",
