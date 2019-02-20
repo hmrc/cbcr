@@ -60,7 +60,13 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.INTERNAL_SERVER_ERROR
 
     }
+    "respond with a 400 if the DES service returns BAD_REQUEST" in {
+      val utr = "700000002"
+      val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
+      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse(Status.BAD_REQUEST))
+      status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.BAD_REQUEST
 
+    }
   }
 
 

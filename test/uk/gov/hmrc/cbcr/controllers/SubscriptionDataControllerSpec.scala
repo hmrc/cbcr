@@ -26,7 +26,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
@@ -53,12 +53,19 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
   val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
+  val exampleSubscriberContact = SubscriberContact(None,"firstName","lastName",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com"))
 
   val desConnector = mock[DESConnector]
   when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List())
   val controller = new SubscriptionDataController(store,desConnector,cBCRAuth,config)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
+
+  val BadFakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(Json.obj("bad" -> "request"))
+
+  val fakePutRequest= FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(toJson(exampleSubscriberContact))
+
+  val badFakePutRequest= FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(Json.obj("bad" -> "request"))
 
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveSubscriptionData")
 
@@ -79,10 +86,32 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
       status(result) shouldBe Status.OK
     }
 
-    "respond with a 500 if there is a DB failure" in {
+    "respond with a 500 if there is a DB failure during save" in {
       when(store.save(any(classOf[SubscriptionDetails]))).thenReturn(Future.successful(failResult))
       val result = controller.saveSubscriptionData()(fakePostRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "respond with a 400 if invalid SubscriptionData passed in request" in {
+      val result = controller.saveSubscriptionData()(BadFakePostRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "respond with a 200 when asked to update SubscriptionData" in {
+      when(store.update(any(),any(classOf[SubscriberContact]))) thenReturn Future.successful(true)
+      val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "respond with a 500 if there is a DB failure during update" in {
+      when(store.update(any(),any(classOf[SubscriberContact]))) thenReturn Future.successful(false)
+      val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "respond with a 400 if invalid SubscriberContact passed in request" in {
+      val result = controller.updateSubscriberContactDetails(cbcId)(badFakePutRequest)
+      status(result) shouldBe Status.BAD_REQUEST
     }
 
     "respond with a 200 and a SubscriptionData when asked to retrieve an existing CBCID" in {

@@ -21,10 +21,55 @@ trait MicroService {
   lazy val plugins : Seq[Plugins] = Seq.empty
   lazy val playSettings : Seq[Setting[_]] = Seq.empty
 
+  lazy val excludedPackages = Seq(
+    "<empty>",
+    "Reverse*",
+    "models/.data/..*",
+    "view.*",
+    ".*standardError*.*",
+    ".*govuk_wrapper*.*",
+    ".*main_template*.*",
+    "uk.gov.hmrc.BuildInfo",
+    "app.*",
+    "prod.*",
+    "config.*",
+    "testOnlyDoNotUseInAppConf.*",
+    "testOnly.*",
+    "test",
+    "uk.gov.hmrc",
+    "uk.gov.hmrc.cbcr.repositories.*",
+    "uk.gov.hmrc.cbcr.connectors.*",
+    "uk.gov.hmrc.cbcr.audit.*",
+    "uk.gov.hmrc.cbcr.controllers.test.*",
+    "uk.gov.hmrc.cbcr.services.RetrieveReportingEntityService",
+    "uk.gov.hmrc.cbcr.services.DataMigrationCriteria",
+    "uk.gov.hmrc.cbcr",
+    "uk.gov.hmrc.cbcr.models.ContactDetails",
+    "uk.gov.hmrc.cbcr.models.CorrDocRefId",
+    "uk.gov.hmrc.cbcr.models.CorrespondenceDetails",
+    "uk.gov.hmrc.cbcr.models.CountryCode",
+    "uk.gov.hmrc.cbcr.models.DbOperationResult",
+    "uk.gov.hmrc.cbcr.models.InvalidState",
+    "uk.gov.hmrc.cbcr.models.MessageRefId",
+    "uk.gov.hmrc.cbcr.models.MigrationRequest",
+    "uk.gov.hmrc.cbcr.models.SubscriptionRequest",
+    "uk.gov.hmrc.cbcr.models.Utr*"
+  )
+
+  lazy val scoverageSettings = {
+    import scoverage._
+    Seq(
+      ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
+      ScoverageKeys.coverageMinimum := 80,
+      ScoverageKeys.coverageFailOnMinimum := false,
+      ScoverageKeys.coverageHighlighting := true
+    )
+  }
+
 
   lazy val microservice = Project(appName, file("."))
     .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins : _*)
-    .settings(playSettings : _*)
+    .settings(playSettings ++ scoverageSettings : _*)
     .settings(scalaSettings: _*)
     .settings(playDefaultPort := 9797)
     .settings(publishingSettings: _*)

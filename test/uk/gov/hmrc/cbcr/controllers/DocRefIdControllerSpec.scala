@@ -122,6 +122,11 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
+      "respond with a 500 if returns none" in {
+        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> None))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      }
     }
     "be able to delete a DocRefId" when {
       val runMode = mock[RunMode]
@@ -141,6 +146,11 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
         when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(false, 0, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+      }
+      "return NOT_IMPLEMENTED if enableTestApis = false" in {
+        val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> false),cBCRAuth, runMode)
+        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
+        status(result) shouldBe Status.NOT_IMPLEMENTED
       }
     }
   }

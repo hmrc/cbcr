@@ -108,6 +108,18 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     )
   }
 
+  def query(c:String, r:String) : Future[Option[ReportingEntityData]] = {
+    val criteria = Json.obj("$and" -> Json.arr(
+      Json.obj("$or" -> Json.arr(
+        Json.obj("cbcReportsDRI"      -> Json.obj("$regex" -> (".*" + c + ".*" ))),
+        Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + c + ".*" ))),
+        Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + c + ".*" )))
+      )),
+      Json.obj("reportingPeriod" -> r)
+    ))
+    repository.flatMap(_.find(criteria).one[ReportingEntityData])
+  }
+
   def getAll: Future[List[ReportingEntityDataOld]] =
     repository.flatMap(_.find(JsObject(Seq.empty))
       .cursor[ReportingEntityDataOld]()

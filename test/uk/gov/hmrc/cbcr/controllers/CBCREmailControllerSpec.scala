@@ -25,6 +25,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.EmailService
 import uk.gov.hmrc.play.test.UnitSpec
+import play.api.http.Status
 
 import scala.concurrent.Future
 import play.api.mvc.Results.Accepted
@@ -42,6 +43,13 @@ class CBCREmailControllerSpec extends UnitSpec with MockitoSugar with ScalaFutur
       when(mockEmailService.sendEmail(any())(any())) thenReturn Future.successful(Accepted)
 
       val response = cbcrEmailController.sendEmail()(fakeRequestSubscribe)
+      status(response) shouldBe Status.ACCEPTED
+    }
+    "return a 400 for a call with invalid email" in {
+      val fakeRequestSubscribe = FakeRequest("POST", "/email").withBody(Json.obj("bad" -> "request"))
+
+      val response = cbcrEmailController.sendEmail()(fakeRequestSubscribe)
+      status(response) shouldBe Status.BAD_REQUEST
     }
   }
 }

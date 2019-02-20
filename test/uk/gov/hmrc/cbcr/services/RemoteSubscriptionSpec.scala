@@ -105,6 +105,16 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
         val response = generator.createSubscription(srb)
         status(response) shouldEqual SERVICE_UNAVAILABLE
       }
+      "returns a 500 if unhandled response received" in {
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(UPGRADE_REQUIRED, responseJson = Some(Json.obj("something" -> 1))))
+        val response = generator.createSubscription(srb)
+        status(response) shouldEqual INTERNAL_SERVER_ERROR
+      }
+      "returns a 500 if response json is null" in {
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(OK, responseJson = None))
+        val response = generator.createSubscription(srb)
+        status(response) shouldEqual INTERNAL_SERVER_ERROR
+      }
     }
     "be able to update a user" which {
       "returns a 200 when provided with all the correct data" in {

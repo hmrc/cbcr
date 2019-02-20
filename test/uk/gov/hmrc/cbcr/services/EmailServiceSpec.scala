@@ -28,7 +28,8 @@ import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
+import uk.gov.hmrc.play.audit.http.connector.AuditResult
+import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Success,Disabled,Failure}
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.Future
@@ -60,6 +61,26 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with OneAppPerSuite wi
 
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
+      when(runMode.env) thenReturn "Dev"
+
+      val result: Future[Result] = emailService.sendEmail(correctEmail)
+      await(result) shouldBe BadRequest
+    }
+
+    "return 400 when everything is ok but audit fails" in {
+
+      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400))
+      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Failure("test to designed to provoke an emotional response",None))
+      when(runMode.env) thenReturn "Dev"
+
+      val result: Future[Result] = emailService.sendEmail(correctEmail)
+      await(result) shouldBe BadRequest
+    }
+
+    "return 400 when everything is ok but audit disabled" in {
+
+      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400))
+      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Disabled)
       when(runMode.env) thenReturn "Dev"
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
