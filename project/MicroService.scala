@@ -35,8 +35,25 @@ trait MicroService {
     "config.*",
     "testOnlyDoNotUseInAppConf.*",
     "testOnly.*",
-    "uk.gov.hmrc.cbcr.controllers.test",
-    "test"
+    "test",
+    "uk.gov.hmrc",
+    "uk.gov.hmrc.cbcr.repositories.*",
+    "uk.gov.hmrc.cbcr.connectors.*",
+    "uk.gov.hmrc.cbcr.audit.*",
+    "uk.gov.hmrc.cbcr.controllers.test.*",
+    "uk.gov.hmrc.cbcr.services.RetrieveReportingEntityService",
+    "uk.gov.hmrc.cbcr.services.DataMigrationCriteria",
+    "uk.gov.hmrc.cbcr",
+    "uk.gov.hmrc.cbcr.models.ContactDetails",
+    "uk.gov.hmrc.cbcr.models.CorrDocRefId",
+    "uk.gov.hmrc.cbcr.models.CorrespondenceDetails",
+    "uk.gov.hmrc.cbcr.models.CountryCode",
+    "uk.gov.hmrc.cbcr.models.DbOperationResult",
+    "uk.gov.hmrc.cbcr.models.InvalidState",
+    "uk.gov.hmrc.cbcr.models.MessageRefId",
+    "uk.gov.hmrc.cbcr.models.MigrationRequest",
+    "uk.gov.hmrc.cbcr.models.SubscriptionRequest",
+    "uk.gov.hmrc.cbcr.models.Utr*"
   )
 
   lazy val scoverageSettings = {

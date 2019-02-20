@@ -69,10 +69,31 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
 
   "Calls to delete a ReportingEntityData entry that does not exist" should {
     "complete without error" in {
+
       reset(reportingEntityDataRepo)
       reset(mockAudit)
       when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
       when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Success)
+
+      new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode, mockAudit)
+      eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
+      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(),any()) }
+    }
+    "complete without error but audit fails" in {
+      reset(reportingEntityDataRepo)
+      reset(mockAudit)
+      when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
+      when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Failure("Audit Failure", None))
+
+      new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode, mockAudit)
+      eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
+      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(),any()) }
+    }
+    "complete without error but audit disabled" in {
+      reset(reportingEntityDataRepo)
+      reset(mockAudit)
+      when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
+      when(mockAudit.sendExtendedEvent(any())(any(),any())) thenReturn Future.successful(AuditResult.Disabled)
 
       new DocRefIdClearService(docRefIdRepo,reportingEntityDataRepo,config ++ testConfig,runMode, mockAudit)
       eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }

@@ -23,7 +23,7 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import play.api.http.Status
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
@@ -47,6 +47,8 @@ class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with S
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fir))
 
+  val badFakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(Json.obj("bad" -> "request"))
+
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveFileUploadResponse")
 
   implicit val as = ActorSystem()
@@ -67,6 +69,12 @@ class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with S
       when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "respond with a 400 if UploadFileResponse in request is invalid" in {
+      when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
+      val result = controller.saveFileUploadResponse(badFakePostRequest)
+      status(result) shouldBe Status.BAD_REQUEST
     }
 
     "respond with a 200 and a FileUploadResponse when asked to retrieve an existing envelopeId" in {

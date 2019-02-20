@@ -126,6 +126,13 @@ class LocalSubscriptionSpec  extends TestKit(ActorSystem("CBCIdControllerSpec",C
         jsonBodyOf(response).futureValue shouldEqual Json.toJson(jResponse)
 
       }
+
+      "queries our own subscription store but finds nothing" in {
+        when(repo.get(exampleSubscriptionData.businessPartnerRecord.safeId)) thenReturn OptionT.none[Future,SubscriptionDetails]
+        val response = localGen.getSubscription(exampleSubscriptionData.businessPartnerRecord.safeId)
+        status(response) shouldBe Status.NOT_FOUND
+
+      }
     }
   }
 
