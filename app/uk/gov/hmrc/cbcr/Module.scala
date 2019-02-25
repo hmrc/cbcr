@@ -22,8 +22,10 @@ import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
+import com.typesafe.config.Config
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.services._
 import uk.gov.hmrc.http.HttpPost
@@ -69,8 +71,10 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     if (graphiteEnabled) startGraphite
 
-    bind(classOf[HttpPost]).toInstance(new HttpPost  with WSPost{
+    bind(classOf[HttpPost]).toInstance(new HttpPost  with WSPost with GenericAppConfig {
       override val hooks: Seq[HttpHook] = NoneRequired
+
+      override protected def configuration: Option[Config] = Some(runModeConfiguration.underlying)
     })
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))

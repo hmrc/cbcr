@@ -17,8 +17,8 @@
 package uk.gov.hmrc.cbcr.connectors
 
 import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
+import com.typesafe.config.Config
 import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
@@ -34,6 +34,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpGet, HttpPost, HttpPu
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.http.logging.Authorization
 import configs.syntax._
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.services.RunMode
 
 import scala.concurrent.duration.Duration
@@ -142,14 +143,16 @@ import scala.concurrent.duration.Duration
   class DESConnectorImpl @Inject() (val ec: ExecutionContext,
                                     val auditConnector:AuditConnectorI,
                                     val configuration:Configuration,
-                                    val runMode:RunMode) extends DESConnector {
+                                    val runMode:RunMode) extends DESConnector with GenericAppConfig {
     lazy val serviceUrl: String = baseUrl("etmp-hod")
     lazy val orgLookupURI: String = "registration/organisation"
     lazy val cbcSubscribeURI: String = "country-by-country/subscription"
     lazy val urlHeaderEnvironment: String = config("etmp-hod").getString("environment").getOrElse("")
     lazy val urlHeaderAuthorization: String = s"Bearer ${config("etmp-hod").getString("authorization-token").getOrElse("")}"
     val audit = new Audit("known-fact-checking", auditConnector)
-    val http = new  HttpPost with HttpGet with HttpPut with  WSGet with WSPost with WSPut{
+    val http = new  HttpPost with HttpGet with HttpPut with  WSGet with WSPost with WSPut with GenericAppConfig {
       override val hooks: Seq[HttpHook] = NoneRequired
+
+      override protected def configuration: Option[Config] = Some(runModeConfiguration.underlying)
     }
   }

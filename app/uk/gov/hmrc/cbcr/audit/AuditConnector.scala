@@ -17,12 +17,11 @@
 package uk.gov.hmrc.cbcr.audit
 
 import javax.inject.{Inject, Singleton}
-
 import com.google.inject.ImplementedBy
 import play.api.Environment
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.config.inject.RunMode
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 
 
@@ -33,6 +32,6 @@ import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig
 trait AuditConnectorI extends AuditConnector
 
 @Singleton
-class AuditConnectorIImpl @Inject() (val environment: Environment) extends AuditConnectorI with RunMode {
+class AuditConnectorIImpl @Inject() (val environment: Environment) extends AuditConnectorI with GenericAppConfig {
   override def auditingConfig: AuditingConfig = LoadAuditingConfig("auditing")
 }

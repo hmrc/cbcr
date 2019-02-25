@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mock.MockitoSugar
 import uk.gov.hmrc.auth.core.AffinityGroup

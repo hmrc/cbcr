@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import org.mockito.Matchers.{eq => EQ}
+import org.mockito.ArgumentMatchers.{eq => EQ}
 import org.mockito.Mockito._
 import play.api.http.Status
 import play.api.libs.json.Json

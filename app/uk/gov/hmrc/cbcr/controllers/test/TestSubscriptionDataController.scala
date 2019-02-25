@@ -22,6 +22,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
 import uk.gov.hmrc.play.config.ServicesConfig
@@ -35,7 +36,7 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
                                                docRefRepo: DocRefIdRepository,
                                                messageRefIdRepository: MessageRefIdRepository,
                                                reportingEntityDataRepo: ReportingEntityDataRepo
-                                              )(implicit ec: ExecutionContext) extends BaseController with ServicesConfig {
+                                              )(implicit ec: ExecutionContext) extends BaseController with ServicesConfig with GenericAppConfig {
 
   def insertData() = Action.async[JsValue](parse.json) {
     implicit request =>
