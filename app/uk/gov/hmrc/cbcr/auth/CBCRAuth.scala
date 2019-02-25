@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.{AuthProviders, Retrieval}
 import uk.gov.hmrc.auth.core.retrieve.Retrievals.affinityGroup
-import uk.gov.hmrc.gg.config.GenericAppConfig
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.microservice.controller.BaseController

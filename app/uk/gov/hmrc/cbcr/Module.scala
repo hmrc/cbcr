@@ -25,9 +25,9 @@ import com.google.inject.AbstractModule
 import com.typesafe.config.Config
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.services._
-import uk.gov.hmrc.gg.config.GenericAppConfig
 import uk.gov.hmrc.http.HttpPost
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.play.http.ws.WSPost

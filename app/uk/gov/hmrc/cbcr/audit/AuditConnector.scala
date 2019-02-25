@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.audit
 import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import play.api.Environment
-import uk.gov.hmrc.gg.config.GenericAppConfig
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.play.audit.http.config.AuditingConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.microservice.config.LoadAuditingConfig

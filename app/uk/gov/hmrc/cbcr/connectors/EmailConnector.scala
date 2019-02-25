@@ -20,8 +20,8 @@ import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import com.typesafe.config.Config
 import play.api.Configuration
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models.Email
-import uk.gov.hmrc.gg.config.GenericAppConfig
 import uk.gov.hmrc.play.config.ServicesConfig
 import uk.gov.hmrc.play.http._
 import uk.gov.hmrc.play.http.ws.{WSGet, WSHttp, WSPost}

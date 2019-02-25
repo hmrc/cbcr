@@ -34,8 +34,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpGet, HttpPost, HttpPu
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.http.logging.Authorization
 import configs.syntax._
+import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.services.RunMode
-import uk.gov.hmrc.gg.config.GenericAppConfig
 
 import scala.concurrent.duration.Duration
 
