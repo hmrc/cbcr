@@ -50,7 +50,11 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val fakePostRequest : FakeRequest[JsValue]= FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
 
+  val badFakePostRequest : FakeRequest[JsValue]= FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
+
   val fakePutRequest : FakeRequest[JsValue]= FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.toJson(pred))
+
+  val badFakePutRequest : FakeRequest[JsValue]= FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
 
   val fakeGetRequest = FakeRequest(Helpers.GET, "/reporting-entity/myDocRefId")
 
@@ -77,6 +81,12 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
+    "respond with a 400 if ReportingEntity in request is invalid" in {
+//      when(repo.save(any())).thenReturn(Future.successful(failResult))
+      val result = controller.save()(badFakePostRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
     "respond with a 404 when asked to retrieve a non-existent ReportingEntityData" in {
       when(repo.query(any[DocRefId])).thenReturn(Future.successful(None))
       val result = controller.query(DocRefId("docrefid"))(fakeGetRequest)
@@ -88,6 +98,12 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
       val result = controller.query(DocRefId("docrefid"))(fakeGetRequest)
       status(result) shouldBe Status.OK
       Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+    }
+
+    "respond with a 500 if error when checking ReportingEntityData" in {
+      when(repo.query(any[DocRefId])) thenReturn Future.failed(new Exception("bad"))
+      val result = controller.query(DocRefId("docrefid"))(fakeGetRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 303(NOT_MODIFIED) when asked to update a nonexistant ReportingEntityData" in {
@@ -102,12 +118,25 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
       status(result) shouldBe Status.OK
     }
 
+    "respond with a 400 if PartialReportingEntityData in request is invalid" in {
+      when(repo.update(any[PartialReportingEntityData])) thenReturn Future.successful(true)
+      val result = controller.update()(badFakePutRequest)
+      status(result) shouldBe Status.BAD_REQUEST
+    }
+
     "respond with a 200 and a reportingEntityData entry if the  reportingEntityDRI matches that provided DocRefId" in {
       when(repo.queryReportingEntity(any())) thenReturn Future.successful(Some(red))
       val result = controller.queryDocRefId(docRefId)(fakeGetRequest)
       status(result) shouldBe Status.OK
       Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
     }
+
+    "respond with a 500 when error in mongo query" in {
+      when(repo.queryReportingEntity(any())) thenReturn Future.failed(new Exception("bad"))
+      val result = controller.queryDocRefId(docRefId)(fakeGetRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
     "respond with a 404 if the reportingEntityDRI matches that provided DocRefId" in {
       when(repo.queryReportingEntity(any())) thenReturn Future.successful(None)
       val result = controller.queryDocRefId(docRefId)(fakeGetRequest)
