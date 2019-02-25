@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import org.mockito.Matchers.any
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when, _}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.mock.MockitoSugar
