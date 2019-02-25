@@ -70,15 +70,13 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
        p.reportingEntityDRI.corrDocRefId.isEmpty) {
       Future.successful(true)
     } else {
-
-      val criteria = buildUpdateCriteria(p)
-      val modifier = buildModifier(p)
-
+      val criteria:JsObject = buildUpdateCriteria(p)
       for {
-        collection <- repository
-        update <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+        om          <- query(criteria).map(r => r.get).map(red => red.oldModel)
+        modifier    = buildModifier(p,om)
+        collection  <- repository
+        update      <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
       } yield update.lastError.exists(_.updatedExisting)
-
     }
   }
 
@@ -94,6 +92,11 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     ))
     repository.flatMap(_.find(criteria).one[ReportingEntityData])
   }
+
+  private def query(c:JsObject) : Future[Option[ReportingEntityDataModel]] = {
+    repository.flatMap(_.find(c).one[ReportingEntityDataModel])
+  }
+
 
   def query(d:String) : Future[List[ReportingEntityData]] = {
     val criteria = Json.obj("$or" -> Json.arr(
@@ -126,9 +129,10 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityDataOld]]())
     )
 
-  private def buildModifier(p:PartialReportingEntityData) : JsObject = {
+  private def buildModifier(p:PartialReportingEntityData,aiOldModel:Boolean) : JsObject = {
     val x: immutable.Seq[(String, JsValue)] = List(
-      p.additionalInfoDRI.headOption.map { _ => "additionalInfoDRI" -> JsArray(p.additionalInfoDRI.map(d => JsString(d.docRefId.id)))},
+      if(aiOldModel) p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
+      else p.additionalInfoDRI.headOption.map { _ => "additionalInfoDRI" -> JsArray(p.additionalInfoDRI.map(d => JsString(d.docRefId.id)))},
       p.cbcReportsDRI.headOption.map { _ => "cbcReportsDRI" -> JsArray(p.cbcReportsDRI.map(d => JsString(d.docRefId.id))) },
       p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> JsString(p.reportingEntityDRI.docRefId.id)),
       Some("reportingRole" -> JsString(p.reportingRole.toString)),

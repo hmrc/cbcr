@@ -21,7 +21,8 @@ import java.time.LocalDate
 import cats.data.NonEmptyList
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import play.api.libs.functional.syntax._ // Combinator syntax
+import play.api.libs.functional.syntax._
+import uk.gov.hmrc.emailaddress.EmailAddress // Combinator syntax
 
 case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
                                   additionalInfoDRI:Option[DocRefId],
@@ -80,5 +81,32 @@ object ReportingEntityData{
     )(ReportingEntityData.apply(_,_,_,_,_,_,_,_))
 
   implicit val writes = Json.writes[ReportingEntityData]
+
+}
+
+case class ReportingEntityDataModel(cbcReportsDRI:NonEmptyList[DocRefId],
+                               additionalInfoDRI:List[DocRefId],
+                               reportingEntityDRI:DocRefId,
+                               tin:TIN,
+                               ultimateParentEntity: UltimateParentEntity,
+                               reportingRole: ReportingRole,
+                               creationDate: Option[LocalDate],
+                               reportingPeriod: Option[LocalDate],
+                               oldModel: Boolean)
+
+object ReportingEntityDataModel{
+  import PartialReportingEntityData.formatNEL
+  implicit val reads:Reads[ReportingEntityDataModel]= (
+    (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
+      (JsPath \ "additionalInfoDRI").read[List[DocRefId]].orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
+      (JsPath \ "reportingEntityDRI").read[DocRefId] and
+      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
+      (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
+      (JsPath \ "reportingRole").read[ReportingRole] and
+      (JsPath \ "creationDate").readNullable[LocalDate] and
+      (JsPath \ "reportingPeriod").readNullable[LocalDate] and
+      (JsPath \ "additionalInfoDRI").read[List[DocRefId]].map(_ => false).orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true))
+
+    )(ReportingEntityDataModel.apply(_,_,_,_,_,_,_,_,_))
 
 }
