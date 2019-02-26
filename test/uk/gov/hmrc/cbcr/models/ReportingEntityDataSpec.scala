@@ -103,4 +103,19 @@ class ReportingEntityDataSpec extends UnitSpec with Suite{
     }
   }
 
+  "ReportingEntityDataModel" should {
+     "create oldModel and set value to true" in {
+      val oldModel = Json.parse(additionalInfoDocRefId).as[ReportingEntityDataModel]
+       oldModel shouldBe a [ReportingEntityDataModel]
+       oldModel.oldModel should equal(true)
+    }
+
+    "create oldModel and set value to false" in {
+      val newModel = Json.parse(additionalInfoList).as[ReportingEntityDataModel]
+      newModel shouldBe a [ReportingEntityDataModel]
+      newModel.oldModel should equal(false)
+
+    }
+  }
+
 }
