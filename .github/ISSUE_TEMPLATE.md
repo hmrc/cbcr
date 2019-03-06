@@ -1,6 +1,6 @@
 Thanks for helping make cbcr better!
 
-**Before** you open an issue, please check whether a similar issue already exists or has been closed before.  Please also come and talk to us in our [Slack channel](https://hmrcdigital.slack.com/archives/team-ddcw-liveservices).
+**Before** you open an issue, please check whether a similar issue already exists or has been closed before.  Please also come and talk to us in our [Slack channel](https://hmrcdigital.slack.com/archives/team-ddcw-liveservice).
 
 # Descriptive title
 
