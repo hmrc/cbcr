@@ -16,11 +16,13 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import java.time.LocalDate
+
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
-import uk.gov.hmrc.cbcr.models.{DocRefId, PartialReportingEntityData, ReportingEntityData}
+import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, PartialReportingEntityData, ReportingEntityData}
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
@@ -72,6 +74,19 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   def query(d: DocRefId) = auth.authCBCR{ implicit request =>
     repo.query(d).map {
+      case None       => NotFound
+      case Some(data) => Ok(Json.toJson(data))
+    }.recover {
+      case NonFatal(t) =>
+        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+        InternalServerError
+    }
+
+  }
+
+  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR{ implicit request =>
+
+    repo.queryCbcId(cbcId, LocalDate.parse(reportingPeriod)).map {
       case None       => NotFound
       case Some(data) => Ok(Json.toJson(data))
     }.recover {
