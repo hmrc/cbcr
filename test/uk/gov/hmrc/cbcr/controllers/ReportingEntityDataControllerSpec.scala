@@ -60,6 +60,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
+  val cbcId = CBCId.create(56).toOption
 
   implicit val as = ActorSystem()
   implicit val mat = ActorMaterializer()
@@ -85,6 +86,24 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 //      when(repo.save(any())).thenReturn(Future.successful(failResult))
       val result = controller.save()(badFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
+    }
+
+    "respond with a 404 when asked to retrieve a non-existent ReportingEntityData for given cbd-id and reporting-period" in {
+      when(repo.queryCbcId(any[CBCId], any())).thenReturn(Future.successful(None))
+      val result = controller.queryCbcId(cbcId.get, LocalDate.now().toString)(fakeGetRequest)
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "respond with a 200 when asked to retrieve an existing ReportingEntityData for given cbc-id and reporting-period" in {
+      when(repo.queryCbcId(any[CBCId], any())).thenReturn(Future.successful(Some(red)))
+      val result = controller.queryCbcId(cbcId.get, LocalDate.now().toString)(fakeGetRequest)
+      status(result) shouldBe Status.OK
+    }
+
+    "respond with a 500 if error when checking ReportingEntityData for given cbc-id and reporting-period" in {
+      when(repo.queryCbcId(any[CBCId], any())).thenReturn(Future.failed(new Exception("bad")))
+      val result = controller.queryCbcId(cbcId.get, LocalDate.now().toString)(fakeGetRequest)
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 404 when asked to retrieve a non-existent ReportingEntityData" in {
