@@ -9,3 +9,4 @@ DELETE    /deleteReportingEntityCreationDate/:docRefId                  @uk.gov.
 PUT       /confirmReportingEntityCreationDate/:docRefId/:creationDate   @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.confirmReportingEntityCreationDate(docRefId: String, creationDate: String)
 DELETE    /deleteReportingEntityReportingPeriod/:docRefId               @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityReportingPeriod(docRefId: String)
 GET       /validateNumberOfCbcIdForUtr/:utr                             @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.validateNumberOfCbcIdForUtr(utr: String)
+PUT       /updateReportingEntityAdditionalInfoDRI/:docRefId             @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.updateReportingEntityAdditionalInfoDRI(docRefId: String)

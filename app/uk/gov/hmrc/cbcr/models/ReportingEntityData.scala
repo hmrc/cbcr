@@ -84,6 +84,29 @@ object ReportingEntityData{
 
 }
 
+case class PartialReportingEntityDataModel(cbcReportsDRI:List[DocRefIdPair],
+                                          additionalInfoDRI:List[DocRefIdPair],
+                                          reportingEntityDRI:DocRefIdPair,
+                                          tin:TIN,
+                                          ultimateParentEntity: UltimateParentEntity,
+                                          reportingRole: ReportingRole,
+                                          creationDate: Option[LocalDate],
+                                          reportingPeriod: Option[LocalDate],
+                                          oldModel: Boolean)
+
+object PartialReportingEntityDataModel {
+  implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
+    override def writes(o: NonEmptyList[A]) = JsArray(o.map(Json.toJson(_)).toList)
+
+    override def reads(json: JsValue) = json.validate[List[A]].flatMap(l => NonEmptyList.fromList(l) match {
+      case None    => JsError(s"Unable to serialise $json as NonEmptyList")
+      case Some(a) => JsSuccess(a)
+    }).orElse{ json.validate[A].map(a => NonEmptyList(a,Nil)) }
+  }
+
+  implicit val format = Json.format[PartialReportingEntityDataModel]
+}
+
 case class ReportingEntityDataModel(cbcReportsDRI:NonEmptyList[DocRefId],
                                additionalInfoDRI:List[DocRefId],
                                reportingEntityDRI:DocRefId,
@@ -95,7 +118,7 @@ case class ReportingEntityDataModel(cbcReportsDRI:NonEmptyList[DocRefId],
                                oldModel: Boolean)
 
 object ReportingEntityDataModel{
-  import PartialReportingEntityData.formatNEL
+  import PartialReportingEntityDataModel.formatNEL
   implicit val reads:Reads[ReportingEntityDataModel]= (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
       (JsPath \ "additionalInfoDRI").read[List[DocRefId]].orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
@@ -108,5 +131,7 @@ object ReportingEntityDataModel{
       (JsPath \ "additionalInfoDRI").read[List[DocRefId]].map(_ => false).orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true))
 
     )(ReportingEntityDataModel.apply(_,_,_,_,_,_,_,_,_))
+
+  implicit val writes = Json.writes[ReportingEntityDataModel]
 
 }

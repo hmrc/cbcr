@@ -24,6 +24,7 @@ GET       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers
 PUT       /corr-doc-ref-id/:cid/:id                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
 
 GET       /reporting-entity/:id                     uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /reporting-entity/model/:id               uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryModel(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /reporting-entity/doc-ref-id/:id          uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /reporting-entity/query-cbc-id/:cbcid/:reportingPeriod    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryCbcId(cbcid:uk.gov.hmrc.cbcr.models.CBCId, reportingPeriod: String)
 POST      /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
