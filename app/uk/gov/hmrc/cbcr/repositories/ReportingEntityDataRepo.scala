@@ -123,6 +123,16 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.find(criteria).one[ReportingEntityData])
   }
 
+  def queryModel(d:DocRefId) : Future[Option[ReportingEntityDataModel]] = {
+    Logger.info(s"query reportingEntityDataModel with docRefId: ${d.id}")
+    val criteria = Json.obj("$or" -> Json.arr(
+      Json.obj("cbcReportsDRI"      -> d.id),
+      Json.obj("additionalInfoDRI"  -> d.id),
+      Json.obj("reportingEntityDRI" -> d.id)
+    ))
+    repository.flatMap(_.find(criteria).one[ReportingEntityDataModel])
+  }
+
   def getAll: Future[List[ReportingEntityDataOld]] =
     repository.flatMap(_.find(JsObject(Seq.empty))
       .cursor[ReportingEntityDataOld]()
@@ -183,6 +193,14 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     for {
       collection <- repository
       update     <- collection.update(criteria,Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
+    } yield update.nModified
+  }
+
+  def updateAdditionalInfoDRI(d:DocRefId) : Future[Int] = {
+    val criteria = Json.obj("additionalInfoDRI" -> d.id)
+    for {
+      collection <- repository
+      update     <- collection.update(criteria,Json.obj("$set" -> Json.obj("additionalInfoDRI" -> d.id)))
     } yield update.nModified
   }
 
