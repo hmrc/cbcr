@@ -20,7 +20,7 @@ import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import play.api.libs.json._
+import play.api.libs.json.{Json, _}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
@@ -109,6 +109,16 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       .cursor[ReportingEntityData]()
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]())
     )
+  }
+
+  def queryCbcId(cbcId: CBCId, reportingPeriod: LocalDate) : Future[Option[ReportingEntityData]] = {
+    val criteria = Json.obj(
+      "reportingEntityDRI" -> Json.obj("$regex" -> (".*" + cbcId.toString + ".*" )),
+        "reportingPeriod" -> reportingPeriod.toString
+    )
+
+    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
+    repository.flatMap(_.find(criteria).one[ReportingEntityData])
   }
 
   def query(c:String, r:String) : Future[Option[ReportingEntityData]] = {
