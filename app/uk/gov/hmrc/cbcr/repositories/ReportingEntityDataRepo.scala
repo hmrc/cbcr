@@ -196,4 +196,8 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     } yield update.nModified
   }
 
+  def dropReportEntityCollection(): Future[Boolean] ={
+    repository.flatMap(_.drop(true))
+  }
+
 }

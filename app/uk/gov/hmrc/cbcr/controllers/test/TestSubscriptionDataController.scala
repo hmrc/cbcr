@@ -21,7 +21,9 @@ import java.time.LocalDate
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.mvc._
+import reactivemongo.io.netty.util.concurrent.Future
 import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
@@ -89,6 +91,13 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     reportingEntityDataRepo.delete(DocRefId(docRefId)).map(wr => if(wr.n == 0) NotFound else Ok)
   }
 
+  def dropReportingEntityDataCollection(): Action[AnyContent] = Action.async { implicit request =>
+    reportingEntityDataRepo.dropReportEntityCollection.map {
+      case true => Ok("Successfully drop reporting entity data collection")
+      case _ => InternalServerError("Failed drop reporting entity data collection")
+    }
+  }
+
   def updateReportingEntityCreationDate(docRefId:String, creationDate: String) = Action.async {
     implicit request => {
       val dri = DocRefId(docRefId)
@@ -129,7 +138,7 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
       val dri = DocRefId(docRefId)
 
       reportingEntityDataRepo.deleteReportingPeriod(dri).map {
-        case n if n>0 => Ok
+        case n if n > 0 => Ok
         case _ => NotModified
       }
     }

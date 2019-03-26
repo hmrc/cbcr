@@ -3,6 +3,7 @@ DELETE    /deleteSubscription/:utr                                      @uk.gov.
 DELETE    /deleteDocRefId/:docRefId                                     @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleDocRefId(docRefId: String)
 DELETE    /deleteMessageRefId/:messageRefId                             @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleMessageRefId(messageRefId: String)
 DELETE    /reportingEntityData/:docRefId                                @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityData(docRefId: String)
+DELETE    /reportingEntityData                                          @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.dropReportingEntityDataCollection()
 PUT       /updateReportingEntityCreationDate/:docRefId/:creationDate    @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.updateReportingEntityCreationDate(docRefId: String, creationDate: String)
 DELETE    /deleteReportingEntityCreationDate/:docRefId                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityCreationDate(docRefId: String)
 PUT       /confirmReportingEntityCreationDate/:docRefId/:creationDate   @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.confirmReportingEntityCreationDate(docRefId: String, creationDate: String)
