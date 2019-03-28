@@ -50,6 +50,11 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.remove(criteria))
   }
 
+  def removeAllDocs() = repository.flatMap {
+    collection =>
+      collection.delete(false).one(Json.obj())
+  }
+
   def save(f:ReportingEntityData) : Future[WriteResult] =
     repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDate.now()))))
 
@@ -194,10 +199,6 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       collection <- repository
       update     <- collection.update(criteria,Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
     } yield update.nModified
-  }
-
-  def dropReportEntityCollection(): Future[Boolean] ={
-    repository.flatMap(_.drop(true))
   }
 
 }

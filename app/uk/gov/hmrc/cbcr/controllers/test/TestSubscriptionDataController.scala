@@ -92,8 +92,8 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
   }
 
   def dropReportingEntityDataCollection(): Action[AnyContent] = Action.async { implicit request =>
-    reportingEntityDataRepo.dropReportEntityCollection.map {
-      case true => Ok("Successfully drop reporting entity data collection")
+    reportingEntityDataRepo.removeAllDocs().map {
+      case w if w.ok => Ok("Successfully drop reporting entity data collection")
       case _ => InternalServerError("Failed drop reporting entity data collection")
     }
   }
