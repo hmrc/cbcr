@@ -21,7 +21,9 @@ object MicroServiceBuild extends Build with MicroService {
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
     "com.typesafe.akka" %% "akka-persistence" % "2.4.14",
     "com.github.kxbmap" %% "configs" % "0.4.4",
-    "uk.gov.hmrc" %% "emailaddress" % "3.2.0"
+    "uk.gov.hmrc" %% "emailaddress" % "3.2.0",
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.12.0-play-25"
+
   )
 
   def test(scope: String = "test,it") = Seq(
