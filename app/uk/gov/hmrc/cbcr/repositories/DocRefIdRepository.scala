@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import javax.inject.{Inject, Singleton}
-
 import cats.data.OptionT
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.play.json._
-import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.cbcr.models._
 import cats.instances.future._
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
+import play.api.libs.json.{JsObject, Json}
+import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.{Cursor, ReadPreference}
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.bson.BSONDocument
+import reactivemongo.play.json._
+import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
+import uk.gov.hmrc.cbcr.models._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,12 +38,11 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
 
-
   def delete(d:DocRefId): Future[WriteResult] = {
     val criteria = Json.obj("id" -> d.id)
     for {
       repo <- repository
-      x    <- repo.remove(criteria)
+      x <- repo.remove(criteria)
     } yield  x
   }
 
@@ -57,7 +56,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
     } yield  r
   }
 
-  def save(c:CorrDocRefId, d:DocRefId): Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] ={
+  def save(c:CorrDocRefId, d:DocRefId): Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = {
     val criteria = Json.obj("id" -> c.cid.id, "valid" -> true)
     query(c.cid).zip(query(d)).flatMap{
       case (Invalid,_)            => Future.successful((Invalid,None))
@@ -83,5 +82,6 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
       else        Invalid
     ).getOrElse(DoesNotExist)
   }
+
 
 }
