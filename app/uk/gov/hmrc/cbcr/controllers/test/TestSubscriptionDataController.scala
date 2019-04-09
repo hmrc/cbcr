@@ -153,5 +153,15 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
       }
     }
   }
+  def updateReportingEntityAdditionalInfoDRI(docRefId:String) = Action.async {
+    implicit request => {
+      val dri = DocRefId(docRefId)
+
+      reportingEntityDataRepo.updateAdditionalInfoDRI(dri).map {
+        case n if n>0 => Ok
+        case _ => NotModified
+      }
+    }
+  }
 
 }
