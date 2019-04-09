@@ -58,7 +58,7 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
       val utr = Utr(utrs)
       subRepo.clear(utr).map {
         case w if w.ok => Ok
-        case _         => InternalServerError
+        case _ => InternalServerError
       }
     }
   }
@@ -67,8 +67,8 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     implicit request => {
       val docRefId = DocRefId(docRefIds)
       docRefRepo.delete(docRefId).map {
-        case w if w.ok  => Ok
-        case _          => InternalServerError
+        case w if w.ok => Ok
+        case _ => InternalServerError
       }
     }
   }
@@ -77,18 +77,18 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     implicit request => {
       val messageRefId = MessageRefId(messageRefIds)
       messageRefIdRepository.delete(messageRefId).map {
-        case w if w.ok  => {
+        case w if w.ok => {
           Ok
         }
-        case _          => {
+        case _ => {
           InternalServerError
         }
       }
     }
   }
 
-  def deleteReportingEntityData(docRefId:String) = Action.async{ implicit request =>
-    reportingEntityDataRepo.delete(DocRefId(docRefId)).map(wr => if(wr.n == 0) NotFound else Ok)
+  def deleteReportingEntityData(docRefId: String) = Action.async { implicit request =>
+    reportingEntityDataRepo.delete(DocRefId(docRefId)).map(wr => if (wr.n == 0) NotFound else Ok)
   }
 
   def dropReportingEntityDataCollection(): Action[AnyContent] = Action.async { implicit request =>
@@ -98,48 +98,58 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     }
   }
 
-  def updateReportingEntityCreationDate(docRefId:String, creationDate: String) = Action.async {
+  def updateReportingEntityCreationDate(docRefId: String, creationDate: String) = Action.async {
     implicit request => {
       val dri = DocRefId(docRefId)
       val cd = LocalDate.parse(creationDate)
 
       reportingEntityDataRepo.updateCreationDate(dri, cd).map {
-        case n if n>0 => Ok
+        case n if n > 0 => Ok
         case _ => NotModified
       }
     }
   }
 
-  def deleteReportingEntityCreationDate(docRefId:String) = Action.async {
+  def deleteReportingEntityCreationDate(docRefId: String) = Action.async {
     implicit request => {
       val dri = DocRefId(docRefId)
 
       reportingEntityDataRepo.deleteCreationDate(dri).map {
-        case n if n>0 => Ok
+        case n if n > 0 => Ok
         case _ => NotModified
       }
     }
   }
 
-  def confirmReportingEntityCreationDate(docRefId:String, creationDate: String) = Action.async {
+  def confirmReportingEntityCreationDate(docRefId: String, creationDate: String) = Action.async {
     implicit request => {
       val dri = DocRefId(docRefId)
       val cd = LocalDate.parse(creationDate)
 
       reportingEntityDataRepo.confirmCreationDate(dri, cd).map {
-        case n if n==1 => Ok
+        case n if n == 1 => Ok
         case n if n != 1 => NotFound
       }
     }
   }
 
-  def deleteReportingEntityReportingPeriod(docRefId:String) = Action.async {
+  def deleteReportingEntityReportingPeriod(docRefId: String) = Action.async {
     implicit request => {
       val dri = DocRefId(docRefId)
 
       reportingEntityDataRepo.deleteReportingPeriod(dri).map {
         case n if n > 0 => Ok
         case _ => NotModified
+      }
+    }
+  }
+
+  def validateNumberOfCbcIdForUtr(utr: String): Action[AnyContent] = Action.async {
+    implicit request => {
+
+      subRepo.checkNumberOfCbcIdForUtr(utr).map {
+        case n if n > 0 => Ok(Json.toJson(n))
+        case _ => NotFound
       }
     }
   }
