@@ -17,12 +17,11 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import javax.inject.{Inject, Singleton}
-
 import cats.data.OptionT
 import cats.instances.future._
 import play.api.Logger
 import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsObject, JsValue, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
@@ -110,5 +109,13 @@ class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoAp
  private def getGeneric(criteria:JsObject) =
     OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
 
+
+  def checkNumberOfCbcIdForUtr(utr: String):Future[Int] = {
+    val utrRecord = Json.obj("utr" -> utr)
+
+    repository.flatMap(_.find(utrRecord)
+        .cursor[SubscriptionDetails]()
+        .collect[List](-1, Cursor.FailOnError[List[SubscriptionDetails]]())).map(_.size)
+  }
 
 }
