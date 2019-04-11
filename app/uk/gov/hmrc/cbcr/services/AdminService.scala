@@ -39,7 +39,7 @@ class AdminService @Inject()(docRefIdRepo:ReactiveDocRefIdRepository,
 def showAllDocRef = Action.async {
   implicit request =>
 
-    docRefIdRepo.findAll().map( response => Ok(Json.toJson(countDocRefId(response))))
+    docRefIdRepo.findAll().map( response => Ok(Json.toJson(displayAllDocRefId(response))))
 
 }
 
@@ -49,6 +49,9 @@ def showAllDocRef = Action.async {
   }
 
 
+  def displayAllDocRefId(docs : List[DocRefIdRecord]): ListDocRefIdRecord = {
+    ListDocRefIdRecord(docs)
+  }
 
 //  def checkDocRefIdLength(docs:DocRefIdRecord): Option[DocRefIdRecord] = {
 //    Logger.warn("Finding docRefIds that are greater than 200")
