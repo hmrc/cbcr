@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json._
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import uk.gov.hmrc.cbcr.models.MessageRefId
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,14 +39,14 @@ class MessageRefIdRepository@Inject() (val mongo: ReactiveMongoApi)(implicit ec:
 
   def exists(messageRefId: String): Future[Boolean] = {
     val criteria = Json.obj("messageRefId" -> messageRefId)
-    repository.flatMap(_.find(criteria).one[MessageRefId].map(_.isDefined))
+    repository.flatMap(_.find(criteria, None).one[MessageRefId].map(_.isDefined))
   }
 
   def delete(m:MessageRefId): Future[WriteResult] = {
     val criteria = Json.obj("messageRefId" -> m.id)
     for {
       repo <- repository
-      x    <- repo.remove(criteria)
+      x    <- repo.delete().one(criteria)
     } yield  x
   }
 }

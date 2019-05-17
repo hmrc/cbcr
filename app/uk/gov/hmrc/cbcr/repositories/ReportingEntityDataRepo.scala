@@ -19,18 +19,19 @@ package uk.gov.hmrc.cbcr.repositories
 import java.time.LocalDate
 import java.time._
 import java.time.format.DateTimeFormatter
+
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{Json, _}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.Cursor
+import reactivemongo.api.{Cursor, ReadConcern}
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json._
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
-import scala.math.Ordering.Implicits._
 
+import scala.math.Ordering.Implicits._
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
@@ -51,7 +52,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Json.obj("additionalInfoDRI" -> d.id),
       Json.obj("reportingEntityDRI" -> d.id)
     ))
-    repository.flatMap(_.remove(criteria))
+    repository.flatMap(_.delete().one(criteria))
   }
 
   def removeAllDocs() = repository.flatMap {
@@ -91,7 +92,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   /** Find a reportingEntity that has a reportingEntityDRI with the provided docRefId */
   def queryReportingEntity(d: DocRefId): Future[Option[ReportingEntityData]] =
-    repository.flatMap(_.find(Json.obj("reportingEntityDRI" -> d.id)).one[ReportingEntityData])
+    repository.flatMap(_.find(Json.obj("reportingEntityDRI" -> d.id), None).one[ReportingEntityData])
 
   def query(d: DocRefId): Future[Option[ReportingEntityData]] = {
     val criteria = Json.obj("$or" -> Json.arr(
@@ -99,11 +100,11 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Json.obj("additionalInfoDRI" -> d.id),
       Json.obj("reportingEntityDRI" -> d.id)
     ))
-    repository.flatMap(_.find(criteria).one[ReportingEntityData])
+    repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
   private def query(c: JsObject): Future[Option[ReportingEntityDataModel]] = {
-    repository.flatMap(_.find(c).one[ReportingEntityDataModel])
+    repository.flatMap(_.find(c, None).one[ReportingEntityDataModel])
   }
 
 
@@ -114,7 +115,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + d + ".*")))
     ))
     Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
-    repository.flatMap(_.find(criteria)
+    repository.flatMap(_.find(criteria, None)
       .cursor[ReportingEntityData]()
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]())
     )
@@ -127,13 +128,13 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     )
 
     Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
-    repository.flatMap(_.find(criteria).one[ReportingEntityData])
+    repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
   def queryTIN(tin: String): Future[List[ReportingEntityData]] = {
     val criteria = Json.obj("tin" -> tin)
 
-    val result: Future[List[ReportingEntityData]] = repository.flatMap(_.find(criteria)
+    val result: Future[List[ReportingEntityData]] = repository.flatMap(_.find(criteria, None)
       .cursor[ReportingEntityData]()
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]()))
 
@@ -153,14 +154,17 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     val reportingEntityDri: Seq[String] = reportingEntityData.map(data => data.reportingEntityDRI.id)
 
-    val timestamps: Seq[LocalDateTime] = reportingEntityDri.map { dri =>
-      timestampRegex.findFirstIn(dri) match {
-        case Some(data) => LocalDateTime.parse(data, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
-      }
+    val timestamps: Seq[LocalDateTime] = reportingEntityDri.map(dri => timestampRegex.findFirstIn(dri))
+      .collect {
+      case Some(data) => LocalDateTime.parse(data, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
     }
 
     val timestampSeparator = Set('-', ':')
-    reportingEntityData.filter(x => x.reportingEntityDRI.id.contains(timestamps.sorted.reverse.head.toString.filterNot(timestampSeparator.contains)))
+
+    reportingEntityData.filter(x => x
+      .reportingEntityDRI
+      .id
+      .contains(timestamps.sorted.reverse.head.toString.filterNot(timestampSeparator.contains)))
   }
 
 
@@ -173,7 +177,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       )),
       Json.obj("reportingPeriod" -> r)
     ))
-    repository.flatMap(_.find(criteria).one[ReportingEntityData])
+    repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
   def queryModel(d: DocRefId): Future[Option[ReportingEntityDataModel]] = {
@@ -183,11 +187,11 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Json.obj("additionalInfoDRI" -> d.id),
       Json.obj("reportingEntityDRI" -> d.id)
     ))
-    repository.flatMap(_.find(criteria).one[ReportingEntityDataModel])
+    repository.flatMap(_.find(criteria, None).one[ReportingEntityDataModel])
   }
 
   def getAll: Future[List[ReportingEntityDataOld]] =
-    repository.flatMap(_.find(JsObject(Seq.empty))
+    repository.flatMap(_.find(JsObject(Seq.empty), None)
       .cursor[ReportingEntityDataOld]()
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityDataOld]]())
     )
