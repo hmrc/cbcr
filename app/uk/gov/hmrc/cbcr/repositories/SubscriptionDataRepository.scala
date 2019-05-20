@@ -28,7 +28,7 @@ import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import reactivemongo.api.indexes.{CollectionIndexesManager, Index}
 import reactivemongo.api.indexes.IndexType.{Ascending, Text}
 import reactivemongo.bson.BSONDocument
-import reactivemongo.play.json._
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.{Helpers, JSONCollection}
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
@@ -56,7 +56,7 @@ class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoAp
     val criteria = Json.obj("cbcId" -> cbcId.value)
     for {
       repo   <- OptionT.liftF(repository)
-      result <- OptionT.liftF(repo.remove(criteria, firstMatchOnly = true))
+      result <- OptionT.liftF(repo.delete().one(criteria, Some(1)))//.remove(criteria, firstMatchOnly = true))
     } yield result
   }
 
@@ -64,7 +64,7 @@ class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoAp
     val criteria = Json.obj("utr" -> utr.utr)
     for {
       repo   <- repository
-      result <- repo.remove(criteria, firstMatchOnly = true)
+      result <- repo.delete().one(criteria, Some(1))
     } yield result
   }
 
@@ -100,20 +100,20 @@ class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoAp
     getGeneric(Json.obj("utr" -> utr.utr))
 
   def getSubscriptions(criteria: JsObject): Future[List[SubscriptionDetails]] = {
-    repository.flatMap(_.find(criteria)
+    repository.flatMap(_.find(criteria, None)
       .cursor[SubscriptionDetails]()
       .collect[List](-1, Cursor.FailOnError[List[SubscriptionDetails]]())
     )
   }
 
  private def getGeneric(criteria:JsObject) =
-    OptionT(repository.flatMap(_.find(criteria).one[SubscriptionDetails]))
+    OptionT(repository.flatMap(_.find(criteria, None).one[SubscriptionDetails]))
 
 
   def checkNumberOfCbcIdForUtr(utr: String):Future[Int] = {
     val utrRecord = Json.obj("utr" -> utr)
 
-    repository.flatMap(_.find(utrRecord)
+    repository.flatMap(_.find(utrRecord, None)
         .cursor[SubscriptionDetails]()
         .collect[List](-1, Cursor.FailOnError[List[SubscriptionDetails]]())).map(_.size)
   }

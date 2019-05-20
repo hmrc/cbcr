@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json._
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import uk.gov.hmrc.cbcr.models.UploadFileResponse
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +40,7 @@ class FileUploadRepository @Inject() (val mongo: ReactiveMongoApi)(implicit ec:E
 
   def get(envelopeId:String): Future[Option[UploadFileResponse]] = {
     val criteria = Json.obj("envelopeId" -> envelopeId)
-    repository.flatMap(_.find(criteria).one[UploadFileResponse])
+    repository.flatMap(_.find(criteria, None).one[UploadFileResponse])
   }
 
 }

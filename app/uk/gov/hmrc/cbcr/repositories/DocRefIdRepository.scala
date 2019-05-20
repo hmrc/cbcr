@@ -23,9 +23,9 @@ import play.api.Logger
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.{Cursor, ReadPreference}
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.bson.BSONDocument
-import reactivemongo.play.json._
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
@@ -42,7 +42,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
     val criteria = Json.obj("id" -> d.id)
     for {
       repo <- repository
-      x <- repo.remove(criteria)
+      x <- repo.delete().one(criteria)
     } yield  x
   }
 
@@ -50,13 +50,15 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
     val criteria = Json.obj("id" -> f.id)
     for {
       repo <- repository
-      x    <- repo.find(criteria).one[DocRefIdRecord]
+      x    <- repo.find(criteria, None).one[DocRefIdRecord]
       r    <- if(x.isDefined) Future.successful(AlreadyExists)
               else { repo.insert(DocRefIdRecord(f,valid = true)).map(w => if (w.ok) { Ok } else { Failed }) }
     } yield  r
   }
 
   def save(c:CorrDocRefId, d:DocRefId): Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = {
+    import reactivemongo.play.json.ImplicitBSONHandlers.BSONDocumentWrites
+
     val criteria = Json.obj("id" -> c.cid.id, "valid" -> true)
     query(c.cid).zip(query(d)).flatMap{
       case (Invalid,_)            => Future.successful((Invalid,None))
@@ -77,7 +79,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
 
   def query(docRefId: DocRefId): Future[DocRefIdQueryResponse] = {
     val criteria = Json.obj("id" -> docRefId.id)
-    OptionT(repository.flatMap(_.find(criteria).one[DocRefIdRecord])).map(r =>
+    OptionT(repository.flatMap(_.find(criteria, None).one[DocRefIdRecord])).map(r =>
       if(r.valid) Valid
       else        Invalid
     ).getOrElse(DoesNotExist)

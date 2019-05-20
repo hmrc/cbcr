@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import uk.gov.hmrc.auth.core.AffinityGroup
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.cbcr.auth.{CBCRAuth, MicroServiceAuthConnector}
