@@ -131,13 +131,15 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
-  def queryTIN(tin: String): Future[List[ReportingEntityData]] = {
-    val criteria = Json.obj("tin" -> tin)
+  def queryTIN(tin: String, reportingPeriod: String): Future[List[ReportingEntityData]] = {
+    val criteria = Json.obj("tin" -> tin, "reportingPeriod" -> reportingPeriod)
 
     val result: Future[List[ReportingEntityData]] = repository.flatMap(_.find(criteria, None)
       .cursor[ReportingEntityData]()
       .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]()))
 
+
+    println("Result: " + result.map(x=>x))
 
     result.map(x => getLatestReportingEntityData(x))
 
@@ -161,10 +163,14 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     val timestampSeparator = Set('-', ':')
 
-    reportingEntityData.filter(x => x
+    val result = reportingEntityData.filter(x => x
       .reportingEntityDRI
       .id
       .contains(timestamps.sorted.reverse.head.toString.filterNot(timestampSeparator.contains)))
+
+    println("FilteredData: " + result)
+
+    result
   }
 
 

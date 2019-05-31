@@ -98,8 +98,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def queryTin(tin: String) = auth.authCBCR { implicit request =>
-    repo.queryTIN(tin).map { reportEntityData =>
+  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { implicit request =>
+    repo.queryTIN(tin, reportingPeriod).map { reportEntityData =>
 
       if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
     }.recover {
