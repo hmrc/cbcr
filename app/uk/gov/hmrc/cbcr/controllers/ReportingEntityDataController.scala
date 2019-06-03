@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.controllers
 import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
-import org.omg.CosNaming.NamingContextPackage.NotFound
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
