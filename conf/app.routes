@@ -27,7 +27,7 @@ GET       /reporting-entity/:id                     uk.gov.hmrc.cbcr.controllers
 GET       /reporting-entity/model/:id               uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryModel(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /reporting-entity/doc-ref-id/:id          uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /reporting-entity/query-cbc-id/:cbcid/:reportingPeriod    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryCbcId(cbcid:uk.gov.hmrc.cbcr.models.CBCId, reportingPeriod: String)
-GET       /reporting-entity/query-tin/:tin                    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryTin(tin: String)
+GET       /reporting-entity/query-tin/:tin/:reportingPeriod                    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryTin(tin: String, reportingPeriod: String)
 POST      /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
 PUT       /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.update
 POST      /email                                    uk.gov.hmrc.cbcr.controllers.CBCREmailController.sendEmail

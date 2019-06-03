@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.controllers
 import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
-import org.omg.CosNaming.NamingContextPackage.NotFound
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
@@ -98,8 +97,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def queryTin(tin: String) = auth.authCBCR { implicit request =>
-    repo.queryTIN(tin).map { reportEntityData =>
+  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { implicit request =>
+    repo.queryTIN(tin, reportingPeriod).map { reportEntityData =>
 
       if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
     }.recover {
