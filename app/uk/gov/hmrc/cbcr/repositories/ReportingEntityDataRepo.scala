@@ -82,7 +82,11 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     } else {
       val criteria: JsObject = buildUpdateCriteria(p)
       for {
-        om <- query(criteria).map(r => r.get).map(red => red.oldModel)
+        om <- query(criteria).map(
+          _ match {
+            case None => throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
+            case Some(record) => record
+          }).map((red: ReportingEntityDataModel) => red.oldModel)
         modifier = buildModifier(p, om)
         collection <- repository
         update <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
