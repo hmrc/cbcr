@@ -17,14 +17,13 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
-
 import play.api.Configuration
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.{DocRefIdResponses, _}
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.cbcr.services.RunMode
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.{ExecutionContext, Future}
 
