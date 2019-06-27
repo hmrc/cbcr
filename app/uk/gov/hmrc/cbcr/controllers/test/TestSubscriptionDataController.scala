@@ -19,19 +19,15 @@ package uk.gov.hmrc.cbcr.controllers.test
 import java.time.LocalDate
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Results.{InternalServerError, Ok}
 import play.api.mvc._
-import reactivemongo.io.netty.util.concurrent.Future
 import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.ExecutionContext
-import scala.util.control.NonFatal
 
 @Singleton
 class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataRepository,

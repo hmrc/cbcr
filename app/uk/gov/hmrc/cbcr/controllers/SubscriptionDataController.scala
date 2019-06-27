@@ -16,23 +16,19 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import javax.inject.{Inject, Singleton}
-
 import cats.instances.all._
-import cats.syntax.all._
-import configs.syntax._
+import javax.inject.{Inject, Singleton}
+import play.api.Configuration
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
-import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 @Singleton
 class SubscriptionDataController @Inject() (repo:SubscriptionDataRepository,des:DESConnector,auth: CBCRAuth, configuration:Configuration) extends BaseController {

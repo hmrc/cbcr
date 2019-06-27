@@ -18,16 +18,15 @@ package uk.gov.hmrc.cbcr.services
 
 import com.google.inject.Singleton
 import javax.inject.Inject
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.{DocRefId, DocRefIdRecord}
+import uk.gov.hmrc.cbcr.models.DocRefIdRecord
 import uk.gov.hmrc.cbcr.repositories.ReactiveDocRefIdRepository
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
 @Singleton
 class AdminService @Inject()(docRefIdRepo:ReactiveDocRefIdRepository,
                                       configuration:Configuration,
