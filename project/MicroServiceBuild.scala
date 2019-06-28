@@ -26,8 +26,8 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   def test(scope: String = "test,it") = Seq(
-    "com.typesafe.akka" %% "akka-testkit" % "2.5.23" % scope,
-    "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.1.1" % scope ,
+    "com.typesafe.akka" %% "akka-testkit" % "2.4.14" % scope,
+    "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.4.17.1" % scope ,
     "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-25" % scope,
     "org.scalatest" %% "scalatest" % "3.0.8" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
