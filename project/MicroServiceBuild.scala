@@ -10,7 +10,7 @@ object MicroServiceBuild extends Build with MicroService {
 
   val compile = Seq(
     "org.reactivemongo" %% "play2-reactivemongo" % "0.17.1-play25",
-    "org.reactivemongo" %% "reactivemongo-bson" % "0.17.1-play25",
+    "org.reactivemongo" %% "reactivemongo-bson" % "0.17.1",
     ws,
     "uk.gov.hmrc" %% "auth-client" % "2.22.0-play-25",
     "uk.gov.hmrc" %% "bootstrap-play-25" % "4.13.0",
@@ -23,6 +23,7 @@ object MicroServiceBuild extends Build with MicroService {
   )
 
   def test(scope: String = "test,it") = Seq(
+    "com.typesafe.akka" %% "akka-testkit" % "2.4.14" % scope,
     "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-25" % scope,
     "org.scalatest" %% "scalatest" % "3.0.8" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,

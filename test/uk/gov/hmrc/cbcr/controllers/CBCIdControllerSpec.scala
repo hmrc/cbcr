@@ -30,7 +30,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.{RemoteSubscription, RunMode, SubscriptionHandlerImpl}
+import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, RunMode, SubscriptionHandlerImpl}
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.test.UnitSpec
 
@@ -40,6 +40,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with MockitoSugar with BeforeAndAfterEach with OneAppPerSuite with MockAuth{
 
+  val localGen = mock[LocalSubscription]
   val remoteGen = mock[RemoteSubscription]
   var runMode = mock[RunMode]
   when(runMode.env) thenReturn "Dev"
@@ -65,12 +66,22 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
 
   override def afterEach(): Unit = {
     super.afterEach()
-    reset(remoteGen)
+    reset(localGen,remoteGen)
   }
 
   "The CBCIdController" should {
-    "query the remoteCBCId generator" in {
-      val handler = new SubscriptionHandlerImpl(config,remoteGen,runMode)
+    "query the localCBCId generator when useDESApi is set to false" in {
+
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> false),localGen,remoteGen,runMode)
+      val controller = new CBCIdController(handler,cBCRAuth)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
+      when(localGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
+      val response = controller.subscribe()(fakeRequestSubscribe)
+      status(response) shouldBe Status.OK
+      jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
+    }
+    "query the remoteCBCId generator when useDESApi is set to true" in {
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> true),localGen,remoteGen,runMode)
       val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(remoteGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
@@ -78,10 +89,17 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
       status(response) shouldBe Status.OK
       jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
     }
+    "generate bad request response if request doesn't contain valid subscriptionDetails" in {
 
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> false),localGen,remoteGen,runMode)
+      val controller = new CBCIdController(handler,cBCRAuth)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.obj("bad" -> "request"))
+      val response = controller.subscribe()(fakeRequestSubscribe)
+      status(response) shouldBe Status.BAD_REQUEST
+    }
     "return 200 when updateSubscription passed valid CorrespondenceDetails in request" in {
 
-      val handler = new SubscriptionHandlerImpl(config,remoteGen,runMode)
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> true),localGen,remoteGen,runMode)
       val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(crb))
       when(remoteGen.updateSubscription(any(),any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
@@ -90,7 +108,7 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
     }
     "return 400 when updateSubscription passed invalid CorrespondenceDetails in request" in {
 
-      val handler = new SubscriptionHandlerImpl(config,remoteGen,runMode)
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> true),localGen,remoteGen,runMode)
       val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.obj("bad" -> "request"))
       val response = controller.updateSubscription("safeId")(fakeRequestSubscribe)
@@ -99,10 +117,10 @@ class CBCIdControllerSpec extends UnitSpec with Matchers with ScalaFutures with 
 
     "no error generated when getSubscription called" in {
 
-      val handler = new SubscriptionHandlerImpl(config,remoteGen,runMode)
+      val handler = new SubscriptionHandlerImpl(config ++ Configuration("Dev.CBCId.useDESApi" -> false),localGen,remoteGen,runMode)
       val controller = new CBCIdController(handler,cBCRAuth)
       val fakeRequestSubscribe = FakeRequest("GET", "/cbc-id")
-      when(remoteGen.getSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("some" -> "thing")))
+      when(localGen.getSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("some" -> "thing")))
       val response = controller.getSubscription("safeId")(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
     }
