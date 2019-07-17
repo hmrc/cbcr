@@ -18,14 +18,14 @@ PUT       /subscription/:safeId                     uk.gov.hmrc.cbcr.controllers
 PUT       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
 GET       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)
 
-DELETE    /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.deleteDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
-PUT       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
-GET       /doc-ref-id/:id                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
-PUT       /corr-doc-ref-id/:cid/:id                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
+DELETE    /doc-ref-id/$id<[^\\]+>                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.deleteDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
+PUT       /doc-ref-id/$id<[^\\]+>                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /doc-ref-id/$id<[^\\]+>                          uk.gov.hmrc.cbcr.controllers.DocRefIdController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
+PUT       /corr-doc-ref-id/:cid/$id<[^\\]+>                 uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveCorrDocRefId(cid:uk.gov.hmrc.cbcr.models.CorrDocRefId,id:uk.gov.hmrc.cbcr.models.DocRefId)
 
-GET       /reporting-entity/:id                     uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
-GET       /reporting-entity/model/:id               uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryModel(id:uk.gov.hmrc.cbcr.models.DocRefId)
-GET       /reporting-entity/doc-ref-id/:id          uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /reporting-entity/$id<[^\\]+>                    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.query(id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /reporting-entity/model/$id<[^\\]+>               uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryModel(id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /reporting-entity/doc-ref-id/$id<[^\\]+>          uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /reporting-entity/query-cbc-id/:cbcid/:reportingPeriod    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryCbcId(cbcid:uk.gov.hmrc.cbcr.models.CBCId, reportingPeriod: String)
 GET       /reporting-entity/query-tin/:tin/:reportingPeriod                    uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.queryTin(tin: String, reportingPeriod: String)
 POST      /reporting-entity                         uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
@@ -35,6 +35,6 @@ POST      /email                                    uk.gov.hmrc.cbcr.controllers
 
 
 GET       /getDocsRefId                             uk.gov.hmrc.cbcr.services.AdminService.showAllDocRef
-GET       /admin/reporting-entity/doc-ref-id/:id          uk.gov.hmrc.cbcr.services.AdminService.adminDocRefIdquery(id:uk.gov.hmrc.cbcr.models.DocRefId)
+GET       /admin/reporting-entity/doc-ref-id/$id<[^\\]+>          uk.gov.hmrc.cbcr.services.AdminService.adminDocRefIdquery(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET       /admin/reporting-entity/query-cbc-id/:cbcid/:reportingPeriod    uk.gov.hmrc.cbcr.services.AdminService.adminQueryCbcId(cbcid:uk.gov.hmrc.cbcr.models.CBCId, reportingPeriod: String)
 GET       /admin/reporting-entity/query-tin/:tin/:reportingPeriod                    uk.gov.hmrc.cbcr.services.AdminService.adminQueryTin(tin: String, reportingPeriod: String)
