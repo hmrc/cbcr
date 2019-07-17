@@ -9,25 +9,21 @@ object MicroServiceBuild extends Build with MicroService {
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
   val compile = Seq(
-    "org.reactivemongo" %% "play2-reactivemongo" % "0.16.0-play25",
-    "org.reactivemongo" %% "reactivemongo-bson" % "0.16.0-play25",
-    "org.reactivemongo" %% "reactivemongo-akkastream" % "0.16.1",
-    "com.github.scullxbones" %% "akka-persistence-mongo-rxmongo" % "2.2.2",
+    "org.reactivemongo" %% "play2-reactivemongo" % "0.17.1-play25",
+    "org.reactivemongo" %% "reactivemongo-bson" % "0.17.1",
     ws,
     "uk.gov.hmrc" %% "auth-client" % "2.22.0-play-25",
     "uk.gov.hmrc" %% "bootstrap-play-25" % "4.13.0",
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-25",
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
-    "com.typesafe.akka" %% "akka-persistence" % "2.4.14",
     "com.github.kxbmap" %% "configs" % "0.4.4",
     "uk.gov.hmrc" %% "emailaddress" % "3.2.0",
-    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.12.0-play-25"
+    "uk.gov.hmrc" %% "simple-reactivemongo" % "7.20.0-play-25"
 
   )
 
   def test(scope: String = "test,it") = Seq(
     "com.typesafe.akka" %% "akka-testkit" % "2.4.14" % scope,
-    "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.4.17.1" % scope ,
     "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-25" % scope,
     "org.scalatest" %% "scalatest" % "3.0.8" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,

@@ -18,9 +18,9 @@ package uk.gov.hmrc.cbcr.services
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.testkit.{TestKit, TestProbe}
-import cats.data.OptionT
-import cats.data.Validated.Invalid
+import akka.testkit.TestKit
+import cats.data.{OptionT, Validated}
+import cats.data.Validated.{Invalid, Valid}
 import cats.syntax.option._
 import cats.instances.future._
 import com.typesafe.config.ConfigFactory
@@ -32,7 +32,6 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
-import CBCIdGenCommands.{GenerateCBCId, GenerateCBCIdResponse}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
@@ -59,15 +58,13 @@ class LocalSubscriptionSpec  extends TestKit(ActorSystem("CBCIdControllerSpec",C
 
   implicit val mat = ActorMaterializer()
 
-  val testCBCIdGenerator = TestProbe("testCBCID")
   val config = system.settings.config
   implicit val as = app.injector.instanceOf[ActorSystem]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   val repo = mock[SubscriptionDataRepository]
+  val cbcdIdGenerator = new CBCIdGenerator
 
-  val localGen = new LocalSubscription(Configuration(config), repo){
-    override private[services] lazy val cbcIdGenerator = testCBCIdGenerator.ref
-  }
+  val localGen = new LocalSubscription(Configuration(config), repo, cbcdIdGenerator)
 
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
   val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave", "Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
@@ -87,21 +84,7 @@ class LocalSubscriptionSpec  extends TestKit(ActorSystem("CBCIdControllerSpec",C
     "be able to create a new subscription and" when {
       "everything works, respond with a 200" in {
         val response = localGen.createSubscription(sub)
-        testCBCIdGenerator.expectMsg(GenerateCBCId)
-        testCBCIdGenerator.reply(GenerateCBCIdResponse(CBCId("XGCBC0000000001").toValid(new Exception("Test Error generating CBCId"))))
         status(response) shouldBe Status.OK
-        jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XGCBC0000000001")
-      }
-      "the CBCIdGenerator service fails, respond with a 500" in {
-        val response = localGen.createSubscription(sub)
-        testCBCIdGenerator.expectMsg(GenerateCBCId)
-        testCBCIdGenerator.reply(GenerateCBCIdResponse(Invalid(new Exception("Failed to generate CBCId"))))
-        status(response) shouldBe Status.INTERNAL_SERVER_ERROR
-      }
-      "the CBCIdGenerator service fails to respond, respond with a 500" in {
-        val response = localGen.createSubscription(sub)
-        testCBCIdGenerator.expectMsg(GenerateCBCId)
-        status(response) shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
     "be able to update a subscription" which {

@@ -16,46 +16,24 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import akka.actor.{ActorLogging, Props}
-import akka.persistence.PersistentActor
 import cats.data.Validated
+import play.api.Logger
 import uk.gov.hmrc.cbcr.models.CBCId
-import uk.gov.hmrc.cbcr.services.CBCIdGenCommands.{CBCIdIncrementEvent, GenerateCBCId, GenerateCBCIdResponse}
 
-/**
-  * Actor to encapsulate the mutable state of CBCIdCount.
-  * On each request it generates a new CBCId and on success, increments CBCIdCount
-  */
-class CBCIdGenerator extends PersistentActor with ActorLogging{
+class CBCIdGenerator {
 
   private var CBCIdCount: Int = 0
 
-  def incCBCIdCount() : Unit = CBCIdCount = CBCIdCount + 1
+  def incCBCIdCount(): Unit = CBCIdCount = CBCIdCount + 1
 
-  override def persistenceId: String = "CBCIdGenerator"
 
-  override def receiveCommand: Receive = {
-    case GenerateCBCId =>
-      val newCBCId = CBCId.create(CBCIdCount+1)
-      newCBCId.fold(
-        error => log.error(error,s"Failed to generate CBCId: ${error.getMessage}"),
-        _     => persist(CBCIdIncrementEvent)(_ => incCBCIdCount())
-      )
-      sender() ! GenerateCBCIdResponse(newCBCId)
+  def generateCbcId(): Validated[Throwable, CBCId] = {
+    val newCBCId = CBCId.create(CBCIdCount + 1)
+    newCBCId.fold(
+      error => Logger.error(s"Failed to generate CBCId: ${error.getMessage}"),
+      _ => incCBCIdCount()
+    )
+    newCBCId
   }
 
-  override def receiveRecover: Receive = {
-    case CBCIdIncrementEvent => incCBCIdCount()
-  }
-
-}
-
-object CBCIdGenerator {
-  def props:Props = Props[CBCIdGenerator]
-}
-
-object CBCIdGenCommands {
-  case object CBCIdIncrementEvent
-  case object GenerateCBCId
-  case class GenerateCBCIdResponse(value:Validated[Throwable,CBCId])
 }
