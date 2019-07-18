@@ -15,8 +15,8 @@ POST      /subscription                             uk.gov.hmrc.cbcr.controllers
 GET       /subscription/:safeId                     uk.gov.hmrc.cbcr.controllers.CBCIdController.getSubscription(safeId:String)
 PUT       /subscription/:safeId                     uk.gov.hmrc.cbcr.controllers.CBCIdController.updateSubscription(safeId:String)
 
-PUT       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
-GET       /message-ref-id/:id                       uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)
+PUT       /message-ref-id/$id<(.*)>                        uk.gov.hmrc.cbcr.controllers.MessageRefIdController.save(id:String)
+GET       /message-ref-id/$id<(.*)>                        uk.gov.hmrc.cbcr.controllers.MessageRefIdController.exists(id:String)
 
 DELETE    /doc-ref-id/$id<(.*)>                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.deleteDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 PUT       /doc-ref-id/$id<(.*)>                           uk.gov.hmrc.cbcr.controllers.DocRefIdController.saveDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
