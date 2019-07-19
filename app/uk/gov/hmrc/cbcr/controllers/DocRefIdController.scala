@@ -20,6 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
+import uk.gov.hmrc.cbcr.models.DocRefIdResponses.DocRefIdSaveResponse
 import uk.gov.hmrc.cbcr.models.{DocRefIdResponses, _}
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.cbcr.services.RunMode
@@ -69,6 +70,5 @@ class DocRefIdController @Inject()(repo: DocRefIdRepository,config: Configuratio
       Future.successful(NotImplemented)
     }
   }
-
 
 }
