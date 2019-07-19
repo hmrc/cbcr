@@ -160,4 +160,10 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     }
   }
 
+  def dropSubscriptionDataCollection() = Action.async { implicit request =>
+    subRepo.removeAll().map {
+      case w if w.ok => Ok("Successfully drop subscription data collection")
+      case _ => InternalServerError("Failed drop subscription data collection")
+    }
+  }
 }

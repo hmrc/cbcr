@@ -20,16 +20,15 @@ import cats.data.OptionT
 import cats.instances.future._
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{Cursor, ReadPreference}
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.bson.BSONDocument
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import reactivemongo.play.json.collection.JSONBatchCommands.FindAndModifyCommand
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
-import reactivemongo.play.json.collection.JSONBatchCommands.FindAndModifyCommand
 
 import scala.concurrent.{ExecutionContext, Future}
 
