@@ -20,12 +20,12 @@ import cats.data.OptionT
 import cats.instances.future._
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{Cursor, ReadPreference}
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.bson.BSONDocument
+import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import reactivemongo.play.json.collection.JSONBatchCommands.FindAndModifyCommand
 import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
@@ -46,6 +46,15 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
     } yield  x
   }
 
+    def edit(doc: DocRefId): Future[Int] = {
+
+    val criteria = Json.obj("id" -> doc.id)
+    for {
+      collection <- repository
+      update <- collection.update(criteria, Json.obj("$set" -> Json.obj("valid" -> true)))
+    } yield update.nModified
+  }
+
   def save(f:DocRefId) : Future[DocRefIdSaveResponse] = {
     val criteria = Json.obj("id" -> f.id)
     for {
@@ -59,6 +68,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
   def save(c:CorrDocRefId, d:DocRefId): Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = {
     import reactivemongo.play.json.ImplicitBSONHandlers.BSONDocumentWrites
 
+
     val criteria = Json.obj("id" -> c.cid.id, "valid" -> true)
     query(c.cid).zip(query(d)).flatMap{
       case (Invalid,_)            => Future.successful((Invalid,None))
@@ -66,7 +76,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
       case (Valid, Valid|Invalid) => Future.successful((Valid,Some(AlreadyExists)))
       case (Valid, DoesNotExist)  => for {
             repo     <- repository
-            doc      <- repo.findAndModify(criteria,repo.updateModifier(BSONDocument("$set" -> BSONDocument("valid" -> false))))
+            doc: FindAndModifyCommand.FindAndModifyResult <- repo.findAndModify(criteria,repo.updateModifier(BSONDocument("$set" -> BSONDocument("valid" -> false))))
             x        <- if(doc.result[DocRefIdRecord].isDefined) {
               repo.insert(DocRefIdRecord(d, valid = true)).map(w => if(w.ok) { Ok } else { Failed })
             } else {

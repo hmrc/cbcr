@@ -25,10 +25,9 @@ import play.api.libs.json.{Format, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.models.DocRefIdRecord
-import uk.gov.hmrc.cbcr.repositories.ReactiveDocRefIdRepository
+import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord}
-import uk.gov.hmrc.cbcr.repositories.{ReactiveDocRefIdRepository, ReportingEntityDataRepo}
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
@@ -38,6 +37,7 @@ import scala.util.{Failure, Success}
 class AdminService @Inject()(docRefIdRepo:ReactiveDocRefIdRepository,
                                       configuration:Configuration,
                              repo:ReportingEntityDataRepo,
+                             docRepo:DocRefIdRepository,
                                       runMode: RunMode,
                                       audit: AuditConnectorI)(implicit ec:ExecutionContext) extends BaseController {
 
@@ -95,14 +95,15 @@ def showAllDocRef = Action.async {
     }
 
   }
-//  def checkDocRefIdLength(docs:DocRefIdRecord): Option[DocRefIdRecord] = {
-//    Logger.warn("Finding docRefIds that are greater than 200")
-//    Option(docs)
-//  }
 
-  //def findAllSubmissions = docRefIdRepo.findAll.map(x => checkDocRefIdLength(x))
+  def editDocRefId(id: DocRefId) = Action.async {
+    implicit  request =>
+      docRepo.edit(id) map  {
+        case n if n>0 => Ok
+        case _ => NotModified
+      }
+  }
 
-  //def showAllCollection = Logger.warn(s" something something: \n $findAllSubmissions")
 }
 case class ListDocRefIdRecord(docs: List[DocRefIdRecord])
 object ListDocRefIdRecord {

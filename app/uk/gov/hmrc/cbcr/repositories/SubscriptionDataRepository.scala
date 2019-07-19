@@ -60,6 +60,11 @@ class SubscriptionDataRepository @Inject() (protected val mongo: ReactiveMongoAp
     } yield result
   }
 
+  def removeAll() = repository.flatMap{
+    collection =>
+      collection.delete(false).one(Json.obj())
+  }
+
   def clear(utr:Utr): Future[WriteResult] = {
     val criteria = Json.obj("utr" -> utr.utr)
     for {
