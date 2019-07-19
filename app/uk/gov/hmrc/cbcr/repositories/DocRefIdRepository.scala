@@ -56,9 +56,6 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:Exec
     } yield update.nModified
   }
 
-
-
-
   def save(f:DocRefId) : Future[DocRefIdSaveResponse] = {
     val criteria = Json.obj("id" -> f.id)
     for {
