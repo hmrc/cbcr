@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DocRefIdController @Inject()(repo: DocRefIdRepository,config: Configuration, auth: CBCRAuth, runMode: RunMode)(implicit ec: ExecutionContext) extends BaseController {
 
-  def query(docRefId: DocRefId) = auth.authCBCR { implicit request =>
+  def query(docRefId: DocRefId) = auth.authCBCR  { implicit request =>
     repo.query(docRefId).map {
       case DocRefIdResponses.Valid => Ok
       case DocRefIdResponses.Invalid => Conflict
