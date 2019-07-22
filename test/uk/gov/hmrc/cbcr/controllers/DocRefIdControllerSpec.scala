@@ -25,6 +25,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
+import play.api.libs.json.JsString
 import play.api.test.{FakeRequest, Helpers}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models._
@@ -99,32 +100,32 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
     "be able to save a CorrRefId and DocRefId pair, and "  should {
       "respond with a 200 when CorrRefId and DocRefId are both valid" in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Ok)))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.OK
       }
       "respond with a 404 when CorrRefId referrs to a non-existant DocRefId" in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist -> None))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.NOT_FOUND
       }
       "respond with a BadRequest when the CorrRefId refers to an INVALID DocRefId"  in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Invalid -> None))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.BAD_REQUEST
       }
       "respond with a BadRequest when the DocRefId is not unique" in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.AlreadyExists)))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.BAD_REQUEST
       }
       "respond with a 500 if mongo fails" in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Failed)))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
       "respond with a 500 if returns none" in {
         when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> None))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")), DocRefId("DocRefid"))(fakePutRequest)
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }

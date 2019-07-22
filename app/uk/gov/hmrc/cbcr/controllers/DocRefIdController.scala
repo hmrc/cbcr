@@ -20,10 +20,10 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.mvc.Action
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
-import uk.gov.hmrc.cbcr.models.DocRefIdResponses.DocRefIdSaveResponse
 import uk.gov.hmrc.cbcr.models.{DocRefIdResponses, _}
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.cbcr.services.RunMode
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -47,7 +47,8 @@ class DocRefIdController @Inject()(repo: DocRefIdRepository,config: Configuratio
     }
   }
 
-  def saveCorrDocRefId(corrDocRefId: CorrDocRefId, docRefId: DocRefId) = auth.authCBCR { implicit request =>
+  def saveCorrDocRefId(corrDocRefId: CorrDocRefId) = auth.authCBCR { implicit request =>
+    val docRefId = request.body.asJson.getOrElse(throw new NotFoundException("No doc ref id found in the body")).as[DocRefId]
     repo.save(corrDocRefId, docRefId).map {
       case (DocRefIdResponses.Invalid, _) => BadRequest
       case (DocRefIdResponses.DoesNotExist, _) => NotFound

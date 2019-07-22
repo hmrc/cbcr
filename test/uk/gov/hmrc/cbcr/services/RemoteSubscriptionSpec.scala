@@ -168,12 +168,10 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
 
     "Parse a Json SubscriptionRequestResponse " in {
       val result = Json.fromJson[SubscriptionResponse](Json.parse(subscriptionRequestRsponse))
-      println(result)
       result.isInstanceOf[JsError] shouldNot equal(true)
 
       val decisionRequest: SubscriptionResponse =
         result.getOrElse(srr)
-      println(decisionRequest)
       decisionRequest shouldNot equal(srr)
     }
   }
