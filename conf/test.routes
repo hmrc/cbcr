@@ -1,13 +1,13 @@
-POST      /insertSubscriptionData                                       @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.insertData
-DELETE    /deleteSubscription/:utr                                      @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSubscription(utr: String)
-DELETE    /deleteSubscription                                           @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.dropSubscriptionDataCollection
-DELETE    /deleteDocRefId/$docRefId<(.*)>                                       @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleDocRefId(docRefId: String)
-DELETE    /deleteMessageRefId/$messageRefId<(.*)>                             @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleMessageRefId(messageRefId: String)
-DELETE    /reportingEntityData/$docRefId<(.*)>                                @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityData(docRefId: String)
-DELETE    /reportingEntityData                                          @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.dropReportingEntityDataCollection()
-PUT       /updateReportingEntityCreationDate/$docRefId<(.*)>/:creationDate    @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.updateReportingEntityCreationDate(docRefId: String, creationDate: String)
-DELETE    /deleteReportingEntityCreationDate/$docRefId<(.*)>                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityCreationDate(docRefId: String)
-PUT       /confirmReportingEntityCreationDate/$docRefId<(.*)>/:creationDate   @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.confirmReportingEntityCreationDate(docRefId: String, creationDate: String)
-DELETE    /deleteReportingEntityReportingPeriod/$docRefId<(.*)>               @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityReportingPeriod(docRefId: String)
-GET       /validateNumberOfCbcIdForUtr/:utr                             @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.validateNumberOfCbcIdForUtr(utr: String)
-PUT       /updateReportingEntityAdditionalInfoDRI/$docRefId<(.*)>             @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.updateReportingEntityAdditionalInfoDRI(docRefId: String)
+POST          /insertSubscriptionData                                                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.insertData
+DELETE        /deleteSubscription/:utr                                                 @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSubscription(utr: String)
+DELETE        /deleteSubscription                                                      @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.dropSubscriptionDataCollection
+DELETE        /deleteDocRefId/$docRefId<(.*)>                                          @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleDocRefId(docRefId: String)
+DELETE        /deleteMessageRefId/$messageRefId<(.*)>                                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteSingleMessageRefId(messageRefId: String)
+DELETE        /reportingEntityData/$docRefId<(.*)>                                     @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityData(docRefId: String)
+DELETE        /reportingEntityData                                                     @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.dropReportingEntityDataCollection()
+PUT           /updateReportingEntityCreationDate/:creationDate/$docRefId<(.*)>         @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.updateReportingEntityCreationDate(creationDate: String,docRefId: String)
+DELETE        /deleteReportingEntityCreationDate/$docRefId<(.*)>                       @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityCreationDate(docRefId: String)
+PUT           /confirmReportingEntityCreationDate/:creationDate/$docRefId<(.*)>        @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.confirmReportingEntityCreationDate(creationDate: String,docRefId: String)
+DELETE        /deleteReportingEntityReportingPeriod/$docRefId<(.*)>                    @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.deleteReportingEntityReportingPeriod(docRefId: String)
+GET           /validateNumberOfCbcIdForUtr/:utr                                        @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.validateNumberOfCbcIdForUtr(utr: String)
+PUT           /updateReportingEntityAdditionalInfoDRI/$docRefId<(.*)>                  @uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController.updateReportingEntityAdditionalInfoDRI(docRefId: String)

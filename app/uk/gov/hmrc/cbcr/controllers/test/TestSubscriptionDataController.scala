@@ -94,8 +94,9 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     }
   }
 
-  def updateReportingEntityCreationDate(docRefId: String, creationDate: String) = Action.async {
+  def updateReportingEntityCreationDate(creationDate: String,docRefId: String) = Action.async {
     implicit request => {
+      println(s">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>$creationDate")
       val dri = DocRefId(docRefId)
       val cd = LocalDate.parse(creationDate)
 
@@ -117,7 +118,7 @@ class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataReposito
     }
   }
 
-  def confirmReportingEntityCreationDate(docRefId: String, creationDate: String) = Action.async {
+  def confirmReportingEntityCreationDate(creationDate: String, docRefId: String) = Action.async {
     implicit request => {
       val dri = DocRefId(docRefId)
       val cd = LocalDate.parse(creationDate)
