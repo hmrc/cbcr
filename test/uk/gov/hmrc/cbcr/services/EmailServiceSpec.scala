@@ -24,20 +24,19 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.mvc.Result
 import play.api.mvc.Results._
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditResult
-import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Success,Disabled,Failure}
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Disabled, Failure, Success}
 import uk.gov.hmrc.play.test.UnitSpec
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class EmailServiceSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with ScalaFutures {
 
   val mockEmailConnector = mock[EmailConnectorImpl]
-  val mockAuditConnector = mock[AuditConnectorI]
+  val mockAuditConnector = mock[AuditConnector]
   val runMode = mock[RunMode]
   val config = app.injector.instanceOf[Configuration]
 

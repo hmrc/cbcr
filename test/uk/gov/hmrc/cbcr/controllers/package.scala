@@ -19,19 +19,20 @@ package uk.gov.hmrc.cbcr
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar
-import uk.gov.hmrc.auth.core.AffinityGroup
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.cbcr.auth.{CBCRAuth, MicroServiceAuthConnector}
-
+import uk.gov.hmrc.cbcr.auth.{CBCRAuth}
+import play.api.test.Helpers.stubControllerComponents
 import scala.concurrent.Future
-
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Created by colm on 27/09/17.
   */
 package object controllers extends MockitoSugar{
 
-  val mockAuthConnector = mock[MicroServiceAuthConnector]
-  val cBCRAuth = new CBCRAuth(mockAuthConnector)
+  val cc = stubControllerComponents()
+  val mockAuthConnector = mock[AuthConnector]
+  val cBCRAuth = new CBCRAuth(mockAuthConnector, cc)
   val agentAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Agent)
 

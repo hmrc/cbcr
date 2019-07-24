@@ -19,17 +19,8 @@ package uk.gov.hmrc
 import _root_.play.api.libs.json.Json._
 import _root_.play.api.libs.json._
 import cats.data.{EitherT, OptionT}
-import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models.InvalidState
-import uk.gov.hmrc.play.audit.http.connector.{AuditConnector => Auditing}
-import uk.gov.hmrc.play.bootstrap.config.LoadAuditingConfig
-import uk.gov.hmrc.play.config.AppName
-
 import scala.concurrent.{ExecutionContext, Future}
-
-object AuditConnector extends Auditing with AppName with GenericAppConfig {
-  override lazy val auditingConfig = LoadAuditingConfig(runModeConfiguration, mode, "auditing")
-}
 
 package object cbcr {
 

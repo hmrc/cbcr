@@ -17,20 +17,22 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import java.time.LocalDate
-
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, auth: CBCRAuth)(implicit ec: ExecutionContext) extends BaseController {
+class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo,
+                                              auth: CBCRAuth,
+                                              cc: ControllerComponents)
+                                             (implicit ec: ExecutionContext) extends BackendController(cc) {
 
 
   def save() = auth.authCBCRWithJson({ implicit request =>

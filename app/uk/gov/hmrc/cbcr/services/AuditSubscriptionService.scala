@@ -21,17 +21,15 @@ import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsString, Json}
 import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails}
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.play.audit.http.connector.AuditResult
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class AuditSubscriptionService @Inject() (repo:SubscriptionDataRepository,
                                           configuration:Configuration,
                                           runMode: RunMode,
-                                          audit: AuditConnectorI) (implicit ex: ExecutionContext) {
+                                          audit: AuditConnector) (implicit ex: ExecutionContext) {
 
   val auditSubscriptions: Boolean = configuration.getBoolean(s"${runMode.env}.audit.subscriptions").getOrElse(false)
   Logger.info(s"auditSubscriptions set to: $auditSubscriptions")

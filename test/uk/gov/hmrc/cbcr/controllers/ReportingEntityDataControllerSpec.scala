@@ -67,7 +67,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with MockitoSugar with 
 
   val repo = mock[ReportingEntityDataRepo]
 
-  val controller = new ReportingEntityDataController(repo,cBCRAuth)
+  val controller = new ReportingEntityDataController(repo,cBCRAuth, cc)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a ReportingEntityData" in {

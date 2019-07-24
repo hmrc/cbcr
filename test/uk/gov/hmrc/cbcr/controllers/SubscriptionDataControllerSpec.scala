@@ -57,7 +57,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with Moc
 
   val desConnector = mock[DESConnector]
   when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List())
-  val controller = new SubscriptionDataController(store,desConnector,cBCRAuth,config)
+  val controller = new SubscriptionDataController(store,desConnector,cBCRAuth,config, cc)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 

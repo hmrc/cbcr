@@ -24,16 +24,18 @@ import play.api.http.Status
 import play.api.mvc.Results.{Ok, Unauthorized}
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{AffinityGroup, MissingBearerToken}
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, MissingBearerToken}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.play.test.UnitSpec
-
+import play.api.test.Helpers.stubControllerComponents
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
 
-  val mockMicroServiceAuthConnector = mock[MicroServiceAuthConnector]
-  val cBCRAuth = new CBCRAuth(mockMicroServiceAuthConnector)
+  val cc = stubControllerComponents()
+  val mockMicroServiceAuthConnector = mock[AuthConnector]
+  val cBCRAuth = new CBCRAuth(mockMicroServiceAuthConnector, cc)
   private type AuthAction = Request[AnyContent] => Future[Result]
 
   val authAction: AuthAction = { implicit request  => Future successful Ok }

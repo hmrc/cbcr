@@ -16,22 +16,17 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import com.typesafe.config.Config
+import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models.Email
-import uk.gov.hmrc.play.config.ServicesConfig
-import uk.gov.hmrc.play.http._
-import uk.gov.hmrc.play.http.ws.{WSGet, WSHttp, WSPost}
-
+import uk.gov.hmrc.http.{HeaderCarrier, HttpPost, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpGet, HttpPost, HttpResponse}
-import uk.gov.hmrc.http.hooks.HttpHook
 
 @ImplementedBy(classOf[EmailConnectorImpl])
-trait EmailConnector extends ServicesConfig {
+trait EmailConnector {
   val serviceUrl: String
   val port: String
   val host: String
@@ -41,12 +36,9 @@ trait EmailConnector extends ServicesConfig {
 }
 
 @Singleton
-class EmailConnectorImpl @Inject()(config: Configuration)(implicit ec: ExecutionContext) extends EmailConnector with GenericAppConfig {
-  val http =  new HttpPost  with WSPost with GenericAppConfig {
-    override val hooks: Seq[HttpHook] = NoneRequired
-
-    override protected def configuration: Option[Config] = Some(runModeConfiguration.underlying)
-  }
+class EmailConnectorImpl @Inject()(config: Configuration,
+                                   httpClient: HttpClient)(implicit ec: ExecutionContext) extends EmailConnector {
+  val http = httpClient
   val conf: Config = config.underlying.getConfig("microservice.services.email")
   val host = conf.getString("host")
   val port = conf.getInt("port").toString

@@ -26,7 +26,7 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.EmailService
 import uk.gov.hmrc.play.test.UnitSpec
 import play.api.http.Status
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import play.api.mvc.Results.Accepted
 
@@ -35,7 +35,7 @@ class CBCREmailControllerSpec extends UnitSpec with MockitoSugar with ScalaFutur
   val paramsSub = Map("f_name" → "Tyrion","s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
   val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
   val mockEmailService = mock[EmailService]
-    val  cbcrEmailController = new CBCREmailController(mockEmailService,cBCRAuth)
+    val  cbcrEmailController = new CBCREmailController(mockEmailService,cBCRAuth, cc)
 
   "The CBCREmailController" should {
     "return a 202 for a valid rest call" in {

@@ -55,7 +55,7 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
   val repo = mock[DocRefIdRepository]
 
   val runMode = mock[RunMode]
-  val controller = new DocRefIdController(repo,config,cBCRAuth, runMode)
+  val controller = new DocRefIdController(repo,config,cBCRAuth, runMode, cc)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
@@ -132,7 +132,7 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
     "be able to delete a DocRefId" when {
       val runMode = mock[RunMode]
       when(runMode.env) thenReturn "Dev"
-      val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> true),cBCRAuth, runMode)
+      val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> true),cBCRAuth, runMode, cc)
       "it exists and return a 200" in {
         when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 1, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
@@ -149,7 +149,7 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with MockitoSu
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
       "return NOT_IMPLEMENTED if enableTestApis = false" in {
-        val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> false),cBCRAuth, runMode)
+        val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> false),cBCRAuth, runMode, cc)
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.NOT_IMPLEMENTED
       }

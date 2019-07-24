@@ -22,22 +22,13 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.affinityGroup
-import uk.gov.hmrc.cbcr.config.GenericAppConfig
-import uk.gov.hmrc.http.HttpPost
 import uk.gov.hmrc.play.HeaderCarrierConverter
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.play.config.ServicesConfig
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-@Singleton
-class MicroServiceAuthConnector @Inject()(val http:HttpPost) extends PlayAuthConnector with ServicesConfig with GenericAppConfig {
-  val serviceUrl: String = baseUrl("auth")
-
-}
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CBCRAuth @Inject()(val microServiceAuthConnector: MicroServiceAuthConnector) extends AuthorisedFunctions with BaseController {
+class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector,
+                         cc: ControllerComponents)(implicit val ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions {
   override def authConnector: AuthConnector = microServiceAuthConnector
 
   private val AuthProvider: AuthProviders = AuthProviders(GovernmentGateway)
@@ -47,20 +38,20 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: MicroServiceAuthConnecto
     group.toString.contains("Agent") || group.toString.contains("Organisation")
   }
 
-  def authCBCR(action: AuthAction[AnyContent]): Action[AnyContent] = Action.async{
-    implicit request ⇒authCommon(action)
+  def authCBCR(action: AuthAction[AnyContent]): Action[AnyContent] = Action.async {
+    implicit request ⇒ authCommon(action)
   }
 
-  def authCBCRWithJson(action: AuthAction[JsValue],json:BodyParser[JsValue]): Action[JsValue] =
+  def authCBCRWithJson(action: AuthAction[JsValue], json: BodyParser[JsValue]): Action[JsValue] =
     Action.async(json) { implicit request ⇒ authCommon(action) }
 
-  def authCommon[A](action: AuthAction[A])(implicit request:Request[A]):Future[Result] ={
+  def authCommon[A](action: AuthAction[A])(implicit request: Request[A]): Future[Result] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
     authorised(AuthProvider).retrieve(affinityGroup) {
       case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)
       case _ => Future.successful(Unauthorized)
-    }.recover[Result]{
-      case e:NoActiveSession => Unauthorized(e.reason)
+    }.recover[Result] {
+      case e: NoActiveSession => Unauthorized(e.reason)
     }
   }
 }
