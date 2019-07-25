@@ -21,20 +21,16 @@ import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
 
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
-import com.google.inject.AbstractModule
-import com.typesafe.config.Config
+import com.google.inject.{AbstractModule, Provides}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.cbcr.config.GenericAppConfig
-import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
-import uk.gov.hmrc.cbcr.services._
-import uk.gov.hmrc.http.HttpPost
-import uk.gov.hmrc.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.ws.WSPost
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
+import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-  val graphiteConfig:Configuration = configuration.getConfig("microservice.metrics.graphite").getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
+  val graphiteConfig: Configuration = configuration.getConfig("microservice.metrics.graphite").getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
 
   val metricsPluginEnabled: Boolean = configuration.getBoolean("metrics.enabled").getOrElse(false)
 
@@ -71,17 +67,9 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     if (graphiteEnabled) startGraphite
 
-    bind(classOf[HttpPost]).toInstance(new HttpPost  with WSPost with GenericAppConfig {
-      override val hooks: Seq[HttpHook] = NoneRequired
-
-      override protected def configuration: Option[Config] = Some(runModeConfiguration.underlying)
-    })
+    bind(classOf[HttpClient]).to(classOf[DefaultHttpClient])
+    bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
-
-//    bind(classOf[DocRefIdClearService]).asEagerSingleton()
-//    bind(classOf[RetrieveReportingEntityService]).asEagerSingleton()
-
   }
 }
-

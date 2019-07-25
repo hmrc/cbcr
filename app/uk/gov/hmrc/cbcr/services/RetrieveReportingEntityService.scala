@@ -18,17 +18,17 @@ package uk.gov.hmrc.cbcr.services
 
 import javax.inject.Inject
 import play.api.libs.json.Json
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.models.DocRefId
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RetrieveReportingEntityService @Inject() (repo:ReportingEntityDataRepo,
                                                 configuration:Configuration,
                                                 runMode: RunMode,
-                                                audit: AuditConnectorI) (implicit ex: ExecutionContext) {
+                                                audit: AuditConnector) (implicit ex: ExecutionContext) {
 
   val retrieveReportingEntity: Boolean = configuration.getBoolean(s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
   Logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")

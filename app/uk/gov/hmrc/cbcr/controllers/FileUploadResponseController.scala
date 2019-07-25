@@ -18,18 +18,20 @@ package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
-import play.api.mvc.Action
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.UploadFileResponse
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import scala.concurrent.{ExecutionContext, Future}
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 @Singleton
-class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: CBCRAuth) extends BaseController {
+class FileUploadResponseController @Inject()(repo: FileUploadRepository,
+                                             auth: CBCRAuth,
+                                             cc: ControllerComponents)
+                                            (implicit val ec: ExecutionContext) extends BackendController(cc) {
 
-  def saveFileUploadResponse = Action.async(parse.json){ implicit request =>
+  def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
     request.body.validate[UploadFileResponse].fold(
       error => Future.successful(BadRequest(JsError.toJson(error))),
       response => repo.save(response).map {
@@ -47,4 +49,3 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
   }
 
 }
-

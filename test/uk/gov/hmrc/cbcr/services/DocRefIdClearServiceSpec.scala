@@ -28,8 +28,6 @@ import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import reactivemongo.api.commands.DefaultWriteResult
 import org.mockito.Mockito._
-import uk.gov.hmrc.AuditConnector
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,7 +40,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth 
   val runMode                 = mock[RunMode]
   val docRefIdRepo            = mock[DocRefIdRepository]
   val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
-  val mockAudit               = mock[AuditConnectorI]
+  val mockAudit               = mock[AuditConnector]
 
   val testConfig              = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
   val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)

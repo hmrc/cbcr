@@ -23,19 +23,16 @@ import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
 import play.api.mvc.Results._
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import uk.gov.hmrc.play.audit.AuditExtensions._
-import uk.gov.hmrc.play.audit.http.connector.AuditResult
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 @Singleton
-class EmailService @Inject()(emailConnector:EmailConnectorImpl, auditConnector:AuditConnectorI,
+class EmailService @Inject()(emailConnector:EmailConnectorImpl,
+                             auditConnector:AuditConnector,
                              configuration:Configuration,
-                             runMode: RunMode) {
+                             runMode: RunMode)(implicit val ec: ExecutionContext) {
 
   private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
     configuration.getString(s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")

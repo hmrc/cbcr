@@ -17,15 +17,18 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
+import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class MessageRefIdController @Inject()(repo: MessageRefIdRepository, auth: CBCRAuth)(implicit ec: ExecutionContext) extends BaseController {
+class MessageRefIdController @Inject()(repo: MessageRefIdRepository,
+                                       auth: CBCRAuth,
+                                       cc: ControllerComponents)
+                                      (implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def save(messageRefId: String) = auth.authCBCR { implicit request =>
     repo.save(MessageRefId(messageRefId)).map { wr =>

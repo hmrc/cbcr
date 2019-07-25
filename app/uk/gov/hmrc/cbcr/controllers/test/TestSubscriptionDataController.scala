@@ -17,24 +17,21 @@
 package uk.gov.hmrc.cbcr.controllers.test
 
 import java.time.LocalDate
-
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
-import uk.gov.hmrc.cbcr.config.GenericAppConfig
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, MessageRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
-import uk.gov.hmrc.play.config.ServicesConfig
-
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class TestSubscriptionDataController @Inject()(subRepo: SubscriptionDataRepository,
                                                docRefRepo: DocRefIdRepository,
                                                messageRefIdRepository: MessageRefIdRepository,
-                                               reportingEntityDataRepo: ReportingEntityDataRepo
-                                              )(implicit ec: ExecutionContext) extends BaseController with ServicesConfig with GenericAppConfig {
+                                               reportingEntityDataRepo: ReportingEntityDataRepo,
+                                               cc: ControllerComponents
+                                              )(implicit ec: ExecutionContext) extends BackendController(cc) {
 
   def insertData() = Action.async[JsValue](parse.json) {
     implicit request =>

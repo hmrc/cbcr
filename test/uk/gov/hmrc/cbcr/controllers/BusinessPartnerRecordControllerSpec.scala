@@ -35,7 +35,7 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
   val dc = mock[DESConnector]
   passAuthMock()
-  val controller = new BusinessPartnerRecordController(dc,cBCRAuth)
+  val controller = new BusinessPartnerRecordController(dc,cBCRAuth, cc)
 
   "The BusinessPartnerRecordController" should {
     "respond with a 200 if the UTR is matched" in {

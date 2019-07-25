@@ -17,46 +17,43 @@
 package uk.gov.hmrc.cbcr.services
 
 import java.time.LocalDate
-
 import com.google.inject.Singleton
 import javax.inject.Inject
-import play.api.{Configuration, Logger}
 import play.api.libs.json.{Format, Json}
-import play.api.mvc.Action
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
-import uk.gov.hmrc.cbcr.models.DocRefIdRecord
-import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import play.api.mvc.ControllerComponents
+import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord}
-
+import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
 
 @Singleton
-class AdminService @Inject()(docRefIdRepo:ReactiveDocRefIdRepository,
-                                      configuration:Configuration,
-                             repo:ReportingEntityDataRepo,
-                             docRepo:DocRefIdRepository,
-                                      runMode: RunMode,
-                                      audit: AuditConnectorI)(implicit ec:ExecutionContext) extends BaseController {
+class AdminService @Inject()(docRefIdRepo: ReactiveDocRefIdRepository,
+                             configuration: Configuration,
+                             repo: ReportingEntityDataRepo,
+                             docRepo: DocRefIdRepository,
+                             runMode: RunMode,
+                             audit: AuditConnector,
+                             cc: ControllerComponents)
+                            (implicit ec: ExecutionContext) extends BackendController(cc) {
 
 
+  def showAllDocRef = Action.async {
+    implicit request =>
 
-def showAllDocRef = Action.async {
-  implicit request =>
+      docRefIdRepo.findAll().map(response => Ok(Json.toJson(displayAllDocRefId(response))))
 
-    docRefIdRepo.findAll().map( response => Ok(Json.toJson(displayAllDocRefId(response))))
-
-}
+  }
 
 
-  def countDocRefId(docs : List[DocRefIdRecord]): ListDocRefIdRecord = {
+  def countDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord = {
     ListDocRefIdRecord(docs.filterNot(doc => doc.id.id.length < 200))
   }
 
 
-  def displayAllDocRefId(docs : List[DocRefIdRecord]): ListDocRefIdRecord = {
+  def displayAllDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord = {
     ListDocRefIdRecord(docs)
   }
 
@@ -97,15 +94,17 @@ def showAllDocRef = Action.async {
   }
 
   def editDocRefId(id: DocRefId) = Action.async {
-    implicit  request =>
-      docRepo.edit(id) map  {
-        case n if n>0 => Ok
+    implicit request =>
+      docRepo.edit(id) map {
+        case n if n > 0 => Ok
         case _ => NotModified
       }
   }
 
 }
+
 case class ListDocRefIdRecord(docs: List[DocRefIdRecord])
+
 object ListDocRefIdRecord {
-  implicit val format:Format[ListDocRefIdRecord] = Json.format[ListDocRefIdRecord]
+  implicit val format: Format[ListDocRefIdRecord] = Json.format[ListDocRefIdRecord]
 }

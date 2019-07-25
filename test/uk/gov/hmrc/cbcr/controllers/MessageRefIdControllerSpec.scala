@@ -48,7 +48,7 @@ class MessageRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFu
 
   val repo = mock[MessageRefIdRepository]
 
-  val controller = new MessageRefIdController(repo,cBCRAuth)
+  val controller = new MessageRefIdController(repo,cBCRAuth, cc)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a MessageRefId" in {

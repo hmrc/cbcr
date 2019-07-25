@@ -22,14 +22,11 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
-import play.api.libs.json.JsString
-import reactivemongo.api.commands.DefaultWriteResult
-import uk.gov.hmrc.cbcr.audit.AuditConnectorI
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.audit.http.connector.AuditResult
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,7 +38,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockitoSugar with MockA
 
   val runMode                 = mock[RunMode]
   val subscriptionDataRepo    = mock[SubscriptionDataRepository]
-  val mockAudit               = mock[AuditConnectorI]
+  val mockAudit               = mock[AuditConnector]
 
   val cbcId                   = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
   val cbcId2                  = CBCId.create(2).getOrElse(fail("Couldn't generate cbcid"))

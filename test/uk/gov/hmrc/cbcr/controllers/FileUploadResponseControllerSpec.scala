@@ -31,7 +31,7 @@ import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.play.test.UnitSpec
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -56,7 +56,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with S
 
   val repo = mock[FileUploadRepository]
 
-  val controller = new FileUploadResponseController(repo,cBCRAuth)
+  val controller = new FileUploadResponseController(repo,cBCRAuth, cc)
 
   "The FileUploadResponseController" should {
     "respond with a 200 when asked to store an UploadFileResponse" in {

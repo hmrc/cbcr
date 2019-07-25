@@ -1,4 +1,3 @@
-import play.routes.compiler.StaticRoutesGenerator
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
 import sbt._
