@@ -17,6 +17,8 @@
 package uk.gov.hmrc.cbcr.services
 
 import java.time.LocalDate
+
+import cats.data.NonEmptyList
 import com.google.inject.Singleton
 import javax.inject.Inject
 import play.api.libs.json.{Format, Json}
@@ -26,8 +28,19 @@ import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord}
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
+
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
+
+
+
+case class AdminReportingEntityData(cbcReportsDRI:List[DocRefId],
+                                    additionalInfoDRI:Option[List[DocRefId]],
+                                    reportingEntityDRI:DocRefId)
+
+object AdminReportingEntityData {
+  implicit val format = Json.format[AdminReportingEntityData]
+}
 
 @Singleton
 class AdminService @Inject()(docRefIdRepo: ReactiveDocRefIdRepository,
@@ -98,6 +111,14 @@ class AdminService @Inject()(docRefIdRepo: ReactiveDocRefIdRepository,
       docRepo.edit(id) map {
         case n if n > 0 => Ok
         case _ => NotModified
+      }
+  }
+
+  def editReportingEntityData(docRefId: DocRefId) = Action.async(parse.json[AdminReportingEntityData]) {
+    implicit request =>
+      repo.updateReportingEntityDRI(request.body, docRefId).map {
+        case true => Ok
+        case false => Ok("Reporting entity was not updated due to an error. Please check if the json provided is correct" + Json.toJson(request.body))
       }
   }
 
