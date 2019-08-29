@@ -150,7 +150,6 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
-  /**This is an admin endpoint**/
   def queryTIN(tin: String, reportingPeriod: String): Future[List[ReportingEntityData]] = {
     val criteria = Json.obj("tin" -> tin, "reportingPeriod" -> reportingPeriod)
 
