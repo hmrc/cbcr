@@ -20,6 +20,7 @@ import java.time.LocalDate
 import java.time._
 import java.time.format.DateTimeFormatter
 
+import cats.data.NonEmptyList
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{Json, _}
@@ -35,6 +36,7 @@ import scala.math.Ordering.Implicits._
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
+import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 
 import scala.util.Success
 
@@ -60,6 +62,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       collection.delete(false).one(Json.obj())
   }
 
+
   def save(f: ReportingEntityData): Future[WriteResult] =
     repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDate.now()))))
 
@@ -70,6 +73,18 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     for {
       collection <- repository
       update <- collection.update(criteria, p)
+    } yield update.ok
+
+  }
+/**This is an admin endpoint**/
+  def updateReportingEntityDRI(adminReportingEntityData: AdminReportingEntityData, docRefId: DocRefId) = {
+    val selector = Json.obj("reportingEntityDRI" -> docRefId.id)
+
+    val update = Json.obj("$set" -> Json.toJson(adminReportingEntityData))
+
+    for {
+      collection <- repository
+      update <- collection.update(selector,update)
     } yield update.ok
 
   }
@@ -135,6 +150,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
+  /**This is an admin endpoint**/
   def queryTIN(tin: String, reportingPeriod: String): Future[List[ReportingEntityData]] = {
     val criteria = Json.obj("tin" -> tin, "reportingPeriod" -> reportingPeriod)
 
