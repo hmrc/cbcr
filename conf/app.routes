@@ -40,3 +40,4 @@ GET           /admin/reporting-entity/query-cbc-id/:cbcid/:reportingPeriod      
 GET           /admin/reporting-entity/query-tin/:tin/:reportingPeriod             uk.gov.hmrc.cbcr.services.AdminService.adminQueryTin(tin: String, reportingPeriod: String)
 PUT           /admin/updateDocRefId/$id<(.*)>                                     uk.gov.hmrc.cbcr.services.AdminService.editDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 POST          /admin/updateReportingEntityDRI/$docRefId<(.*)>                     uk.gov.hmrc.cbcr.services.AdminService.editReportingEntityData(docRefId: uk.gov.hmrc.cbcr.models.DocRefId)
+POST          /admin/saveDocRefId/$id<(.*)>                                       uk.gov.hmrc.cbcr.services.AdminService.saveDocRefId(id: uk.gov.hmrc.cbcr.models.DocRefId)
