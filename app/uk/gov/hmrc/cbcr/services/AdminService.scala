@@ -24,7 +24,7 @@ import javax.inject.Inject
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.ControllerComponents
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord}
+import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord, DocRefIdResponses}
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
@@ -112,6 +112,17 @@ class AdminService @Inject()(docRefIdRepo: ReactiveDocRefIdRepository,
         case n if n > 0 => Ok
         case _ => NotModified
       }
+  }
+
+  def saveDocRefId(id: DocRefId) = Action.async {
+    implicit request =>
+      docRepo.save(id).map {
+        case DocRefIdResponses.Ok => Ok
+        case DocRefIdResponses.AlreadyExists => Conflict
+        case DocRefIdResponses.Failed => InternalServerError
+      }
+
+
   }
 
   def editReportingEntityData(docRefId: DocRefId) = Action.async(parse.json[AdminReportingEntityData]) {
