@@ -12,8 +12,8 @@ object MicroServiceBuild extends Build with MicroService {
     "org.reactivemongo" %% "play2-reactivemongo" % "0.17.1-play26",
     "org.reactivemongo" %% "reactivemongo-bson" % "0.17.1",
     ws,
-    "uk.gov.hmrc" %% "auth-client" % "2.24.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "0.42.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.30.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0",
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
     "com.github.kxbmap" %% "configs" % "0.4.4",
@@ -32,7 +32,7 @@ object MicroServiceBuild extends Build with MicroService {
     "org.mockito" % "mockito-core" % "2.28.2" % scope,
     "org.scalacheck" %% "scalacheck" % "1.14.0" % scope,
     "org.eu.acolyte" % "play-reactive-mongo_2.11" % "1.0.43-j7p" % scope,
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "0.42.0" % Test classifier "tests"
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0" % Test classifier "tests"
   )
 
 }
