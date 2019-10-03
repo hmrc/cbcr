@@ -26,7 +26,7 @@ import play.api.mvc.{AnyContent, Request, Result}
 import play.api.test.FakeRequest
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, MissingBearerToken}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 import play.api.test.Helpers.stubControllerComponents
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -24,7 +24,6 @@ object MicroServiceBuild extends Build with MicroService {
 
   def test(scope: String = "test,it") = Seq(
     "com.typesafe.akka" %% "akka-testkit" % "2.4.14" % scope,
-    "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % scope,
     "org.scalatest" %% "scalatest" % "3.0.8" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
     "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,

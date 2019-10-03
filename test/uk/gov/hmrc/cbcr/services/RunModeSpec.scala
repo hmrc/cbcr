@@ -20,7 +20,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 
 class RunModeSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite {
   val config = app.injector.instanceOf[Configuration]
