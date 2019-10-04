@@ -22,7 +22,7 @@ import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.BeforeAndAfterEach

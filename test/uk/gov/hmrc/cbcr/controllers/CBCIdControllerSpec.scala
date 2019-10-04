@@ -33,7 +33,7 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, RunMode, SubscriptionHandlerImpl}
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

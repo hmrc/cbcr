@@ -35,7 +35,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier

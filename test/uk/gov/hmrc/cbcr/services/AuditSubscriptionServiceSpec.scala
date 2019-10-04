@@ -27,7 +27,7 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo, SubscriptionDataRepository}
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.{ExecutionContext, Future}
 

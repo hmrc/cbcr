@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.models
 
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.cbcr.util.UnitSpec
 import org.scalatest.Matchers.defined
 
 import scala.concurrent.duration._
