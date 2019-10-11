@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DocRefIdClearServiceSpec extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite with Eventually{
+class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with OneAppPerSuite with Eventually{
 
   val config                  = app.injector.instanceOf[Configuration]
   implicit val ec             = app.injector.instanceOf[ExecutionContext]

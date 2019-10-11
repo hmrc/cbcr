@@ -26,15 +26,13 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Result
 import play.api.test.{FakeRequest, Helpers}
 import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models.{CBC701, _}
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.util.{LogCapturing, UnitSpec}
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with MockAuth with LogCapturing {
 
@@ -73,13 +71,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   val repo = mock[ReportingEntityDataRepo]
 
-  val controller = new ReportingEntityDataController(repo,cBCRAuth, cc)
-
-  def verifyResult(result: Future[Result], red: ReportingEntityData) = Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
-
-  def verifyResult(result: Future[Result], red: ReportingEntityDataModel) = Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
-
-  def verifyStatusCode(result: Future[Result], statusCode: Int) = status(result) shouldBe statusCode
+  val controller = new ReportingEntityDataController(repo, cBCRAuth, cc)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a ReportingEntityData" in {

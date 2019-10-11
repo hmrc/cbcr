@@ -37,7 +37,7 @@ import scala.concurrent.Future
 /**
   * Created by max on 03/04/17.
   */
-class FileUploadResponseControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
+class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with MockAuth{
 
   val fir = UploadFileResponse("id1", "fid1", "status",None)
 
