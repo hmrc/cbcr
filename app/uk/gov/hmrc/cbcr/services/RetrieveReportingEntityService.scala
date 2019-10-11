@@ -31,14 +31,15 @@ class RetrieveReportingEntityService @Inject() (repo:ReportingEntityDataRepo,
                                                 audit: AuditConnector) (implicit ex: ExecutionContext) {
 
   val retrieveReportingEntity: Boolean = configuration.getBoolean(s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
+
   Logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
 
   if (retrieveReportingEntity) {
     val docRefId: String = configuration.getString(s"${runMode.env}.retrieve.docRefId").getOrElse("")
-    Logger.info(s"docRefId to retireve = ${docRefId}")
+    Logger.info(s"docRefId to retireve = $docRefId")
 
     repo.query(docRefId).map(red =>
-      if(red.size > 0) red.foreach(r => Logger.info(s"reportingEntityData for docRefId ${docRefId} = ${Json.toJson(r)}"))
+      if(red.nonEmpty) red.foreach(r => Logger.info(s"reportingEntityData for doc RefId $docRefId = ${Json.toJson(r)}"))
       else Logger.info(s"no reportingEntityData found for docRefIds matching $docRefId")
     )
   }

@@ -35,14 +35,10 @@ trait MicroService {
     "testOnlyDoNotUseInAppConf.*",
     "testOnly.*",
     "test",
-    "uk.gov.hmrc",
-    "uk.gov.hmrc.cbcr.repositories.*",
-    "uk.gov.hmrc.cbcr.connectors.*",
-    "uk.gov.hmrc.cbcr.audit.*",
-    "uk.gov.hmrc.cbcr.controllers.test.*",
-    "uk.gov.hmrc.cbcr.services.RetrieveReportingEntityService",
-    "uk.gov.hmrc.cbcr.services.DataMigrationCriteria",
-    "uk.gov.hmrc.cbcr",
+    "uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController",
+  //    "uk.gov.hmrc.cbcr.repositories.*",
+//    "uk.gov.hmrc.cbcr.audit.*",
+//    "uk.gov.hmrc.cbcr",
     "uk.gov.hmrc.cbcr.models.ContactDetails",
     "uk.gov.hmrc.cbcr.models.CorrDocRefId",
     "uk.gov.hmrc.cbcr.models.CorrespondenceDetails",
@@ -94,7 +90,7 @@ trait MicroService {
     ))
 }
 
-private object TestPhases {
+private object TestPhases { 
 
   def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
     tests map {
