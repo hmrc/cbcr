@@ -19,22 +19,17 @@ package uk.gov.hmrc.cbcr.services
 import java.time.LocalDate
 
 import akka.stream.Materializer
-import akka.util.ByteString
 import cats.data.NonEmptyList
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.api.http.{HttpEntity, Status}
-import play.api.libs.json.Json
-import play.api.libs.streams.Accumulator
-import play.api.mvc.{ResponseHeader, Result}
-import play.api.test.Helpers.stubControllerComponents
+import play.api.http.Status
 import play.api.test.FakeRequest
-import reactivemongo.api.ReadPreference.Primary
+import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses.{AlreadyExists, Failed, Ok}
-import uk.gov.hmrc.cbcr.models.{CBC701, CBCId, DocRefId, DocRefIdRecord, ReportingEntityData, TIN, UltimateParentEntity}
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -169,12 +164,20 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
   }
 
   "editReportingEntityData" should {
-    "return an 200 response code when the reporting entity DRI has been updated" in {
+    "return a 200 response code when the reporting entity DRI has been updated" in {
       when(repo.updateReportingEntityDRI(any(), any())) thenReturn Future.successful(true)
-      val result = adminService.editReportingEntityData(docRefId)(fakeRequest.withBody(Json.toJson(adminRED)))
+      val result = adminService.editReportingEntityData(docRefId)(fakeRequest.withBody(adminRED))
+      verifyStatusCode(result, Status.OK)
+    }
+
+    "return a 200 response code when the reportingEntityDRI failed to update" in {
+      when(repo.updateReportingEntityDRI(any(), any())) thenReturn Future.successful(false)
+      val fakeRequestWithJsonBody = fakeRequest.withBody(adminRED)
+      val result = adminService.editReportingEntityData(docRefId)(fakeRequestWithJsonBody)
       verifyStatusCode(result, Status.OK)
     }
   }
+}
 
 
 
