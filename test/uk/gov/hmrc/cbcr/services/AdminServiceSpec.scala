@@ -160,7 +160,7 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
     val docRefIdRecord = DocRefIdRecord(docRefId, valid = true)
     when(docRefIdRepo.findAll(any())(any())) thenReturn Future.successful(List(docRefIdRecord))
     val result = adminService.showAllDocRef(fakeRequest)
-    verifyStatusCode(result, 200)
+    verifyStatusCode(result, Status.OK)
   }
 
   "editReportingEntityData" should {

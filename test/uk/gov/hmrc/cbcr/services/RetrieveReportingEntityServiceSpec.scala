@@ -93,19 +93,5 @@ class RetrieveReportingEntityServiceSpec
         logs.count(_.getLevel == Level.INFO) shouldBe 1
       }
     }
-//    "log info if the configuration value matches the required values but the query of the docRefId is empty" in {
-//      withCaptureOfLoggingFrom(Logger) { logs =>
-//        new RetrieveReportingEntityService(mockReportingEntityDataRepo,
-//                                           configuration,
-//                                           runMode,
-//                                           audit)
-//
-//        when(mockReportingEntityDataRepo.query(any[String]())) thenReturn Future.successful(List[ReportingEntityData]())
-//
-//        logs.count(_.getLevel == Level.INFO) shouldBe 3
-//        logs.reverse.headOption shouldBe Some("")
-//
-//      }
-//    }
   }
 }
