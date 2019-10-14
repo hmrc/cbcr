@@ -66,4 +66,7 @@ trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
 
   def verifyStatusCode(result: Future[Result], statusCode: Int) = status(result) shouldBe statusCode
 
+  def verifyStatusCode[A](result: Future[Result], expected: A) = status(result) shouldBe expected
+
+
 }
