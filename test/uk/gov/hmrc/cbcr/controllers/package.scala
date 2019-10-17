@@ -18,13 +18,14 @@ package uk.gov.hmrc.cbcr
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
-import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.cbcr.auth.{CBCRAuth}
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.stubControllerComponents
-import scala.concurrent.Future
+import uk.gov.hmrc.auth.core.retrieve.Retrieval
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector}
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 /**
   * Created by colm on 27/09/17.
   */

@@ -31,7 +31,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.Future
 
-class MessageRefIdControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
+class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAuth{
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 

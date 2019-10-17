@@ -42,7 +42,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionDataControllerSpec extends UnitSpec with MockitoSugar with MockAuth with OneAppPerSuite{
+class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppPerSuite{
 
   val store = mock[SubscriptionDataRepository]
 

@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import play.api.mvc.Results.Accepted
 
-class CBCREmailControllerSpec extends UnitSpec with MockitoSugar with ScalaFutures with MockAuth{
+class CBCREmailControllerSpec extends UnitSpec with ScalaFutures with MockAuth{
 
   val paramsSub = Map("f_name" → "Tyrion","s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
   val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)

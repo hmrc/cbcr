@@ -23,6 +23,7 @@ import akka.util.ByteString
 import org.scalatest.{Matchers, OptionValues, WordSpecLike}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
+import uk.gov.hmrc.cbcr.models.{ReportingEntityData, ReportingEntityDataModel}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
@@ -37,8 +38,6 @@ trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
   implicit def extractAwait[A](future: Future[A]): A = await[A](future)
 
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
-
-  implicit def liftFuture[A](v: A): Future[A] = Future.successful(v)
 
   def status(of: Result): Int = of.header.status
 
@@ -60,4 +59,14 @@ trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
   def bodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[String] = {
     resultF.map(bodyOf)
   }
+
+  def verifyResult(result: Future[Result], red: ReportingEntityData)(implicit mat: Materializer) = Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+
+  def verifyResult(result: Future[Result], red: ReportingEntityDataModel)(implicit mat: Materializer) = Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+
+  def verifyStatusCode(result: Future[Result], statusCode: Int) = status(result) shouldBe statusCode
+
+  def verifyStatusCode[A](result: Future[Result], expected: A) = status(result) shouldBe expected
+
+
 }

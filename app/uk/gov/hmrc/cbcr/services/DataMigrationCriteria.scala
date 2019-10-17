@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import configs.syntax._
 import play.api.Configuration
 import play.api.libs.json.Json
-import configs.syntax._
 
 object DataMigrationCriteria {
 
