@@ -65,15 +65,12 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
   "Calls to save a DocRefId" should {
     "should successfully create a new doc if it does not exist" in {
 
-      val criteria = Json.obj("id" -> docRefId.id)
       val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(docRefId)
       await(result) shouldBe Ok
 
     }
-
     "should return AlreadyExists because its created in the above step" in {
 
-      val criteria = Json.obj("id" -> docRefId.id)
       val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(docRefId)
       await(result) shouldBe AlreadyExists
 
@@ -83,12 +80,10 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
   "Calls to query" should {
     "should check for Valid docRefId" in {
 
-      val criteria = Json.obj("id" -> docRefId.id)
       val result: Future[DocRefIdQueryResponse] = docRefIdRepository.query(docRefId)
       await(result) shouldBe Valid
 
     }
-
     "should check for the absence of that doc when it does not exist in database" in {
 
       val result: Future[DocRefIdQueryResponse] = docRefIdRepository.query(new DocRefId("docRefId-that-Never-Exists"))
@@ -106,63 +101,42 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
         await(result.map(r => r.ok)) shouldBe true
 
       }
-
       "should delete the doesNotExistYet if it exists" in {
 
         val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
         await(result.map(r => r.ok)) shouldBe true
 
       }
+      "should return (DoesNotExist,None) because corrDocRefId exists" in {
 
-    "should return (DoesNotExist,None) because corrDocRefId exists" in {
+        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
+        await(result) shouldBe (DoesNotExist,None)
 
-      val criteria = Json.obj("id" -> docRefId.id)
-      val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
+      }
+      "should now create a correDocRefId" in {
 
-      await(result) shouldBe (DoesNotExist,None)
+        val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(DocRefId(corrRefId.cid.id))
+        await(result) shouldBe Ok
 
+      }
+      "should return Valid and Some(AlreadyExists) because corrDocRefId exists" in {
+
+        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
+        await(result) shouldBe (Valid,Some(AlreadyExists))
+
+      }
+      "should return Valid and Some(Ok) because corrDocRefId does not exist yet" in {
+
+        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
+        await(result) shouldBe (Valid,Some(Ok))
+
+      }
+      "should now return Invalid and None because corrDocRefId exists now" in {
+
+        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
+        await(result) shouldBe (Invalid,None)
+
+      }
     }
-
-
-
-    "should now create a correDocRefId" in {
-
-      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(DocRefId(corrRefId.cid.id))
-      await(result) shouldBe Ok
-
-    }
-
-    "should return Valid and Some(AlreadyExists) because corrDocRefId exists" in {
-
-      val criteria = Json.obj("id" -> docRefId.id)
-      val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
-
-      await(result) shouldBe (Valid,Some(AlreadyExists))
-
-    }
-
-
-    "should return Valid and Some(***) because corrDocRefId exists" in {
-
-      val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
-
-      await(result) shouldBe (Valid,Some(Ok))
-
-    }
-
-    "should now return Invalid and None" in {
-
-      val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
-
-      await(result) shouldBe (Invalid,None)
-
-    }
-
-
-
-
-  }
-
-
 
 }
