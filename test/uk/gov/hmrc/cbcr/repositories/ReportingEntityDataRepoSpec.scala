@@ -90,9 +90,18 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     "should return the ReportingEntityData object for a given docRefId" in {
 
       val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId)
-      await(result.map(x => x.get.reportingEntityDRI)) shouldBe 1
+      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
 
     }
+  }
+
+    "Calls to queryReportingEntity" should {
+      "should return the ReportingEntityData object for a given docRefId" in {
+
+        val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryReportingEntity(docRefId)
+        await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+
+      }
   }
 
 
