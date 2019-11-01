@@ -20,13 +20,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import cats.data.NonEmptyList
-import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.{CBC701, CorrDocRefId, DocRefId, ReportingEntityData, TIN, UltimateParentEntity}
+import uk.gov.hmrc.cbcr.models.{CBC701, CBCId, CorrDocRefId, DocRefId, ReportingEntityData, ReportingEntityDataOld, TIN, UltimateParentEntity}
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -41,14 +40,19 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val notFoundWriteResult             = DefaultWriteResult(true,0,Seq.empty,None,None,None)
   lazy val reactiveMongoApi           = app.injector.instanceOf[ReactiveMongoApi]
   val docRefId                        = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
+  val cbcId                           = CBCId.apply("XVCBC0000000056")
   val corrRefId                       = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
   val reportingEntityDataRepository   = new ReportingEntityDataRepo(reactiveMongoApi)
 
   val creationDate                    = LocalDate.now
+  val updateForcreationDate                    = (LocalDate.now).plusDays(5)
   val reportingPeroid                 = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+
 
   val reportingEntityData = ReportingEntityData(NonEmptyList(docRefId, Nil), List(docRefId), docRefId,
                                 TIN("3590617086", "CGI"), UltimateParentEntity("ABCCorp"), CBC701, Some(creationDate),Some(reportingPeroid))
+
 
   "Calls to delete a DocRefId" should {
     "should delete that docRefId" in {
@@ -69,13 +73,33 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   }
 
   "Calls to save" should {
-    "should save the reportingEntityData in trhe database" in {
+    "should save the reportingEntityData in the database" in {
 
       val result: Future[WriteResult] = reportingEntityDataRepository.save(reportingEntityData)
       await(result.map(r => r.ok)) shouldBe true
 
     }
   }
+
+  "Calls to update" should {
+    "should update the reportingEntityData in the database" in {
+
+      val result: Future[Boolean] = reportingEntityDataRepository.update(reportingEntityData)
+      await(result) shouldBe true
+
+    }
+  }
+
+  "Calls to getLatestReportingEntityData" should {
+    "should return the ReportingEntityDataList sorted in ascending order" in {
+
+      val result: List[ReportingEntityData] = reportingEntityDataRepository.getLatestReportingEntityData(List(reportingEntityData))
+      result.size shouldBe 1
+
+    }
+  }
+
+
 
   "Calls to confirmCreationDate" should {
     "should confirm the creationDate for the docRefId" in {
@@ -86,26 +110,92 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     }
   }
 
-  "Calls to query" should {
+  "Calls to updateCreationDate" should {
+    "should update the creationDate for the docRefId" in {
+
+      val result: Future[Int] = reportingEntityDataRepository.updateCreationDate(docRefId, updateForcreationDate)
+      await(result) shouldBe 1
+
+    }
+  }
+
+
+
+  /*"Calls to query" should {
     "should return the ReportingEntityData object for a given docRefId" in {
 
       val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId)
       await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
 
     }
+  }*/
+
+  "Calls to query" should {
+    "with additional reportingPeriod param should return the List of ReportingEntityData object for a given docRefId" in {
+
+      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId.id, "2019-10-01")
+      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+
+    }
   }
 
-    "Calls to queryReportingEntity" should {
-      "should return the ReportingEntityData object for a given docRefId" in {
 
-        val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryReportingEntity(docRefId)
-        await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
 
-      }
+  "Calls to queryReportingEntity" should {
+    "should return the ReportingEntityData object for a given docRefId" in {
+
+      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryReportingEntity(docRefId)
+      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+
+    }
+  }
+
+  "Calls to updateAdditionalInfoDRI" should {
+    "should update AdditionalInfoDRI docRefId for a given docRefId" in {
+
+      val result: Future[Int] = reportingEntityDataRepository.updateAdditionalInfoDRI(docRefId)
+      await(result) shouldBe 1
+
+    }
+  }
+
+  "Calls to queryCbcId" should {
+    "should return ReportingEntityData if it exists" in {
+
+      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryCbcId(cbcId.get, reportingPeroid)
+      await(result.map(x => x.get.ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+
+    }
+  }
+
+  "Calls to queryTIN" should {
+    "should return ReportingEntityData if it exists by criteria" in {
+
+      val result: Future[List[ReportingEntityData]] = reportingEntityDataRepository.queryTIN("3590617086", "2019-10-01")
+      await(result.map(x => x.apply(0).ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+
+    }
   }
 
 
 
+  "Calls to deleteReportingPeriod" should {
+    "should delete the reporting period for a given docRefId" in {
+
+      val result: Future[Int] = reportingEntityDataRepository.deleteReportingPeriod(docRefId)
+      await(result) shouldBe 1
+
+    }
+  }
+
+  "Calls to deleteCreationDate" should {
+    "should delete the reporting period for a given docRefId" in {
+
+      val result: Future[Int] = reportingEntityDataRepository.deleteCreationDate(docRefId)
+      await(result) shouldBe 1
+
+    }
+  }
 
 
 }
