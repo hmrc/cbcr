@@ -109,13 +109,18 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with OneAppP
     }
   }
 
+  "Calls to get  checkNumberOfCbcIdForUtr Details" should {
+    "should successfully fetch that checkNumberOfCbcIdForUtr details using utr" in {
+      val result: Future[Int] = subscriptionDataRepository.checkNumberOfCbcIdForUtr("7000000003")
+      await(result) shouldBe cbcId.size
+    }
+  }
 
-  "Calls to update  subscription repository using country code" should {
-    "should successfully update that Subscription details using country code" in {
-      val modifier =  Json.obj("businessPartnerRecord.address.countryCode" -> "GB")
-
-      val result: Future[Boolean] = subscriptionDataRepository.update(modifier,CountryCode("FR"))
-      await(result) shouldBe true
+  "Calls to  getSubscriptions Details" should {
+    "should successfully fetch that getSubscriptions details " in {
+      val modifier =  Json.obj("subscriberContact" -> Json.toJson(subscriberContact))
+      val result: Future[List[SubscriptionDetails]] = subscriptionDataRepository.getSubscriptions(modifier)
+      await(result.map(x=>x.apply(0).subscriberContact.email.value)) shouldBe  "dave@dave.com"
     }
   }
 
@@ -128,4 +133,12 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with OneAppP
     }
   }
 
+  "Calls to update  subscription repository using country code" should {
+    "should successfully update that Subscription details using country code" in {
+      val modifier =  Json.obj("businessPartnerRecord.address.countryCode" -> "GB")
+
+      val result: Future[Boolean] = subscriptionDataRepository.update(modifier,CountryCode("FR"))
+      await(result) shouldBe true
+    }
+  }
 }
