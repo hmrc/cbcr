@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
+import scala.util.{Failure, Success}
 import cats.data.OptionT
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
@@ -121,6 +122,13 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with OneAppP
       val modifier =  Json.obj("subscriberContact" -> Json.toJson(subscriberContact))
       val result: Future[List[SubscriptionDetails]] = subscriptionDataRepository.getSubscriptions(modifier)
       await(result.map(x=>x.apply(0).subscriberContact.email.value)) shouldBe  "dave@dave.com"
+    }
+  }
+
+  "Calls to  backup data" should {
+    "should successfully backup details " in {
+      val result: List[Future[WriteResult]] = subscriptionDataRepository.backup(List(exampleSubscriptionData))
+      result.length >=(1)
     }
   }
 
