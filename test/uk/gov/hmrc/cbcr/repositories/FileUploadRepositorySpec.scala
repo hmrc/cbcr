@@ -35,8 +35,8 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuit
   val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)
   val notFoundWriteResult     = DefaultWriteResult(true,0,Seq.empty,None,None,None)
   lazy val reactiveMongoApi   = app.injector.instanceOf[ReactiveMongoApi]
-  val fileUploadRepository      = new FileUploadRepository(reactiveMongoApi)
-  val fir = UploadFileResponse("id1", "fid1", "status",None)
+  val fileUploadRepository    = new FileUploadRepository(reactiveMongoApi)
+  val fir                     = UploadFileResponse("id1", "fid1", "status",None)
 
 
   "Calls to Save  UploadFileResponse" should {
@@ -57,7 +57,7 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuit
     }
   }
 
-    "Calls to get a EnvelopId which is not exist" should {
+    "Calls to get a EnvelopId which does not exist" should {
       "should not fetch that envelopId" in {
 
         val result: Future[Option[UploadFileResponse]] = fileUploadRepository.get("envelopeId")

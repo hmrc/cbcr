@@ -39,7 +39,7 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSu
   val messageRefIdRepository      = new MessageRefIdRepository(reactiveMongoApi)
 
   "Calls to Save  MessageRefId" should {
-  "should successfully save that MessageRefId" in {
+  "successfully save that MessageRefId" in {
 
   val result: Future[WriteResult] = messageRefIdRepository.save(MessageRefId("mRId"))
   await(result.map(r => r.ok)) shouldBe true
@@ -47,16 +47,16 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSu
 }
 }
 
-  "Calls to check exist a MessageRefId" should {
-  "should available  that MessageRefId" in {
+  "Calls to check existence of a MessageRefId" should {
+  "return available response for that MessageRefId" in {
 
   val result: Future[Boolean] = messageRefIdRepository.exists("mRId")
   await(result) shouldBe true
 
 }
 }
-  "Calls to check exist a MessageRefId" should {
-    "should not available that MessageRefId" in {
+  "Calls to check existence of a MessageRefId" should {
+    "that does not exist should return false for that MessageRefId" in {
 
       val result: Future[Boolean] = messageRefIdRepository.exists("mRId1")
       await(result) shouldBe false
@@ -64,8 +64,8 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSu
     }
   }
 
-  "Calls to delete a MessageRefId which is not exist" should {
-  "should delete that MessageRefId" in {
+  "Calls to delete a MessageRefId which exists" should {
+  "delete that MessageRefId" in {
 
   val result: Future[WriteResult] = messageRefIdRepository.delete(MessageRefId("mRId"))
   await(result.map(r=> r.ok)) shouldBe  true
