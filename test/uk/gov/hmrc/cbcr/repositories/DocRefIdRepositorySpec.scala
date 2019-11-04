@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.repositories
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
-import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
@@ -93,20 +92,23 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
 
   }
 
+  "Calls to delete" should {
+
+    "should delete the corrDocRefId if it exists" in {
+
+      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId(corrRefId.cid.id))
+      await(result.map(r => r.ok)) shouldBe true
+
+    }
+    "should delete the doesNotExistYet if it exists" in {
+
+      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
+      await(result.map(r => r.ok)) shouldBe true
+
+    }
+  }
+
   "Calls to save" should {
-
-      "should delete the corrDocRefId if it exists" in {
-
-        val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId(corrRefId.cid.id))
-        await(result.map(r => r.ok)) shouldBe true
-
-      }
-      "should delete the doesNotExistYet if it exists" in {
-
-        val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
-        await(result.map(r => r.ok)) shouldBe true
-
-      }
       "should return (DoesNotExist,None) because corrDocRefId exists" in {
 
         val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
@@ -138,5 +140,27 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
 
       }
     }
+
+  "Calls to delete as a cleanup operation " should {
+
+    "should delete the corrRefId-SaveTest if it exists finally" in {
+
+      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("corrRefId-SaveTest"))
+      await(result.map(r => r.ok)) shouldBe true
+
+    }
+    "should delete the docRefId-SaveTest if it exists finally" in {
+
+      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("docRefId-SaveTest"))
+      await(result.map(r => r.ok)) shouldBe true
+
+    }
+    "should delete the doesNotExistYet if it exists finally" in {
+
+      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
+      await(result.map(r => r.ok)) shouldBe true
+
+    }
+  }
 
 }

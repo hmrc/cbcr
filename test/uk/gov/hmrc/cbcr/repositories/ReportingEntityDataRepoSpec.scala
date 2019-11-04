@@ -25,7 +25,8 @@ import play.api.Configuration
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.{CBC701, CBCId, CorrDocRefId, DocRefId, ReportingEntityData, ReportingEntityDataOld, TIN, UltimateParentEntity}
+import uk.gov.hmrc.cbcr.models.{CBC701, CBCId, CorrDocRefId, DocRefId, ReportingEntityData, TIN, UltimateParentEntity}
+import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -45,7 +46,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val reportingEntityDataRepository   = new ReportingEntityDataRepo(reactiveMongoApi)
 
   val creationDate                    = LocalDate.now
-  val updateForcreationDate                    = (LocalDate.now).plusDays(5)
+  val updateForcreationDate           = (LocalDate.now).plusDays(5)
   val reportingPeroid                 = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
 
@@ -53,6 +54,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val reportingEntityData = ReportingEntityData(NonEmptyList(docRefId, Nil), List(docRefId), docRefId,
                                 TIN("3590617086", "CGI"), UltimateParentEntity("ABCCorp"), CBC701, Some(creationDate),Some(reportingPeroid))
 
+  val adminReportingEntityData = AdminReportingEntityData(List(docRefId), Some(List(docRefId)), docRefId)
 
   "Calls to delete a DocRefId" should {
     "should delete that docRefId" in {
@@ -63,14 +65,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     }
   }
 
-  "Calls to removeAllDocs" should {
-    "should delete all docs" in {
-
-      val result: Future[WriteResult] = reportingEntityDataRepository.removeAllDocs()
-      await(result.map(r => r.ok)) shouldBe true
-
-    }
-  }
 
   "Calls to save" should {
     "should save the reportingEntityData in the database" in {
@@ -119,16 +113,14 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     }
   }
 
+  "Calls to updateReportingEntityDRI" should {
+    "should update the reportingEntityDRI for the docRefId" in {
 
-
-  /*"Calls to query" should {
-    "should return the ReportingEntityData object for a given docRefId" in {
-
-      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId)
-      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+      val result: Future[Boolean] = reportingEntityDataRepository.updateReportingEntityDRI(adminReportingEntityData, docRefId)
+      await(result) shouldBe true
 
     }
-  }*/
+  }
 
   "Calls to query" should {
     "with additional reportingPeriod param should return the List of ReportingEntityData object for a given docRefId" in {
@@ -193,6 +185,15 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
       val result: Future[Int] = reportingEntityDataRepository.deleteCreationDate(docRefId)
       await(result) shouldBe 1
+
+    }
+  }
+
+  "Calls to delete a DocRefId as cleanup process" should {
+    "should delete that docRefId" in {
+
+      val result: Future[WriteResult] = reportingEntityDataRepository.delete(docRefId)
+      await(result.map(r => r.ok)) shouldBe true
 
     }
   }
