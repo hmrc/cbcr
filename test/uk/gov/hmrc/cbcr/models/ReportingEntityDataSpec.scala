@@ -116,6 +116,11 @@ class ReportingEntityDataSpec extends UnitSpec with Suite{
       newModel.oldModel should equal(false)
 
     }
+
+    "just create remaining role values" in {
+      ReportingRole.parseFromString("CBC702")
+      ReportingRole.parseFromString("CBC703")
+    }
   }
 
 }
