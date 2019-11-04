@@ -21,7 +21,7 @@ import play.api.Configuration
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.{CorrDocRefId, DocRefId, UploadFileResponse}
+import uk.gov.hmrc.cbcr.models.UploadFileResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 

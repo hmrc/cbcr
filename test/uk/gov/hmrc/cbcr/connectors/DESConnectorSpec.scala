@@ -16,27 +16,21 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import com.typesafe.config.Config
-import org.mockito.ArgumentMatchers.{eq => EQ}
-import uk.gov.hmrc.cbcr.controllers.MockAuth
-import org.mockito.Mockito._
-import play.api.libs.json.{JsValue, Json, Writes}
-import uk.gov.hmrc.cbcr.services.RunMode
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
-import play.api.http.Status
-import play.api.mvc.Result
-import play.api.test.FakeRequest
-import uk.gov.hmrc.cbcr.models.{BusinessPartnerRecord, CBCId, ContactDetails, ContactName, CorrespondenceDetails, Email, EtmpAddress, OrganisationResponse, PhoneNumber, SubscriberContact, SubscriptionDetails, SubscriptionRequest, Utr}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import play.api.libs.json.JsValue
+import uk.gov.hmrc.cbcr.controllers.MockAuth
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
@@ -87,22 +81,6 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
           await(result).status shouldBe 202
         }
       }
-        /*"getSubscription" should {
-
-          "submit request to getSubscription and get successful response status" in new Setup {
-            val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-            val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave", "Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
-            when(httpMock.GET[HttpResponse]
-              (
-                any(),
-                Seq(any()),
-                Seq(any()))
-              (any(), any(), any())
-            ).thenReturn(Future.successful(HttpResponse(202)))
-            val result: Future[HttpResponse] = connector.getSubscription("safeId" )
-            await(result).status shouldBe 202
-          }
-  }*/
 
   sealed trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()

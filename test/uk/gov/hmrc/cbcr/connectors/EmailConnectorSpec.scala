@@ -16,23 +16,16 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import com.typesafe.config.Config
-import org.mockito.ArgumentMatchers.{eq => eqTo, _}
-import uk.gov.hmrc.cbcr.controllers.MockAuth
-import org.mockito.Mockito._
-import play.api.libs.json.Writes
-import uk.gov.hmrc.cbcr.services.RunMode
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
-import play.api.mvc.Result
+import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.Email
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.cbcr.util.UnitSpec
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 

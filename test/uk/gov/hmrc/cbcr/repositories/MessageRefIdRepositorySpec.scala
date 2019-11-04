@@ -22,7 +22,7 @@ import play.api.Configuration
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.{CorrDocRefId, DocRefId, MessageRefId, UploadFileResponse}
+import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -37,8 +37,6 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSu
   val notFoundWriteResult     = DefaultWriteResult(true,0,Seq.empty,None,None,None)
   lazy val reactiveMongoApi   = app.injector.instanceOf[ReactiveMongoApi]
   val messageRefIdRepository      = new MessageRefIdRepository(reactiveMongoApi)
-  //val fir = UploadFileResponse("id1", "fid1", "status",None)
-
 
   "Calls to Save  MessageRefId" should {
   "should successfully save that MessageRefId" in {

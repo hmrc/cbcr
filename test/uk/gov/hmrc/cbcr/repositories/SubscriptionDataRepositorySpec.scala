@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import scala.util.{Failure, Success}
 import cats.data.OptionT
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
@@ -24,7 +23,7 @@ import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.{BusinessPartnerRecord, CBCId, CountryCode, EtmpAddress, MessageRefId, OrganisationResponse, PhoneNumber, SubscriberContact, SubscriptionDetails, Utr}
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
@@ -42,18 +41,7 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with OneAppP
   val subscriptionDataRepository      = new SubscriptionDataRepository(reactiveMongoApi)
   val subscriberContact       = SubscriberContact(name = None, "Dave", "Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com"))
   val subscriberContact1      = SubscriberContact(None,"changedFirstName","changedLastName",PhoneNumber("07777888866").get,EmailAddress("changedbob@bob.com"))
-
-
-  /*
-  val subscriptionDetails     = SubscriptionDetails(BusinessPartnerRecord("safeId",Some(OrganisationResponse("Org1")),address),subscriberContact,Some(cbcId),utr)
-  val subscriptionDetails2    = SubscriptionDetails(BusinessPartnerRecord("safeId",Some(OrganisationResponse("Org1")),address),subscriberContact,Some(cbcId2),utr)
-*/
-  /*val cbcId                   = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
-  val cbcId2                  = CBCId.create(2).getOrElse(fail("Couldn't generate cbcid"))
-  */val utr                     = Utr("7000000003")
- /* val testConfig              = Configuration("Dev.audit.subscriptions" -> true)
-  val cbcIdConfig             = Configuration("Dev.audit.cbcIds" -> s"${cbcId.toString}_${cbcId2.toString}")
- */
+  val utr                     = Utr("7000000003")
   val cbcId  = CBCId("XGCBC0000000001")
   val address                 = EtmpAddress("address1",Some("address2"),Some("address3"),Some("address4"),Some("PO1 1OP"),"UK")
   val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
