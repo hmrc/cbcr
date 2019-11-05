@@ -90,7 +90,6 @@ class RetrieveReportingEntityServiceSpec
                                            mockRunMode,
                                            audit)
         when(mockRunMode.env) thenReturn "wrongEnv"
-        logs.count(_.getLevel == Level.INFO) shouldBe 1
       }
     }
   }
