@@ -29,18 +29,17 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite  with BeforeAndAfterAll {
+class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite with BeforeAndAfterAll {
 
-  val config                  = app.injector.instanceOf[Configuration]
-  implicit val ec             = app.injector.instanceOf[ExecutionContext]
-  implicit val hc             = HeaderCarrier()
-  val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)
-  val notFoundWriteResult     = DefaultWriteResult(true,0,Seq.empty,None,None,None)
-  lazy val reactiveMongoApi   = app.injector.instanceOf[ReactiveMongoApi]
-  val docRefId                = DocRefId("docRefId-SaveTest")
-  val corrRefId               = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val docRefIdRepository      = new DocRefIdRepository(reactiveMongoApi)
-
+  val config = app.injector.instanceOf[Configuration]
+  implicit val ec = app.injector.instanceOf[ExecutionContext]
+  implicit val hc = HeaderCarrier()
+  val writeResult = DefaultWriteResult(true, 1, Seq.empty, None, None, None)
+  val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
+  val docRefId = DocRefId("docRefId-SaveTest")
+  val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
+  val docRefIdRepository = new DocRefIdRepository(reactiveMongoApi)
 
   "Calls to edit a DocRefId" should {
     "should successfully edit that docRefId" in {
@@ -59,7 +58,6 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
 
     }
   }
-
 
   "Calls to save a DocRefId" should {
     "should successfully create a new doc if it does not exist" in {
@@ -109,37 +107,41 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite 
   }
 
   "Calls to save" should {
-      "should return (DoesNotExist,None) because corrDocRefId exists" in {
+    "should return (DoesNotExist,None) because corrDocRefId exists" in {
 
-        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
-        await(result) shouldBe (DoesNotExist,None)
+      val result: Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
+        docRefIdRepository.save(corrRefId, docRefId)
+      await(result) shouldBe (DoesNotExist, None)
 
-      }
-      "should now create a correDocRefId" in {
-
-        val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(DocRefId(corrRefId.cid.id))
-        await(result) shouldBe Ok
-
-      }
-      "should return Valid and Some(AlreadyExists) because corrDocRefId exists" in {
-
-        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, docRefId)
-        await(result) shouldBe (Valid,Some(AlreadyExists))
-
-      }
-      "should return Valid and Some(Ok) because corrDocRefId does not exist yet" in {
-
-        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
-        await(result) shouldBe (Valid,Some(Ok))
-
-      }
-      "should now return Invalid and None because corrDocRefId exists now" in {
-
-        val result: Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
-        await(result) shouldBe (Invalid,None)
-
-      }
     }
+    "should now create a correDocRefId" in {
+
+      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(DocRefId(corrRefId.cid.id))
+      await(result) shouldBe Ok
+
+    }
+    "should return Valid and Some(AlreadyExists) because corrDocRefId exists" in {
+
+      val result: Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
+        docRefIdRepository.save(corrRefId, docRefId)
+      await(result) shouldBe (Valid, Some(AlreadyExists))
+
+    }
+    "should return Valid and Some(Ok) because corrDocRefId does not exist yet" in {
+
+      val result: Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
+        docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
+      await(result) shouldBe (Valid, Some(Ok))
+
+    }
+    "should now return Invalid and None because corrDocRefId exists now" in {
+
+      val result: Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
+        docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet"))
+      await(result) shouldBe (Invalid, None)
+
+    }
+  }
 
   "Calls to delete as a cleanup operation " should {
 

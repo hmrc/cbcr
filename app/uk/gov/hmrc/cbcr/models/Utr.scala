@@ -20,7 +20,6 @@ import play.api.libs.json.{Reads, Writes}
 import play.api.mvc.PathBindable
 import uk.gov.hmrc.domain.{Modulus11Check, SimpleObjectReads, SimpleObjectWrites, TaxIdentifier}
 
-
 case class Utr(utr: String) extends TaxIdentifier {
   override def value: String = utr
 
@@ -40,7 +39,7 @@ case class Utr(utr: String) extends TaxIdentifier {
 object Utr {
   implicit val pathFormat = new PathBindable[Utr] {
     override def bind(key: String, value: String): Either[String, Utr] =
-      if(Utr(value).isValid){
+      if (Utr(value).isValid) {
         Right(Utr(value))
       } else {
         Left(s"Invalid Utr: $value")

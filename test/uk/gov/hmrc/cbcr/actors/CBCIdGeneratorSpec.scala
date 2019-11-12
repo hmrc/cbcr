@@ -23,7 +23,6 @@ import uk.gov.hmrc.cbcr.services.CBCIdGenerator
 
 class CBCIdGeneratorSpec extends WordSpecLike with Matchers with Eventually {
 
-
   val generator = new CBCIdGenerator
 
   "The CBCIdGenerator actor" should {
@@ -45,7 +44,7 @@ class CBCIdGeneratorSpec extends WordSpecLike with Matchers with Eventually {
       val newGenerator = new CBCIdGenerator
 
       val response = newGenerator.generateCbcId()
-        response.toOption.map(_.value) shouldEqual CBCId("XTCBC0100000001").map(_.value)
+      response.toOption.map(_.value) shouldEqual CBCId("XTCBC0100000001").map(_.value)
 
     }
   }

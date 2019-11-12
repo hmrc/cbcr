@@ -32,41 +32,53 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton
-class DocRefIdClearService @Inject()(docRefIdRepo:DocRefIdRepository,
-                                     reportingEntityDataRepo: ReportingEntityDataRepo,
-                                     configuration:Configuration,
-                                     runMode: RunMode,
-                                     audit: AuditConnector)(implicit ec:ExecutionContext){
+class DocRefIdClearService @Inject()(
+  docRefIdRepo: DocRefIdRepository,
+  reportingEntityDataRepo: ReportingEntityDataRepo,
+  configuration: Configuration,
+  runMode: RunMode,
+  audit: AuditConnector)(implicit ec: ExecutionContext) {
 
   private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
 
-  val docRefIds: List[DocRefId] = configuration.underlying.get[String](s"${runMode.env}.DocRefId.clear").valueOr(_ => "").split("_").toList.map(DocRefId.apply)
+  val docRefIds: List[DocRefId] = configuration.underlying
+    .get[String](s"${runMode.env}.DocRefId.clear")
+    .valueOr(_ => "")
+    .split("_")
+    .toList
+    .map(DocRefId.apply)
 
   if (docRefIds.nonEmpty) {
     Logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")
-    docRefIds.map{ d =>
-      (for {
-        _ <- EitherT.right(docRefIdRepo.delete(d))
-        _ <- EitherT.right(reportingEntityDataRepo.delete(d))
-        _ <- auditDocRefIdClear(d)
-      } yield ()).value
-    }.sequence[Future,Either[String,Unit]].map(_.separate._1.foreach(Logger.error(_))).onComplete{
-      case Success(_) => Logger.info(s"Successfully deleted and audited ${docRefIds.size} DocRefIds")
-      case Failure(t) => Logger.error(s"Error in deleting and auditing the docRefIds: ${t.getMessage}", t)
-    }
+    docRefIds
+      .map { d =>
+        (for {
+          _ <- EitherT.right(docRefIdRepo.delete(d))
+          _ <- EitherT.right(reportingEntityDataRepo.delete(d))
+          _ <- auditDocRefIdClear(d)
+        } yield ()).value
+      }
+      .sequence[Future, Either[String, Unit]]
+      .map(_.separate._1.foreach(Logger.error(_)))
+      .onComplete {
+        case Success(_) => Logger.info(s"Successfully deleted and audited ${docRefIds.size} DocRefIds")
+        case Failure(t) => Logger.error(s"Error in deleting and auditing the docRefIds: ${t.getMessage}", t)
+      }
   }
 
-
-  private def auditDocRefIdClear(docRefId: DocRefId): EitherT[Future,String,Unit] = {
-    EitherT[Future,String,Unit](
-      audit.sendExtendedEvent(ExtendedDataEvent("Country-By-Country-Backend", DOCREFID_AUDIT,
-        detail = Json.obj(
-          "docRefId" -> Json.toJson(docRefId)
-        )
-      )).map {
-        case AuditResult.Success          => Right(())
-        case AuditResult.Failure(msg, _)  => Left(s"failed to audit: $msg")
-        case AuditResult.Disabled         => Right(())
-      })
-  }
+  private def auditDocRefIdClear(docRefId: DocRefId): EitherT[Future, String, Unit] =
+    EitherT[Future, String, Unit](
+      audit
+        .sendExtendedEvent(
+          ExtendedDataEvent(
+            "Country-By-Country-Backend",
+            DOCREFID_AUDIT,
+            detail = Json.obj(
+              "docRefId" -> Json.toJson(docRefId)
+            )))
+        .map {
+          case AuditResult.Success         => Right(())
+          case AuditResult.Failure(msg, _) => Left(s"failed to audit: $msg")
+          case AuditResult.Disabled        => Right(())
+        })
 }

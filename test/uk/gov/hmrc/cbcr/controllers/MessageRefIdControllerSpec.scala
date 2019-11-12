@@ -31,7 +31,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.Future
 
-class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAuth{
+class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -42,18 +42,17 @@ class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAut
   val fakeGetRequest = FakeRequest(Helpers.GET, "/messageRefId/myRefIDxx")
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
-
   implicit val as = ActorSystem()
   implicit val mat = ActorMaterializer()
 
   val repo = mock[MessageRefIdRepository]
 
-  val controller = new MessageRefIdController(repo,cBCRAuth, cc)
+  val controller = new MessageRefIdController(repo, cBCRAuth, cc)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a MessageRefId" in {
       when(repo.save(any(classOf[MessageRefId]))).thenReturn(Future.successful(okResult))
-      val result     = controller.save("messagerefid")(fakePutRequest)
+      val result = controller.save("messagerefid")(fakePutRequest)
       status(result) shouldBe Status.OK
     }
 

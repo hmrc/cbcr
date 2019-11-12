@@ -26,7 +26,6 @@ class CBCIdGenerator {
 
   def incCBCIdCount(): Unit = CBCIdCount = CBCIdCount + 1
 
-
   def generateCbcId(): Validated[Throwable, CBCId] = {
     val newCBCId = CBCId.create(CBCIdCount + 1)
     newCBCId.fold(

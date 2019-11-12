@@ -24,113 +24,134 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.emailaddress.EmailAddress // Combinator syntax
 
-case class ReportingEntityDataOld(cbcReportsDRI:DocRefId,
-                                  additionalInfoDRI:Option[DocRefId],
-                                  reportingEntityDRI:DocRefId,
-                                  tin:TIN,
-                                  ultimateParentEntity: UltimateParentEntity,
-                                  reportingRole: ReportingRole)
+case class ReportingEntityDataOld(
+  cbcReportsDRI: DocRefId,
+  additionalInfoDRI: Option[DocRefId],
+  reportingEntityDRI: DocRefId,
+  tin: TIN,
+  ultimateParentEntity: UltimateParentEntity,
+  reportingRole: ReportingRole)
 
-object ReportingEntityDataOld{ implicit val format = Json.format[ReportingEntityDataOld] }
+object ReportingEntityDataOld { implicit val format = Json.format[ReportingEntityDataOld] }
 
-case class ReportingEntityData(cbcReportsDRI:NonEmptyList[DocRefId],
-                               additionalInfoDRI:List[DocRefId],
-                               reportingEntityDRI:DocRefId,
-                               tin:TIN,
-                               ultimateParentEntity: UltimateParentEntity,
-                               reportingRole: ReportingRole,
-                               creationDate: Option[LocalDate],
-                               reportingPeriod: Option[LocalDate])
+case class ReportingEntityData(
+  cbcReportsDRI: NonEmptyList[DocRefId],
+  additionalInfoDRI: List[DocRefId],
+  reportingEntityDRI: DocRefId,
+  tin: TIN,
+  ultimateParentEntity: UltimateParentEntity,
+  reportingRole: ReportingRole,
+  creationDate: Option[LocalDate],
+  reportingPeriod: Option[LocalDate])
 
-case class DocRefIdPair(docRefId: DocRefId,corrDocRefId: Option[CorrDocRefId])
-object DocRefIdPair{ implicit val format = Json.format[DocRefIdPair] }
+case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
+object DocRefIdPair { implicit val format = Json.format[DocRefIdPair] }
 
-case class PartialReportingEntityData(cbcReportsDRI:List[DocRefIdPair],
-                                      additionalInfoDRI:List[DocRefIdPair],
-                                      reportingEntityDRI:DocRefIdPair,
-                                      tin:TIN,
-                                      ultimateParentEntity: UltimateParentEntity,
-                                      reportingRole: ReportingRole,
-                                      creationDate: Option[LocalDate],
-                                      reportingPeriod: Option[LocalDate])
+case class PartialReportingEntityData(
+  cbcReportsDRI: List[DocRefIdPair],
+  additionalInfoDRI: List[DocRefIdPair],
+  reportingEntityDRI: DocRefIdPair,
+  tin: TIN,
+  ultimateParentEntity: UltimateParentEntity,
+  reportingRole: ReportingRole,
+  creationDate: Option[LocalDate],
+  reportingPeriod: Option[LocalDate])
 
 object PartialReportingEntityData {
-  implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
+  implicit def formatNEL[A: Format] = new Format[NonEmptyList[A]] {
     override def writes(o: NonEmptyList[A]) = JsArray(o.map(Json.toJson(_)).toList)
 
-    override def reads(json: JsValue) = json.validate[List[A]].flatMap(l => NonEmptyList.fromList(l) match {
-      case None    => JsError(s"Unable to serialise $json as NonEmptyList")
-      case Some(a) => JsSuccess(a)
-    }).orElse{ json.validate[A].map(a => NonEmptyList(a,Nil)) }
+    override def reads(json: JsValue) =
+      json
+        .validate[List[A]]
+        .flatMap(l =>
+          NonEmptyList.fromList(l) match {
+            case None    => JsError(s"Unable to serialise $json as NonEmptyList")
+            case Some(a) => JsSuccess(a)
+        })
+        .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
   }
 
   implicit val format = Json.format[PartialReportingEntityData]
 }
 
-object ReportingEntityData{
+object ReportingEntityData {
   import PartialReportingEntityData.formatNEL
-  implicit val reads:Reads[ReportingEntityData]= (
+  implicit val reads: Reads[ReportingEntityData] = (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
-    (JsPath \ "additionalInfoDRI").read[List[DocRefId]].orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
-    (JsPath \ "reportingEntityDRI").read[DocRefId] and
-    (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
-    (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
-    (JsPath \ "reportingRole").read[ReportingRole] and
-    (JsPath \ "creationDate").readNullable[LocalDate] and
-    (JsPath \ "reportingPeriod").readNullable[LocalDate]
-    )(ReportingEntityData.apply(_,_,_,_,_,_,_,_))
+      (JsPath \ "additionalInfoDRI")
+        .read[List[DocRefId]]
+        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
+      (JsPath \ "reportingEntityDRI").read[DocRefId] and
+      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
+      (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
+      (JsPath \ "reportingRole").read[ReportingRole] and
+      (JsPath \ "creationDate").readNullable[LocalDate] and
+      (JsPath \ "reportingPeriod").readNullable[LocalDate]
+  )(ReportingEntityData.apply(_, _, _, _, _, _, _, _))
 
   implicit val writes = Json.writes[ReportingEntityData]
 
 }
 
-case class PartialReportingEntityDataModel(cbcReportsDRI:List[DocRefIdPair],
-                                          additionalInfoDRI:List[DocRefIdPair],
-                                          reportingEntityDRI:DocRefIdPair,
-                                          tin:TIN,
-                                          ultimateParentEntity: UltimateParentEntity,
-                                          reportingRole: ReportingRole,
-                                          creationDate: Option[LocalDate],
-                                          reportingPeriod: Option[LocalDate],
-                                          oldModel: Boolean)
+case class PartialReportingEntityDataModel(
+  cbcReportsDRI: List[DocRefIdPair],
+  additionalInfoDRI: List[DocRefIdPair],
+  reportingEntityDRI: DocRefIdPair,
+  tin: TIN,
+  ultimateParentEntity: UltimateParentEntity,
+  reportingRole: ReportingRole,
+  creationDate: Option[LocalDate],
+  reportingPeriod: Option[LocalDate],
+  oldModel: Boolean)
 
 object PartialReportingEntityDataModel {
-  implicit def formatNEL[A:Format] = new Format[NonEmptyList[A]] {
+  implicit def formatNEL[A: Format] = new Format[NonEmptyList[A]] {
     override def writes(o: NonEmptyList[A]) = JsArray(o.map(Json.toJson(_)).toList)
 
-    override def reads(json: JsValue) = json.validate[List[A]].flatMap(l => NonEmptyList.fromList(l) match {
-      case None    => JsError(s"Unable to serialise $json as NonEmptyList")
-      case Some(a) => JsSuccess(a)
-    }).orElse{ json.validate[A].map(a => NonEmptyList(a,Nil)) }
+    override def reads(json: JsValue) =
+      json
+        .validate[List[A]]
+        .flatMap(l =>
+          NonEmptyList.fromList(l) match {
+            case None    => JsError(s"Unable to serialise $json as NonEmptyList")
+            case Some(a) => JsSuccess(a)
+        })
+        .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
   }
 
   implicit val format = Json.format[PartialReportingEntityDataModel]
 }
 
-case class ReportingEntityDataModel(cbcReportsDRI:NonEmptyList[DocRefId],
-                               additionalInfoDRI:List[DocRefId],
-                               reportingEntityDRI:DocRefId,
-                               tin:TIN,
-                               ultimateParentEntity: UltimateParentEntity,
-                               reportingRole: ReportingRole,
-                               creationDate: Option[LocalDate],
-                               reportingPeriod: Option[LocalDate],
-                               oldModel: Boolean)
+case class ReportingEntityDataModel(
+  cbcReportsDRI: NonEmptyList[DocRefId],
+  additionalInfoDRI: List[DocRefId],
+  reportingEntityDRI: DocRefId,
+  tin: TIN,
+  ultimateParentEntity: UltimateParentEntity,
+  reportingRole: ReportingRole,
+  creationDate: Option[LocalDate],
+  reportingPeriod: Option[LocalDate],
+  oldModel: Boolean)
 
-object ReportingEntityDataModel{
+object ReportingEntityDataModel {
   import PartialReportingEntityDataModel.formatNEL
-  implicit val reads:Reads[ReportingEntityDataModel]= (
+  implicit val reads: Reads[ReportingEntityDataModel] = (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
-      (JsPath \ "additionalInfoDRI").read[List[DocRefId]].orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
+      (JsPath \ "additionalInfoDRI")
+        .read[List[DocRefId]]
+        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
       (JsPath \ "reportingEntityDRI").read[DocRefId] and
       (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
       (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
       (JsPath \ "reportingRole").read[ReportingRole] and
       (JsPath \ "creationDate").readNullable[LocalDate] and
       (JsPath \ "reportingPeriod").readNullable[LocalDate] and
-      (JsPath \ "additionalInfoDRI").read[List[DocRefId]].map(_ => false).orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true))
-
-    )(ReportingEntityDataModel.apply(_,_,_,_,_,_,_,_,_))
+      (JsPath \ "additionalInfoDRI")
+        .read[List[DocRefId]]
+        .map(_ => false)
+        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true))
+  )(ReportingEntityDataModel.apply(_, _, _, _, _, _, _, _, _))
 
   implicit val writes = Json.writes[ReportingEntityDataModel]
 

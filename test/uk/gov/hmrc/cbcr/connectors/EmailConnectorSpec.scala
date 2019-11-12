@@ -37,29 +37,16 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with O
 
       // given
       val endpointUrl = "emailHost://emailHost:1337/hmrc/email"
-      when(httpMock.POST[Email, HttpResponse]
-        (
-         any(),
-          any(),
-          any())
-        (any(), any(), any(), any())
-      ).thenReturn(Future.successful(HttpResponse(202)))
+      when(httpMock.POST[Email, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(202)))
 
       // when
       val result: Future[HttpResponse] = connector.sendEmail(correctEmail)
       await(result).status shouldBe 202
 
-
       // and
       val expectedResponseBody = Email(List("tyrion.lannister@gmail.com"), templateId, paramsSub)
-      verify(httpMock).POST(
-        any(),
-        body = eqTo(expectedResponseBody),
-        any())(
-       any(),
-        any(),
-        any(),
-        any())
+      verify(httpMock).POST(any(), body = eqTo(expectedResponseBody), any())(any(), any(), any(), any())
     }
   }
 
@@ -74,11 +61,8 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with O
 
     val config = app.injector.instanceOf[Configuration]
 
-
     val connector = new EmailConnectorImpl(config, httpMock)
 
   }
-
-
 
 }

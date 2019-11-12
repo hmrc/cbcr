@@ -40,9 +40,8 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with OneAppPerSuite wi
   val runMode = mock[RunMode]
   val config = app.injector.instanceOf[Configuration]
 
-
   val emailService = new EmailService(mockEmailConnector, mockAuditConnector, config, runMode)
-  val paramsSub = Map("f_name" → "Tyrion","s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
+  val paramsSub = Map("f_name" → "Tyrion", "s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
   val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
   implicit val hc = HeaderCarrier()
 
@@ -69,7 +68,8 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with OneAppPerSuite wi
     "return 400 when everything is ok but audit fails" in {
 
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400))
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Failure("test to designed to provoke an emotional response",None))
+      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
+        Failure("test to designed to provoke an emotional response", None))
       when(runMode.env) thenReturn "Dev"
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)

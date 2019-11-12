@@ -19,8 +19,8 @@ package uk.gov.hmrc.cbcr.models
 import play.api.libs.json._
 import play.api.mvc.PathBindable
 
-case class DocRefId(id:String)
-object DocRefId{
+case class DocRefId(id: String)
+object DocRefId {
 
   implicit val pathFormat = new PathBindable[DocRefId] {
     override def bind(key: String, value: String): Either[String, DocRefId] = Right(DocRefId(value))
@@ -30,15 +30,17 @@ object DocRefId{
   implicit val format = new Format[DocRefId] {
     override def writes(o: DocRefId): JsValue = JsString(o.id)
 
-    override def reads(json: JsValue): JsResult[DocRefId] = json.asOpt[JsString].map(v => DocRefId(v.value)).fold[JsResult[DocRefId]](
-      JsError(s"Unable to deserialise $json as a DocRefId"))(
-      (id: DocRefId) => JsSuccess(id)
-    )
+    override def reads(json: JsValue): JsResult[DocRefId] =
+      json
+        .asOpt[JsString]
+        .map(v => DocRefId(v.value))
+        .fold[JsResult[DocRefId]](JsError(s"Unable to deserialise $json as a DocRefId"))(
+          (id: DocRefId) => JsSuccess(id)
+        )
   }
 }
-case class CorrDocRefId(cid:DocRefId)
+case class CorrDocRefId(cid: DocRefId)
 object CorrDocRefId {
-
 
   implicit val pathFormat = new PathBindable[CorrDocRefId] {
     override def bind(key: String, value: String): Either[String, CorrDocRefId] = Right(CorrDocRefId(DocRefId(value)))
@@ -52,13 +54,12 @@ object CorrDocRefId {
 
 }
 
-
-case class DocRefIdRecord(id:DocRefId,valid:Boolean)
+case class DocRefIdRecord(id: DocRefId, valid: Boolean)
 object DocRefIdRecord {
   implicit val format = Json.format[DocRefIdRecord]
 }
 
-object DocRefIdResponses{
+object DocRefIdResponses {
 
   sealed trait DocRefIdResponses extends Product with Serializable
 

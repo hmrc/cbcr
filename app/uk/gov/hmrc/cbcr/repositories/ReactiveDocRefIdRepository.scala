@@ -23,14 +23,9 @@ import uk.gov.hmrc.cbcr.models.{DocRefId, DocRefIdRecord}
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
-
-class ReactiveDocRefIdRepository @Inject()(implicit  rmc: ReactiveMongoComponent)
-  extends ReactiveRepository[DocRefIdRecord, BSONObjectID](
-    "DocRefId",
-    rmc.mongoConnector.db,
-    DocRefIdRecord.format,
-    ReactiveMongoFormats.objectIdFormats) {
-
-
-
-}
+class ReactiveDocRefIdRepository @Inject()(implicit rmc: ReactiveMongoComponent)
+    extends ReactiveRepository[DocRefIdRecord, BSONObjectID](
+      "DocRefId",
+      rmc.mongoConnector.db,
+      DocRefIdRecord.format,
+      ReactiveMongoFormats.objectIdFormats) {}

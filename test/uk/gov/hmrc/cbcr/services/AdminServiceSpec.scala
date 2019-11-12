@@ -56,7 +56,16 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
   private val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
   private val adminRED = AdminReportingEntityData(List(docRefId), None, docRefId)
-  private val red = ReportingEntityData(NonEmptyList(docRefId, Nil), List(docRefId), docRefId, TIN("90000000001", "GB"), UltimateParentEntity("Foo Corp"), CBC701, Some(LocalDate.now()), Some(LocalDate.now()))
+  private val red = ReportingEntityData(
+    NonEmptyList(docRefId, Nil),
+    List(docRefId),
+    docRefId,
+    TIN("90000000001", "GB"),
+    UltimateParentEntity("Foo Corp"),
+    CBC701,
+    Some(LocalDate.now()),
+    Some(LocalDate.now())
+  )
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
   "adminQueryTin" should {
@@ -122,7 +131,6 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
     }
   }
 
-
   "editDocRefId" should {
     "respond with a 200 code" in {
       when(docRepo.edit(any())) thenReturn Future.successful(200)
@@ -178,6 +186,3 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
     }
   }
 }
-
-
-

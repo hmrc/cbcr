@@ -26,30 +26,42 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CBCIdController @Inject()(gen: SubscriptionHandlerImpl,
-                                auth: CBCRAuth,
-                                cc: ControllerComponents)
-                               (implicit ec: ExecutionContext) extends BackendController(cc) {
+class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
-  def subscribe = auth.authCBCRWithJson({ implicit request: Request[JsValue] =>
-    request.body.validate[SubscriptionDetails].fold[Future[Result]](
-      _ => Future.successful(BadRequest),
-      srb => gen.createSubscription(srb)
+  def subscribe =
+    auth.authCBCRWithJson(
+      { implicit request: Request[JsValue] =>
+        request.body
+          .validate[SubscriptionDetails]
+          .fold[Future[Result]](
+            _ => Future.successful(BadRequest),
+            srb => gen.createSubscription(srb)
+          )
+      },
+      parse.json
     )
-  }, parse.json)
 
-  def updateSubscription(safeId: String) = auth.authCBCRWithJson({ implicit request =>
-    request.body.validate[CorrespondenceDetails].fold[Future[Result]](
-      e => Future.successful(BadRequest(e.toString)),
-      details => gen.updateSubscription(safeId, details)
+  def updateSubscription(safeId: String) =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[CorrespondenceDetails]
+          .fold[Future[Result]](
+            e => Future.successful(BadRequest(e.toString)),
+            details => gen.updateSubscription(safeId, details)
+          )
+      },
+      parse.json
     )
-  }, parse.json)
 
   def getSubscription(safeId: String) = auth.authCBCR { implicit request =>
     gen.getSubscription(safeId)
   }
 
-  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(s: SubscriptionDetails): SubscriptionRequest = {
+  @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(
+    s: SubscriptionDetails): SubscriptionRequest =
     SubscriptionRequest(
       s.businessPartnerRecord.safeId,
       false,
@@ -59,6 +71,5 @@ class CBCIdController @Inject()(gen: SubscriptionHandlerImpl,
         ContactName(s.subscriberContact.firstName, s.subscriberContact.lastName)
       )
     )
-  }
 
 }

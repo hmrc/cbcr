@@ -18,15 +18,16 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json._
 
-case class MessageRefId(id:String)
+case class MessageRefId(id: String)
 object MessageRefId {
   implicit val format = new OFormat[MessageRefId] {
     override def writes(o: MessageRefId): JsObject = Json.obj("messageRefId" -> o.id)
 
     override def reads(json: JsValue): JsResult[MessageRefId] = json match {
-      case o:JsObject =>
+      case o: JsObject =>
         val result = o.value.get("messageRefId").flatMap(_.asOpt[String])
-        result.fold[JsResult[MessageRefId]](JsError(s"Unable to parse MessageRefId: $o"))(v => JsSuccess(MessageRefId(v)))
+        result.fold[JsResult[MessageRefId]](JsError(s"Unable to parse MessageRefId: $o"))(v =>
+          JsSuccess(MessageRefId(v)))
       case other => JsError(s"Unable to parse MessageRefId: $other")
     }
   }

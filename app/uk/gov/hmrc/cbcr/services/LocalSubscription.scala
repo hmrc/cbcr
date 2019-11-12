@@ -31,40 +31,43 @@ import cats.instances.future._
 import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton
-class LocalSubscription @Inject()(config:Configuration,
-                                  repo:SubscriptionDataRepository,
-                                  cbcIdGenerator: CBCIdGenerator)(implicit ec:ExecutionContext) extends SubscriptionHandler{
+class LocalSubscription @Inject()(
+  config: Configuration,
+  repo: SubscriptionDataRepository,
+  cbcIdGenerator: CBCIdGenerator)(implicit ec: ExecutionContext)
+    extends SubscriptionHandler {
 
-  def createCBCId = {
+  def createCBCId =
     cbcIdGenerator.generateCbcId.fold(
       (error: Throwable) => throw error,
       (id: CBCId) => Future.successful(id)
     )
-  }
 
-  override def createSubscription(sub:SubscriptionRequest)(implicit hc:HeaderCarrier): Future[Result] = {
-    createCBCId.map {
-      id: CBCId => Ok(Json.obj("cbc-id" -> id.value))
-    }.recover {
-      case NonFatal(e) => InternalServerError(e.getMessage)
-    }
-  }
+  override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[Result] =
+    createCBCId
+      .map { id: CBCId =>
+        Ok(Json.obj("cbc-id" -> id.value))
+      }
+      .recover {
+        case NonFatal(e) => InternalServerError(e.getMessage)
+      }
 
   override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) =
     Future.successful(Ok(Json.toJson(UpdateResponse(LocalDateTime.now))))
 
-  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) ={
-    repo.get(safeId).map(sd =>
-      GetResponse(
-        safeId,
-        ContactName(sd.subscriberContact.firstName, sd.subscriberContact.lastName),
-        ContactDetails(sd.subscriberContact.email,sd.subscriberContact.phoneNumber),
-        sd.businessPartnerRecord.address
+  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) =
+    repo
+      .get(safeId)
+      .map(sd =>
+        GetResponse(
+          safeId,
+          ContactName(sd.subscriberContact.firstName, sd.subscriberContact.lastName),
+          ContactDetails(sd.subscriberContact.email, sd.subscriberContact.phoneNumber),
+          sd.businessPartnerRecord.address
+      ))
+      .cata(
+        NotFound,
+        (response: GetResponse) => Ok(Json.toJson(response))
       )
-    ).cata(
-      NotFound,
-      (response: GetResponse) => Ok(Json.toJson(response))
-    )
-  }
 
 }

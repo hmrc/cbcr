@@ -29,15 +29,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FileUploadRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite {
 
-  val config                  = app.injector.instanceOf[Configuration]
-  implicit val ec             = app.injector.instanceOf[ExecutionContext]
-  implicit val hc             = HeaderCarrier()
-  val writeResult             = DefaultWriteResult(true,1,Seq.empty,None,None,None)
-  val notFoundWriteResult     = DefaultWriteResult(true,0,Seq.empty,None,None,None)
-  lazy val reactiveMongoApi   = app.injector.instanceOf[ReactiveMongoApi]
-  val fileUploadRepository    = new FileUploadRepository(reactiveMongoApi)
-  val fir                     = UploadFileResponse("id1", "fid1", "status",None)
-
+  val config = app.injector.instanceOf[Configuration]
+  implicit val ec = app.injector.instanceOf[ExecutionContext]
+  implicit val hc = HeaderCarrier()
+  val writeResult = DefaultWriteResult(true, 1, Seq.empty, None, None, None)
+  val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
+  val fileUploadRepository = new FileUploadRepository(reactiveMongoApi)
+  val fir = UploadFileResponse("id1", "fid1", "status", None)
 
   "Calls to Save  UploadFileResponse" should {
     "should successfully save that UploadFileResponse" in {
@@ -57,13 +56,13 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuit
     }
   }
 
-    "Calls to get a EnvelopId which does not exist" should {
-      "should not fetch that envelopId" in {
+  "Calls to get a EnvelopId which does not exist" should {
+    "should not fetch that envelopId" in {
 
-        val result: Future[Option[UploadFileResponse]] = fileUploadRepository.get("envelopeId")
-        await(result.map(r=> r)) shouldBe  None
+      val result: Future[Option[UploadFileResponse]] = fileUploadRepository.get("envelopeId")
+      await(result.map(r => r)) shouldBe None
 
-      }
+    }
   }
 
 }

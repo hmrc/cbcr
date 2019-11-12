@@ -26,7 +26,6 @@ class DataMigrationCriteriaSpec extends UnitSpec with GuiceOneAppPerSuite {
   "DataMigrationCriteria" should {
     import DataMigrationCriteria._
 
-
     "produce an jsObject when result cannot get the correct values from the configuration" in {
       val failCaseJson = Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*"))
       val configuration = Configuration()
@@ -38,7 +37,7 @@ class DataMigrationCriteriaSpec extends UnitSpec with GuiceOneAppPerSuite {
 
       val key = "businessPartnerRecord.safeId"
       val config = Configuration("CBCId.safeId1" -> "id1", "CBCId.safeId2" -> "id2")
-      val successCaseJson = Json.obj ("$or" -> Json.arr (Json.obj (key -> "id1"), Json.obj (key -> "id2")))
+      val successCaseJson = Json.obj("$or"       -> Json.arr(Json.obj(key -> "id1"), Json.obj(key -> "id2")))
 
       PRIVATE_BETA_CRITERIA(config) shouldBe successCaseJson
     }

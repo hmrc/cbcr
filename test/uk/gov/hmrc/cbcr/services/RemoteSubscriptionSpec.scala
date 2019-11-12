@@ -33,9 +33,9 @@ import play.api.http.Status._
 import play.api.libs.json.{JsError, JsResult, JsValue, Json}
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
-class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with ScalaFutures{
+class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSuite with ScalaFutures {
 
   val desConnector = mock[DESConnector]
 
@@ -46,9 +46,9 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
   val generator = new RemoteSubscription(desConnector)
 
   val cd = CorrespondenceDetails(
-    EtmpAddress("line1",None,None,None,None,"GB"),
-    ContactDetails(EmailAddress("test@test.com"),PhoneNumber("9876543").get),
-    ContactName("FirstName","Surname")
+    EtmpAddress("line1", None, None, None, None, "GB"),
+    ContactDetails(EmailAddress("test@test.com"), PhoneNumber("9876543").get),
+    ContactName("FirstName", "Surname")
   )
 
   val srb = SubscriptionRequest(
@@ -56,16 +56,26 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
     false,
     cd
   )
-  val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
+  val bpr = BusinessPartnerRecord(
+    "MySafeID",
+    Some(OrganisationResponse("Dave Corp")),
+    EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
+  val exampleSubscriptionData = SubscriptionDetails(
+    bpr,
+    SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
+    CBCId("XGCBC0000000001"),
+    Utr("utr"))
 
   val getResponse = GetResponse(
     bpr.safeId,
-    ContactName(exampleSubscriptionData.subscriberContact.firstName,exampleSubscriptionData.subscriberContact.lastName),
-    ContactDetails(exampleSubscriptionData.subscriberContact.email,exampleSubscriptionData.subscriberContact.phoneNumber),
+    ContactName(
+      exampleSubscriptionData.subscriberContact.firstName,
+      exampleSubscriptionData.subscriberContact.lastName),
+    ContactDetails(
+      exampleSubscriptionData.subscriberContact.email,
+      exampleSubscriptionData.subscriberContact.phoneNumber),
     exampleSubscriptionData.businessPartnerRecord.address
   )
-
 
   private val subscriptionRequestRsponse =
     """
@@ -75,38 +85,44 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
 
   implicit val hc = new HeaderCarrier()
 
-  val srr = SubscriptionResponse(LocalDateTime.now(),CBCId.create(1).getOrElse(fail("Could not generate CBCID")))
+  val srr = SubscriptionResponse(LocalDateTime.now(), CBCId.create(1).getOrElse(fail("Could not generate CBCID")))
   "The remoteCBCIdGenerator" should {
     "be able to subscribe a user" which {
 
       "returns a 200 with a cbcid when the submission is successful" in {
-        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson(srr))))
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(
+          HttpResponse(OK, responseJson = Some(Json.toJson(srr))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual OK
         jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
       }
       "returns a 400 when BAD_REQUEST is returned by DES" in {
-        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(BAD_REQUEST, responseJson = Some(Json.obj("bad" -> "request"))))
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(
+          HttpResponse(BAD_REQUEST, responseJson = Some(Json.obj("bad" -> "request"))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual BAD_REQUEST
       }
       "returns a 500 if the response is malformed" in {
-        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(OK, responseJson = Some(Json.obj("something" -> 1))))
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(
+          HttpResponse(OK, responseJson = Some(Json.obj("something" -> 1))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual INTERNAL_SERVER_ERROR
       }
       "returns a 403 if the response is FORBIDDEN" in {
-        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(FORBIDDEN, responseJson = Some(Json.obj("something" -> 1))))
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(
+          HttpResponse(FORBIDDEN, responseJson = Some(Json.obj("something" -> 1))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual FORBIDDEN
       }
       "returns a 503 if DES returns a SERVICE_UNAVAILABLE" in {
-        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(SERVICE_UNAVAILABLE, responseJson = Some(Json.obj("something" -> 1))))
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(
+          HttpResponse(SERVICE_UNAVAILABLE, responseJson = Some(Json.obj("something" -> 1))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual SERVICE_UNAVAILABLE
       }
       "returns a 500 if unhandled response received" in {
-        when(desConnector.createSubscription(any())) thenReturn Future.successful(HttpResponse(UPGRADE_REQUIRED, responseJson = Some(Json.obj("something" -> 1))))
+        when(desConnector.createSubscription(any())) thenReturn Future.successful(
+          HttpResponse(UPGRADE_REQUIRED, responseJson = Some(Json.obj("something" -> 1))))
         val response = generator.createSubscription(srb)
         status(response) shouldEqual INTERNAL_SERVER_ERROR
       }
@@ -118,29 +134,33 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with OneAppPerSu
     }
     "be able to update a user" which {
       "returns a 200 when provided with all the correct data" in {
-        when(desConnector.updateSubscription(any(),any())) thenReturn Future.successful(HttpResponse(OK, responseJson = Some(Json.toJson(UpdateResponse(LocalDateTime.now())))))
-        val response = generator.updateSubscription("safeId",cd)
+        when(desConnector.updateSubscription(any(), any())) thenReturn Future.successful(
+          HttpResponse(OK, responseJson = Some(Json.toJson(UpdateResponse(LocalDateTime.now())))))
+        val response = generator.updateSubscription("safeId", cd)
         status(response) shouldEqual OK
       }
       "returns a 400 if the request is bad" in {
-        when(desConnector.updateSubscription(any(),any())) thenReturn Future.successful(HttpResponse(BAD_REQUEST))
-        val response = generator.updateSubscription("safeId",cd)
+        when(desConnector.updateSubscription(any(), any())) thenReturn Future.successful(HttpResponse(BAD_REQUEST))
+        val response = generator.updateSubscription("safeId", cd)
         status(response) shouldEqual BAD_REQUEST
       }
       "returns a 500 if DES returns a 500" in {
-        when(desConnector.updateSubscription(any(),any())) thenReturn Future.successful(HttpResponse(INTERNAL_SERVER_ERROR))
-        val response = generator.updateSubscription("safeId",cd)
+        when(desConnector.updateSubscription(any(), any())) thenReturn Future.successful(
+          HttpResponse(INTERNAL_SERVER_ERROR))
+        val response = generator.updateSubscription("safeId", cd)
         status(response) shouldEqual INTERNAL_SERVER_ERROR
       }
       "returns a 500 if DES returns invalid json" in {
-        when(desConnector.updateSubscription(any(),any())) thenReturn Future.successful(HttpResponse(OK,  responseJson = Some(Json.obj("something" -> 1))))
-        val response = generator.updateSubscription("safeId",cd)
+        when(desConnector.updateSubscription(any(), any())) thenReturn Future.successful(
+          HttpResponse(OK, responseJson = Some(Json.obj("something" -> 1))))
+        val response = generator.updateSubscription("safeId", cd)
         status(response) shouldEqual INTERNAL_SERVER_ERROR
       }
     }
     "be able to display the subscription details for a user" which {
       "queries the DES api and passes along the data" in {
-        when(desConnector.getSubscription(any())) thenReturn Future.successful(HttpResponse(OK,  responseJson = Some(Json.toJson(getResponse))))
+        when(desConnector.getSubscription(any())) thenReturn Future.successful(
+          HttpResponse(OK, responseJson = Some(Json.toJson(getResponse))))
         val response = generator.getSubscription("safeId")
         status(response) shouldEqual OK
       }

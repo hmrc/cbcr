@@ -27,47 +27,51 @@ import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 @Singleton
-class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionContext: ExecutionContext) extends SubscriptionHandler {
+class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionContext: ExecutionContext)
+    extends SubscriptionHandler {
 
-  def checkResponse[T:Reads](response:HttpResponse)(f: T => Result) : Result = {
-    Logger.info(s"Response body: ${response.body}" )
+  def checkResponse[T: Reads](response: HttpResponse)(f: T => Result): Result = {
+    Logger.info(s"Response body: ${response.body}")
     response.status match {
-      case OK                     =>
-        if(response.json != null) {
-          response.json.validate[T].fold[Result](
-            errors => {
-              Logger.error(s"Unable to de-serialise response: ${response.body}\nErrors: $errors")
-              InternalServerError
-            },
-            (t: T) => f(t)
-          )
+      case OK =>
+        if (response.json != null) {
+          response.json
+            .validate[T]
+            .fold[Result](
+              errors => {
+                Logger.error(s"Unable to de-serialise response: ${response.body}\nErrors: $errors")
+                InternalServerError
+              },
+              (t: T) => f(t)
+            )
         } else {
           InternalServerError
         }
-      case FORBIDDEN              => Forbidden
-      case NOT_FOUND              => NotFound
-      case BAD_REQUEST            => BadRequest
-      case INTERNAL_SERVER_ERROR  => InternalServerError
-      case SERVICE_UNAVAILABLE    => ServiceUnavailable
-      case _                      => InternalServerError
+      case FORBIDDEN             => Forbidden
+      case NOT_FOUND             => NotFound
+      case BAD_REQUEST           => BadRequest
+      case INTERNAL_SERVER_ERROR => InternalServerError
+      case SERVICE_UNAVAILABLE   => ServiceUnavailable
+      case _                     => InternalServerError
     }
   }
 
+  override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[Result] =
+    des
+      .createSubscription(sub)
+      .map(response =>
+        checkResponse[SubscriptionResponse](response)(r => Ok(Json.obj("cbc-id" -> r.cbcSubscriptionID.value))))
 
-  override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier) : Future[Result] =
-    des.createSubscription(sub).map( response  =>
-      checkResponse[SubscriptionResponse](response)(r => Ok(Json.obj("cbc-id" -> r.cbcSubscriptionID.value)))
-    )
+  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(
+    implicit headerCarrier: HeaderCarrier): Future[Result] =
+    des
+      .updateSubscription(safeId, details)
+      .map(response => checkResponse[UpdateResponse](response)(r => Ok(UpdateResponse.format.writes(r))))
 
-  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit headerCarrier: HeaderCarrier) : Future[Result] =
-    des.updateSubscription(safeId,details).map( response =>
-      checkResponse[UpdateResponse](response)(r => Ok(UpdateResponse.format.writes(r)))
-    )
-
-  override def getSubscription(safeId: String)(implicit headerCarrier: HeaderCarrier) : Future[Result] =
+  override def getSubscription(safeId: String)(implicit headerCarrier: HeaderCarrier): Future[Result] =
     des.getSubscription(safeId).map { response =>
       checkResponse[GetResponse](response)(r => Ok(GetResponse.format.writes(r)))
     }

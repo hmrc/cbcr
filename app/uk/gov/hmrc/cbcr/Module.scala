@@ -30,7 +30,9 @@ import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
-  val graphiteConfig: Configuration = configuration.getConfig("microservice.metrics.graphite").getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
+  val graphiteConfig: Configuration = configuration
+    .getConfig("microservice.metrics.graphite")
+    .getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
 
   val metricsPluginEnabled: Boolean = configuration.getBoolean("metrics.enabled").getOrElse(false)
 
@@ -43,14 +45,15 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   private def startGraphite(): Unit = {
     Logger.info("Graphite metrics enabled, starting the reporter")
 
-    val graphite = new Graphite(new InetSocketAddress(
-      graphiteConfig.getString("host").getOrElse("graphite"),
-      graphiteConfig.getInt("port").getOrElse(2003)))
+    val graphite = new Graphite(
+      new InetSocketAddress(
+        graphiteConfig.getString("host").getOrElse("graphite"),
+        graphiteConfig.getInt("port").getOrElse(2003)))
 
     val prefix = graphiteConfig.getString("prefix").getOrElse("play.cbcr")
 
-    val reporter = GraphiteReporter.forRegistry(
-      SharedMetricRegistries.getOrCreate(registryName))
+    val reporter = GraphiteReporter
+      .forRegistry(SharedMetricRegistries.getOrCreate(registryName))
       .prefixedWith(s"$prefix.${java.net.InetAddress.getLocalHost.getHostName}")
       .convertRatesTo(SECONDS)
       .convertDurationsTo(MILLISECONDS)

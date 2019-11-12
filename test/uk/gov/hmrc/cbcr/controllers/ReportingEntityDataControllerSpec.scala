@@ -36,13 +36,41 @@ import scala.concurrent.Future
 
 class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with MockAuth with LogCapturing {
 
-  val docRefId=DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
+  val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
 
-  val red = ReportingEntityData(NonEmptyList(docRefId,Nil),List(docRefId),docRefId,TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701,Some(LocalDate.now()),Some(LocalDate.now()))
+  val red = ReportingEntityData(
+    NonEmptyList(docRefId, Nil),
+    List(docRefId),
+    docRefId,
+    TIN("90000000001", "GB"),
+    UltimateParentEntity("Foo Corp"),
+    CBC701,
+    Some(LocalDate.now()),
+    Some(LocalDate.now())
+  )
 
-  val pred = PartialReportingEntityData(List(DocRefIdPair(docRefId,None)),List(DocRefIdPair(docRefId,None)),DocRefIdPair(docRefId,None),TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"),CBC701,Some(LocalDate.now()),Some(LocalDate.now()))
+  val pred = PartialReportingEntityData(
+    List(DocRefIdPair(docRefId, None)),
+    List(DocRefIdPair(docRefId, None)),
+    DocRefIdPair(docRefId, None),
+    TIN("90000000001", "GB"),
+    UltimateParentEntity("Foo Corp"),
+    CBC701,
+    Some(LocalDate.now()),
+    Some(LocalDate.now())
+  )
 
-  val redm = ReportingEntityDataModel(NonEmptyList(docRefId,Nil), List(docRefId),docRefId,TIN("90000000001","GB"),UltimateParentEntity("Foo Corp"), CBC701,Some(LocalDate.now()),Some(LocalDate.now()), oldModel = false)
+  val redm = ReportingEntityDataModel(
+    NonEmptyList(docRefId, Nil),
+    List(docRefId),
+    docRefId,
+    TIN("90000000001", "GB"),
+    UltimateParentEntity("Foo Corp"),
+    CBC701,
+    Some(LocalDate.now()),
+    Some(LocalDate.now()),
+    oldModel = false
+  )
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -52,13 +80,15 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
 
-  val fakePostRequest : FakeRequest[JsValue]= FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
+  val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
 
-  val badFakePostRequest : FakeRequest[JsValue]= FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
+  val badFakePostRequest: FakeRequest[JsValue] =
+    FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
 
-  val fakePutRequest : FakeRequest[JsValue]= FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.toJson(pred))
+  val fakePutRequest: FakeRequest[JsValue] = FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.toJson(pred))
 
-  val badFakePutRequest : FakeRequest[JsValue]= FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
+  val badFakePutRequest: FakeRequest[JsValue] =
+    FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
 
   val fakeGetRequest = FakeRequest(Helpers.GET, "/reporting-entity/myDocRefId")
 
@@ -76,7 +106,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a ReportingEntityData" in {
       when(repo.save(any())) thenReturn Future.successful(okResult)
-      val result     = controller.save()(fakePostRequest)
+      val result = controller.save()(fakePostRequest)
       verifyStatusCode(result, Status.OK)
     }
 
@@ -167,13 +197,13 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
     "queryTin" should {
       "return a notFound response" in {
-        when(repo.queryTIN(any(),any())) thenReturn Future.successful(List[ReportingEntityData]())
+        when(repo.queryTIN(any(), any())) thenReturn Future.successful(List[ReportingEntityData]())
 
         val result = controller.queryTin(tin, reportingPeriod)(fakeGetRequest)
         verifyStatusCode(result, Status.NOT_FOUND)
       }
       "return an OK response, with a json body containing reportEntityData" in {
-        when(repo.queryTIN(any(),any())) thenReturn Future.successful(List[ReportingEntityData](red))
+        when(repo.queryTIN(any(), any())) thenReturn Future.successful(List[ReportingEntityData](red))
 
         val result = controller.queryTin(tin, reportingPeriod)(fakeGetRequest)
         verifyStatusCode(result, Status.OK)
@@ -181,9 +211,9 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
       }
 
       "recover from a future failed and return an internalServerError" in {
-          when(repo.queryTIN(any(), any())) thenReturn Future.failed(new Exception("mugged it"))
-         val result = controller.queryTin(tin, reportingPeriod)(fakeGetRequest)
-         verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
+        when(repo.queryTIN(any(), any())) thenReturn Future.failed(new Exception("mugged it"))
+        val result = controller.queryTin(tin, reportingPeriod)(fakeGetRequest)
+        verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
       }
     }
 
@@ -206,7 +236,5 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
         verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
       }
     }
-    }
   }
-
-
+}

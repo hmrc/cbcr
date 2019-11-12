@@ -21,18 +21,23 @@ import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
 import play.api.libs.functional.syntax._ // Combinator syntax
 
-case class SubscriberContact(name: Option[String], firstName:String, lastName:String, phoneNumber:PhoneNumber, email:EmailAddress)
+case class SubscriberContact(
+  name: Option[String],
+  firstName: String,
+  lastName: String,
+  phoneNumber: PhoneNumber,
+  email: EmailAddress)
 object SubscriberContact {
 
-  implicit val formats :Format[SubscriberContact] = Json.format[SubscriberContact]
+  implicit val formats: Format[SubscriberContact] = Json.format[SubscriberContact]
 
   val subscriberContactFormat = new Format[SubscriberContact] {
     override def writes(o: SubscriberContact) = Json.obj(
-      "name" -> o.name,
-      "firstName" -> o.firstName,
-      "lastName" -> o.lastName,
+      "name"        -> o.name,
+      "firstName"   -> o.firstName,
+      "lastName"    -> o.lastName,
       "phoneNumber" -> o.phoneNumber,
-      "email" -> o.email
+      "email"       -> o.email
     )
 
     implicit val subscriberContactReads: Reads[SubscriberContact] =
@@ -40,14 +45,18 @@ object SubscriberContact {
         (JsPath \ "firstName").read[String] and
         (JsPath \ "lastName").read[String] and
         (JsPath \ "phoneNumber").read[PhoneNumber] and
-        (JsPath \ "email").read[EmailAddress]) (SubscriberContact.apply _)
+        (JsPath \ "email").read[EmailAddress])(SubscriberContact.apply _)
 
     override def reads(json: JsValue) = subscriberContactReads.reads(json)
   }
 
 }
 
-case class SubscriptionDetails(businessPartnerRecord: BusinessPartnerRecord, subscriberContact: SubscriberContact, cbcId:Option[CBCId], utr:Utr)
+case class SubscriptionDetails(
+  businessPartnerRecord: BusinessPartnerRecord,
+  subscriberContact: SubscriberContact,
+  cbcId: Option[CBCId],
+  utr: Utr)
 object SubscriptionDetails {
   implicit val subscriptionDetailsFormat = Json.format[SubscriptionDetails]
 }

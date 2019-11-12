@@ -29,43 +29,50 @@ import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 @Singleton
-class EmailService @Inject()(emailConnector:EmailConnectorImpl,
-                             auditConnector:AuditConnector,
-                             configuration:Configuration,
-                             runMode: RunMode)(implicit val ec: ExecutionContext) {
+class EmailService @Inject()(
+  emailConnector: EmailConnectorImpl,
+  auditConnector: AuditConnector,
+  configuration: Configuration,
+  runMode: RunMode)(implicit val ec: ExecutionContext) {
 
   private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
     configuration.getString(s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
 
-  def sendEmail(email:Email)(implicit hc:HeaderCarrier):Future[Result] = {
-    emailConnector.sendEmail(email).map(res => res.status match {
-      case 202 =>
-        Logger.info("CBCR Successfully sent email")
-        audit(email, CBCREmailSuccess)
-        Accepted
-    }).recover {
-      case _ =>
-        Logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
-        audit(email, CBCREmailFailure)
-        BadRequest
-    }
-  }
+  def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[Result] =
+    emailConnector
+      .sendEmail(email)
+      .map(res =>
+        res.status match {
+          case 202 =>
+            Logger.info("CBCR Successfully sent email")
+            audit(email, CBCREmailSuccess)
+            Accepted
+      })
+      .recover {
+        case _ =>
+          Logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
+          audit(email, CBCREmailFailure)
+          BadRequest
+      }
 
-  def audit(email:Email, auditType:AuditType)(implicit hc:HeaderCarrier) = {
-    auditConnector.sendExtendedEvent(ExtendedDataEvent(auditSource = "Country-By-Country", auditType.toString,
-      detail = Json.obj(
-        "email" -> Json.toJson(email),
-        "path" -> JsString(emailConnector.serviceUrl)
-      )
-    )).map {
-      case AuditResult.Success => Logger.info(s"Successfully audited ${auditType.toString}")
-      case AuditResult.Failure(msg, _) => Logger.warn(s"Unable to audit ${auditType.toString} $msg")
-      case AuditResult.Disabled => Logger.warn(s"Auditing is disabled for ${auditType.toString}")
-    }
-  }
+  def audit(email: Email, auditType: AuditType)(implicit hc: HeaderCarrier) =
+    auditConnector
+      .sendExtendedEvent(
+        ExtendedDataEvent(
+          auditSource = "Country-By-Country",
+          auditType.toString,
+          detail = Json.obj(
+            "email" -> Json.toJson(email),
+            "path"  -> JsString(emailConnector.serviceUrl)
+          )))
+      .map {
+        case AuditResult.Success         => Logger.info(s"Successfully audited ${auditType.toString}")
+        case AuditResult.Failure(msg, _) => Logger.warn(s"Unable to audit ${auditType.toString} $msg")
+        case AuditResult.Disabled        => Logger.warn(s"Auditing is disabled for ${auditType.toString}")
+      }
 
 }
 
 sealed trait AuditType
-  case object CBCREmailFailure extends AuditType
-  case object CBCREmailSuccess extends AuditType
+case object CBCREmailFailure extends AuditType
+case object CBCREmailSuccess extends AuditType

@@ -18,24 +18,23 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json.{Json, Writes}
 
-case class MigrationRequest(safeId:String, cBCId: String, correspondenceDetails: CorrespondenceDetails )
+case class MigrationRequest(safeId: String, cBCId: String, correspondenceDetails: CorrespondenceDetails)
 
-object MigrationRequest{
+object MigrationRequest {
   implicit val migrationWriter = new Writes[MigrationRequest] {
-    override def writes(o: MigrationRequest) = {Json.obj(
-      "safeId" -> o.safeId,
-      "cbcRegNumber" -> o.cBCId,
+    override def writes(o: MigrationRequest) = Json.obj(
+      "safeId"            -> o.safeId,
+      "cbcRegNumber"      -> o.cBCId,
       "isMigrationRecord" -> true,
-      "correspondenceDetails"-> Json.obj(
+      "correspondenceDetails" -> Json.obj(
         "contactAddress" -> EtmpAddress.formats.writes(o.correspondenceDetails.contactAddress),
         "contactDetails" -> Json.obj(
           "emailAddress" -> o.correspondenceDetails.contactDetails.email.value,
           "phoneNumber"  -> o.correspondenceDetails.contactDetails.phoneNumber.number
         ),
-        "contactName"    -> ContactName.format.writes(o.correspondenceDetails.contactName)
+        "contactName" -> ContactName.format.writes(o.correspondenceDetails.contactName)
       )
-    )}
+    )
 
   }
 }
-

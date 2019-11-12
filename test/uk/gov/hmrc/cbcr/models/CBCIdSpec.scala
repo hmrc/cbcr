@@ -21,7 +21,7 @@ import org.scalatest.WordSpec
 import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
-class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks{
+class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks {
 
   val arbBigNum = Gen.posNum[Int].map(_ + 999999)
 
@@ -54,7 +54,6 @@ class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks{
         val inValid4 = "XVCBC0000026122"
         val inValid5 = "XTCBC0000612830"
 
-
         CBCId(inValid1) shouldBe None
         CBCId(inValid2) shouldBe None
         CBCId(inValid3) shouldBe None
@@ -68,10 +67,10 @@ class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks{
       }
     }
     "not allow creating CBCIds outside of the valid range of 1-999999" in {
-      forAll(Gen.negNum[Int]){ n =>
+      forAll(Gen.negNum[Int]) { n =>
         CBCId.create(n).isInvalid shouldBe true
       }
-      forAll(Gen.posNum[Int].map(_ + 999999)){ n =>
+      forAll(Gen.posNum[Int].map(_ + 999999)) { n =>
         CBCId.create(n).isInvalid shouldBe true
       }
     }

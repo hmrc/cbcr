@@ -32,96 +32,93 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
-
-
-case class AdminReportingEntityData(cbcReportsDRI:List[DocRefId],
-                                    additionalInfoDRI:Option[List[DocRefId]],
-                                    reportingEntityDRI:DocRefId)
+case class AdminReportingEntityData(
+  cbcReportsDRI: List[DocRefId],
+  additionalInfoDRI: Option[List[DocRefId]],
+  reportingEntityDRI: DocRefId)
 
 object AdminReportingEntityData {
   implicit val format = Json.format[AdminReportingEntityData]
 }
 
 @Singleton
-class AdminService @Inject()(docRefIdRepo: ReactiveDocRefIdRepository,
-                             configuration: Configuration,
-                             repo: ReportingEntityDataRepo,
-                             docRepo: DocRefIdRepository,
-                             runMode: RunMode,
-                             audit: AuditConnector,
-                             cc: ControllerComponents)
-                            (implicit ec: ExecutionContext) extends BackendController(cc) {
+class AdminService @Inject()(
+  docRefIdRepo: ReactiveDocRefIdRepository,
+  configuration: Configuration,
+  repo: ReportingEntityDataRepo,
+  docRepo: DocRefIdRepository,
+  runMode: RunMode,
+  audit: AuditConnector,
+  cc: ControllerComponents)(implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
-
-  def showAllDocRef = Action.async {
-    implicit request =>
-
-      docRefIdRepo.findAll().map(response => Ok(Json.toJson(displayAllDocRefId(response))))
+  def showAllDocRef = Action.async { implicit request =>
+    docRefIdRepo.findAll().map(response => Ok(Json.toJson(displayAllDocRefId(response))))
 
   }
 
-
-  def countDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord = {
+  def countDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord =
     ListDocRefIdRecord(docs.filterNot(doc => doc.id.id.length < 200))
-  }
 
-
-  def displayAllDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord = {
+  def displayAllDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord =
     ListDocRefIdRecord(docs)
-  }
 
   def adminDocRefIdquery(d: DocRefId) = Action.async { implicit request =>
-    repo.query(d).map {
-      case None => NotFound
-      case Some(data) => Ok(Json.toJson(data))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
-    }
+    repo
+      .query(d)
+      .map {
+        case None       => NotFound
+        case Some(data) => Ok(Json.toJson(data))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
 
   }
 
   def adminQueryTin(tin: String, reportingPeriod: String) = Action.async { implicit request =>
-    repo.queryTIN(tin, reportingPeriod).map { reportEntityData =>
-
-      if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
-    }
+    repo
+      .queryTIN(tin, reportingPeriod)
+      .map { reportEntityData =>
+        if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
   }
 
   def adminQueryCbcId(cbcId: CBCId, reportingPeriod: String) = Action.async { implicit request =>
+    repo
+      .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
+      .map {
+        case None       => NotFound
+        case Some(data) => Ok(Json.toJson(data))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
 
-    repo.queryCbcId(cbcId, LocalDate.parse(reportingPeriod)).map {
-      case None => NotFound
-      case Some(data) => Ok(Json.toJson(data))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
+  }
+
+  def editDocRefId(id: DocRefId) = Action.async { implicit request =>
+    docRepo.edit(id) map {
+      case n if n > 0 => Ok
+      case _          => NotModified
     }
-
   }
 
-  def editDocRefId(id: DocRefId) = Action.async {
-    implicit request =>
-      docRepo.edit(id) map {
-        case n if n > 0 => Ok
-        case _ => NotModified
-      }
-  }
-
-  def saveDocRefId(id: DocRefId) = Action.async {
-    implicit request =>
-      docRepo.save(id).map {
-        case DocRefIdResponses.Ok => Ok
-        case DocRefIdResponses.AlreadyExists => Conflict
-        case DocRefIdResponses.Failed => InternalServerError
-      }
-
+  def saveDocRefId(id: DocRefId) = Action.async { implicit request =>
+    docRepo.save(id).map {
+      case DocRefIdResponses.Ok            => Ok
+      case DocRefIdResponses.AlreadyExists => Conflict
+      case DocRefIdResponses.Failed        => InternalServerError
+    }
 
   }
 
@@ -129,7 +126,10 @@ class AdminService @Inject()(docRefIdRepo: ReactiveDocRefIdRepository,
     implicit request =>
       repo.updateReportingEntityDRI(request.body, docRefId).map {
         case true => Ok
-        case false => Ok("Reporting entity was not updated due to an error. Please check if the json provided is correct" + Json.toJson(request.body))
+        case false =>
+          Ok(
+            "Reporting entity was not updated due to an error. Please check if the json provided is correct" + Json
+              .toJson(request.body))
       }
   }
 
