@@ -40,47 +40,32 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
 
     "submit request to lookup and get successful response status" in new Setup {
       val utr = "700000002"
-      when(httpMock.POST[JsValue, HttpResponse]
-        (
-          any(),
-          any(),
-          any())
-        (any(), any(), any(), any())
-      ).thenReturn(Future.successful(HttpResponse(202)))
+      when(httpMock.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(202)))
       val result: Future[HttpResponse] = connector.lookup(utr)
       await(result).status shouldBe 202
     }
   }
 
-    "createSubscription" should {
+  "createSubscription" should {
 
-      "submit request to createSubscription and get successful response status" in new Setup {
-        val sub = SubscriptionRequest("safeid", false, cd)
-        when(httpMock.POST[SubscriptionRequest, HttpResponse]
-          (
-            any(),
-            any(),
-            any())
-          (any(), any(), any(), any())
-        ).thenReturn(Future.successful(HttpResponse(202)))
-        val result: Future[HttpResponse] = connector.createSubscription(sub)
-        await(result).status shouldBe 202
-      }
+    "submit request to createSubscription and get successful response status" in new Setup {
+      val sub = SubscriptionRequest("safeid", false, cd)
+      when(httpMock.POST[SubscriptionRequest, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(202)))
+      val result: Future[HttpResponse] = connector.createSubscription(sub)
+      await(result).status shouldBe 202
     }
-      "updateSubscription" should {
+  }
+  "updateSubscription" should {
 
-        "submit request to updateSubscription and get successful response status" in new Setup {
-          when(httpMock.PUT[CorrespondenceDetails, HttpResponse]
-            (
-              any(),
-              any(),
-              any())
-            (any(), any(), any(), any())
-          ).thenReturn(Future.successful(HttpResponse(202)))
-          val result: Future[HttpResponse] = connector.updateSubscription("safeID", cd)
-          await(result).status shouldBe 202
-        }
-      }
+    "submit request to updateSubscription and get successful response status" in new Setup {
+      when(httpMock.PUT[CorrespondenceDetails, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+        .thenReturn(Future.successful(HttpResponse(202)))
+      val result: Future[HttpResponse] = connector.updateSubscription("safeID", cd)
+      await(result).status shouldBe 202
+    }
+  }
 
   sealed trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -88,21 +73,19 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
     val mockAuditConnector = mock[AuditConnector]
     val runMode = mock[RunMode]
     val httpMock: HttpClient = mock[HttpClient]
-    val servicesConfig=mock[ServicesConfig]
+    val servicesConfig = mock[ServicesConfig]
 
     val config = app.injector.instanceOf[Configuration]
 
     val cd = CorrespondenceDetails(
-      EtmpAddress("line1",None,None,None,None,"GB"),
-      ContactDetails(EmailAddress("test@test.com"),PhoneNumber("9876543").get),
-      ContactName("FirstName","Surname")
+      EtmpAddress("line1", None, None, None, None, "GB"),
+      ContactDetails(EmailAddress("test@test.com"), PhoneNumber("9876543").get),
+      ContactName("FirstName", "Surname")
     )
 
-
-    val connector = new DESConnectorImpl(executionContext, mockAuditConnector,config,runMode,httpMock,servicesConfig)
+    val connector =
+      new DESConnectorImpl(executionContext, mockAuditConnector, config, runMode, httpMock, servicesConfig)
 
   }
-
-
 
 }

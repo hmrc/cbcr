@@ -33,67 +33,70 @@ import uk.gov.hmrc.cbcr.models._
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext)  {
+class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
 
-  def delete(d:DocRefId): Future[WriteResult] = {
+  def delete(d: DocRefId): Future[WriteResult] = {
     val criteria = Json.obj("id" -> d.id)
     for {
       repo <- repository
-      x <- repo.delete().one(criteria)
-    } yield  x
+      x    <- repo.delete().one(criteria)
+    } yield x
   }
 
-    def edit(doc: DocRefId): Future[Int] = {
+  def edit(doc: DocRefId): Future[Int] = {
 
     val criteria = Json.obj("id" -> doc.id)
     for {
       collection <- repository
-      update <- collection.update(criteria, Json.obj("$set" -> Json.obj("valid" -> true)))
+      update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("valid" -> true)))
     } yield update.nModified
   }
 
-  def save(f:DocRefId) : Future[DocRefIdSaveResponse] = {
+  def save(f: DocRefId): Future[DocRefIdSaveResponse] = {
     val criteria = Json.obj("id" -> f.id)
     for {
       repo <- repository
       x    <- repo.find(criteria, None).one[DocRefIdRecord]
-      r    <- if(x.isDefined) Future.successful(AlreadyExists)
-              else { repo.insert(DocRefIdRecord(f,valid = true)).map(w => if (w.ok) { Ok } else { Failed }) }
-    } yield  r
+      r <- if (x.isDefined) Future.successful(AlreadyExists)
+          else { repo.insert(DocRefIdRecord(f, valid = true)).map(w => if (w.ok) { Ok } else { Failed }) }
+    } yield r
   }
 
-  def save(c:CorrDocRefId, d:DocRefId): Future[(DocRefIdQueryResponse,Option[DocRefIdSaveResponse])] = {
+  def save(c: CorrDocRefId, d: DocRefId): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] = {
     import reactivemongo.play.json.ImplicitBSONHandlers.BSONDocumentWrites
 
-
     val criteria = Json.obj("id" -> c.cid.id, "valid" -> true)
-    query(c.cid).zip(query(d)).flatMap{
-      case (Invalid,_)            => Future.successful((Invalid,None))
-      case (DoesNotExist,_)       => Future.successful((DoesNotExist,None))
-      case (Valid, Valid|Invalid) => Future.successful((Valid,Some(AlreadyExists)))
-      case (Valid, DoesNotExist)  => for {
-            repo     <- repository
-            doc: FindAndModifyCommand.FindAndModifyResult <- repo.findAndModify(criteria,repo.updateModifier(BSONDocument("$set" -> BSONDocument("valid" -> false))))
-            x        <- if(doc.result[DocRefIdRecord].isDefined) {
-              repo.insert(DocRefIdRecord(d, valid = true)).map(w => if(w.ok) { Ok } else { Failed })
-            } else {
-              Logger.error(doc.toString)
-              Future.successful(Failed)
-            }
-          } yield (Valid,Some(x))
-      }
+    query(c.cid).zip(query(d)).flatMap {
+      case (Invalid, _)             => Future.successful((Invalid, None))
+      case (DoesNotExist, _)        => Future.successful((DoesNotExist, None))
+      case (Valid, Valid | Invalid) => Future.successful((Valid, Some(AlreadyExists)))
+      case (Valid, DoesNotExist) =>
+        for {
+          repo <- repository
+          doc: FindAndModifyCommand.FindAndModifyResult <- repo.findAndModify(
+                                                            criteria,
+                                                            repo.updateModifier(
+                                                              BSONDocument("$set" -> BSONDocument("valid" -> false))))
+          x <- if (doc.result[DocRefIdRecord].isDefined) {
+                repo.insert(DocRefIdRecord(d, valid = true)).map(w => if (w.ok) { Ok } else { Failed })
+              } else {
+                Logger.error(doc.toString)
+                Future.successful(Failed)
+              }
+        } yield (Valid, Some(x))
+    }
   }
 
   def query(docRefId: DocRefId): Future[DocRefIdQueryResponse] = {
     val criteria = Json.obj("id" -> docRefId.id)
-    OptionT(repository.flatMap(_.find(criteria, None).one[DocRefIdRecord])).map(r =>
-      if(r.valid) Valid
-      else        Invalid
-    ).getOrElse(DoesNotExist)
+    OptionT(repository.flatMap(_.find(criteria, None).one[DocRefIdRecord]))
+      .map(r =>
+        if (r.valid) Valid
+        else Invalid)
+      .getOrElse(DoesNotExist)
   }
-
 
 }

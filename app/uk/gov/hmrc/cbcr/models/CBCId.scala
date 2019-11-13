@@ -34,8 +34,8 @@ import uk.gov.hmrc.domain.Modulus23Check
   *
   * Note: This is a hard limit of 999999 unique CBCIds
   */
-class CBCId private(val value:String){
-  override def toString:String = value
+class CBCId private (val value: String) {
+  override def toString: String = value
 }
 
 object CBCId extends Modulus23Check {
@@ -51,29 +51,31 @@ object CBCId extends Modulus23Check {
     override def writes(o: CBCId): JsValue = JsString(o.value)
 
     override def reads(json: JsValue): JsResult[CBCId] = json match {
-      case JsString(value) => CBCId(value).fold[JsResult[CBCId]](
-        JsError(s"CBCId is invalid: $value")
-      )(cbcid => JsSuccess(cbcid))
+      case JsString(value) =>
+        CBCId(value).fold[JsResult[CBCId]](
+          JsError(s"CBCId is invalid: $value")
+        )(cbcid => JsSuccess(cbcid))
       case other => JsError(s"CBCId is invalid: $other")
     }
   }
-  def apply(s:String) : Option[CBCId] =
-    if(isValidCBC(s) && isCheckCorrect(s,1)){
+  def apply(s: String): Option[CBCId] =
+    if (isValidCBC(s) && isCheckCorrect(s, 1)) {
       Some(new CBCId(s))
     } else {
       None
     }
 
   private val cbcRegex = """^X[A-Z]CBC\d{10}$"""
-  private def isValidCBC(s:String) : Boolean = s.matches(cbcRegex)
+  private def isValidCBC(s: String): Boolean = s.matches(cbcRegex)
 
-  def create(i:Int): Validated[Throwable,CBCId] = if(i > 999999 || i < 0){
+  def create(i: Int): Validated[Throwable, CBCId] =
+    if (i > 999999 || i < 0) {
       Invalid(new IllegalArgumentException("CBCId ranges from 0-999999"))
     } else {
       val sequenceNumber = i.formatted("%06d")
       val id = s"CBC0100$sequenceNumber"
       val checkChar = calculateCheckCharacter(id)
-      CBCId(s"X$checkChar" + id).fold[Validated[Throwable,CBCId]](
+      CBCId(s"X$checkChar" + id).fold[Validated[Throwable, CBCId]](
         Invalid(new Exception(s"Generated CBCId did not validate: $id"))
       )(
         cbcId => Valid(cbcId)

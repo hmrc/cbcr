@@ -35,11 +35,31 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
   val dc = mock[DESConnector]
   passAuthMock()
-  val controller = new BusinessPartnerRecordController(dc,cBCRAuth, cc)
+  val controller = new BusinessPartnerRecordController(dc, cBCRAuth, cc)
 
   "The BusinessPartnerRecordController" should {
     "respond with a 200 if the UTR is matched" in {
-      val response = Json.obj("safeId"->"XV0000100085686","agentReferenceNumber"->"BARN0000191","isEditable"->false,"isAnAgent"->true,"isAnASAgent"->true,"isAnIndividual"->true,"individual"-> Json.obj("firstName"->"First Name Taxpayer 01","lastName"->"Last Name Taxpayer 01","dateOfBirth"->"1960-12-01"),"address"->Json.obj("addressLine1"->"Matheson House 1","addressLine2"->"Grange Central","addressLine3"->"Telford","addressLine4"->"Shropshire","countryCode"->"GB","postalCode"->"TF3 4ER"), "contactDetails" -> Json.obj())
+      val response = Json.obj(
+        "safeId"               -> "XV0000100085686",
+        "agentReferenceNumber" -> "BARN0000191",
+        "isEditable"           -> false,
+        "isAnAgent"            -> true,
+        "isAnASAgent"          -> true,
+        "isAnIndividual"       -> true,
+        "individual" -> Json.obj(
+          "firstName"   -> "First Name Taxpayer 01",
+          "lastName"    -> "Last Name Taxpayer 01",
+          "dateOfBirth" -> "1960-12-01"),
+        "address" -> Json.obj(
+          "addressLine1" -> "Matheson House 1",
+          "addressLine2" -> "Grange Central",
+          "addressLine3" -> "Telford",
+          "addressLine4" -> "Shropshire",
+          "countryCode"  -> "GB",
+          "postalCode"   -> "TF3 4ER"
+        ),
+        "contactDetails" -> Json.obj()
+      )
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
       when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse(Status.OK, Some(response)))
@@ -68,6 +88,5 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
     }
   }
-
 
 }

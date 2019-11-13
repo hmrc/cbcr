@@ -43,30 +43,28 @@ trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
 
   def status(of: Future[Result])(implicit timeout: Duration): Int = status(Await.result(of, timeout))
 
-  def jsonBodyOf(result: Result)(implicit mat: Materializer): JsValue = {
+  def jsonBodyOf(result: Result)(implicit mat: Materializer): JsValue =
     Json.parse(bodyOf(result))
-  }
 
-  def jsonBodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[JsValue] = {
+  def jsonBodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[JsValue] =
     resultF.map(jsonBodyOf)
-  }
 
   def bodyOf(result: Result)(implicit mat: Materializer): String = {
     val bodyBytes: ByteString = await(result.body.consumeData)
     bodyBytes.decodeString(Charset.defaultCharset().name)
   }
 
-  def bodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[String] = {
+  def bodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[String] =
     resultF.map(bodyOf)
-  }
 
-  def verifyResult(result: Future[Result], red: ReportingEntityData)(implicit mat: Materializer) = Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+  def verifyResult(result: Future[Result], red: ReportingEntityData)(implicit mat: Materializer) =
+    Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
 
-  def verifyResult(result: Future[Result], red: ReportingEntityDataModel)(implicit mat: Materializer) = Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+  def verifyResult(result: Future[Result], red: ReportingEntityDataModel)(implicit mat: Materializer) =
+    Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
 
   def verifyStatusCode(result: Future[Result], statusCode: Int) = status(result) shouldBe statusCode
 
   def verifyStatusCode[A](result: Future[Result], expected: A) = status(result) shouldBe expected
-
 
 }

@@ -30,11 +30,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RetrieveReportingEntityServiceSpec
-    extends LogCapturing
-    with UnitSpec
-    with GuiceOneAppPerSuite
-    with ScalaFutures {
+class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with GuiceOneAppPerSuite with ScalaFutures {
 
   private val reportingEntityDataRepo =
     app.injector.instanceOf[ReportingEntityDataRepo]
@@ -44,33 +40,26 @@ class RetrieveReportingEntityServiceSpec
   private val mockRunMode = mock[RunMode]
   val mockReportingEntityDataRepo = mock[ReportingEntityDataRepo]
 
-
   private val retrieveReportingEntityService =
-    new RetrieveReportingEntityService(reportingEntityDataRepo,
-                                       configuration,
-                                       runMode,
-                                       audit)
+    new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, runMode, audit)
   private val retrieveReportingEntityServiceWithMockRunMode =
-    new RetrieveReportingEntityService(reportingEntityDataRepo,
-                                       configuration,
-                                       mockRunMode,
-                                       audit)
+    new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
 
   private val tin = TIN("value", "issuedBy")
   private val emptyDocRefId = DocRefId("")
   private val ultimateParentEntity = UltimateParentEntity("")
   private val reportingEntityData =
-    ReportingEntityData(NonEmptyList(emptyDocRefId, List.empty),
-                        List.empty,
-                        DocRefId(""),
-                        tin,
-                        ultimateParentEntity,
-                       reportingRole = CBC701,
-                        None,
-                        None)
+    ReportingEntityData(
+      NonEmptyList(emptyDocRefId, List.empty),
+      List.empty,
+      DocRefId(""),
+      tin,
+      ultimateParentEntity,
+      reportingRole = CBC701,
+      None,
+      None)
 
-  private def isRetrieveReportingEntityTrue(
-      rrEntityService: RetrieveReportingEntityService) =
+  private def isRetrieveReportingEntityTrue(rrEntityService: RetrieveReportingEntityService) =
     rrEntityService.retrieveReportingEntity
 
   "the val retrieveReportingEntity" should {
@@ -79,16 +68,12 @@ class RetrieveReportingEntityServiceSpec
     }
     "return false if the configuration value does not match any of the required values" in {
       when(mockRunMode.env) thenReturn "wrongEnv"
-      isRetrieveReportingEntityTrue(
-        retrieveReportingEntityServiceWithMockRunMode) shouldBe false
+      isRetrieveReportingEntityTrue(retrieveReportingEntityServiceWithMockRunMode) shouldBe false
     }
 
     "log info if the configuration value does not match any of the required values" in {
       withCaptureOfLoggingFrom(Logger) { logs =>
-        new RetrieveReportingEntityService(reportingEntityDataRepo,
-                                           configuration,
-                                           mockRunMode,
-                                           audit)
+        new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
         when(mockRunMode.env) thenReturn "wrongEnv"
       }
     }

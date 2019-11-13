@@ -22,7 +22,7 @@ import play.api.{Configuration, Logger}
 import configs.syntax._
 
 @Singleton
-class RunMode @Inject() (configuration:Configuration) {
+class RunMode @Inject()(configuration: Configuration) {
   private val APP_RUNNING_LOCALY: String = "Dev"
 
   val env: String = configuration.underlying.get[String]("run.mode").valueOr(_ => APP_RUNNING_LOCALY)

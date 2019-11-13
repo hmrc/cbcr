@@ -26,33 +26,43 @@ import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class AuditSubscriptionService @Inject() (repo:SubscriptionDataRepository,
-                                          configuration:Configuration,
-                                          runMode: RunMode,
-                                          audit: AuditConnector) (implicit ex: ExecutionContext) {
+class AuditSubscriptionService @Inject()(
+  repo: SubscriptionDataRepository,
+  configuration: Configuration,
+  runMode: RunMode,
+  audit: AuditConnector)(implicit ex: ExecutionContext) {
 
   val auditSubscriptions: Boolean = configuration.getBoolean(s"${runMode.env}.audit.subscriptions").getOrElse(false)
   Logger.info(s"auditSubscriptions set to: $auditSubscriptions")
 
   if (auditSubscriptions) {
-    val cbcIds: List[CBCId] = configuration.getString(s"${runMode.env}.audit.cbcIds").getOrElse("").split("_").toList.flatMap(CBCId.apply)
+    val cbcIds: List[CBCId] =
+      configuration.getString(s"${runMode.env}.audit.cbcIds").getOrElse("").split("_").toList.flatMap(CBCId.apply)
     val subscriptions = Json.obj("cbcId" -> Json.obj("$in" -> cbcIds))
 
-    repo.getSubscriptions(subscriptions).map(sd => sd.foreach( s => auditSubscriptionDetails(s).onComplete {
-      case Success(AuditResult.Success) => Logger.info(s"Successfully audited SubscriptionDetails of CBCId ${s.cbcId.toString}")
-      case Success(AuditResult.Failure(msg, _)) => Logger.warn(s"Unable to audit SubscriptionDetails of CBCId ${s.cbcId.toString} $msg")
-      case Success(AuditResult.Disabled) => Logger.warn(s"Auditing is disabled for SubscriptionDetails of CBCId ${s.cbcId.toString}")
-      case Failure(e) => Logger.warn(s"Audit failed to complete for CBCId ${s.cbcId.toString}, ${e.getMessage}")
-    }))
+    repo
+      .getSubscriptions(subscriptions)
+      .map(sd =>
+        sd.foreach(s =>
+          auditSubscriptionDetails(s).onComplete {
+            case Success(AuditResult.Success) =>
+              Logger.info(s"Successfully audited SubscriptionDetails of CBCId ${s.cbcId.toString}")
+            case Success(AuditResult.Failure(msg, _)) =>
+              Logger.warn(s"Unable to audit SubscriptionDetails of CBCId ${s.cbcId.toString} $msg")
+            case Success(AuditResult.Disabled) =>
+              Logger.warn(s"Auditing is disabled for SubscriptionDetails of CBCId ${s.cbcId.toString}")
+            case Failure(e) => Logger.warn(s"Audit failed to complete for CBCId ${s.cbcId.toString}, ${e.getMessage}")
+        }))
 
   }
 
-  private def auditSubscriptionDetails(sd: SubscriptionDetails): Future[AuditResult] = {
-    audit.sendExtendedEvent(ExtendedDataEvent(auditSource = "Country-By-Country", "SubscriptionDetails",
-      detail = Json.obj(
-        "cbcId"        -> JsString(sd.cbcId.toString),
-        "SubscriptionDetails" -> Json.toJson(sd)
-      )
-    ))
-  }
+  private def auditSubscriptionDetails(sd: SubscriptionDetails): Future[AuditResult] =
+    audit.sendExtendedEvent(
+      ExtendedDataEvent(
+        auditSource = "Country-By-Country",
+        "SubscriptionDetails",
+        detail = Json.obj(
+          "cbcId"               -> JsString(sd.cbcId.toString),
+          "SubscriptionDetails" -> Json.toJson(sd)
+        )))
 }

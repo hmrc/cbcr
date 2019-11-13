@@ -28,8 +28,7 @@ import org.scalatest.FunSuite
 
 import scala.concurrent.Await
 
-
-class ReportingEntityDataSpec extends UnitSpec with Suite{
+class ReportingEntityDataSpec extends UnitSpec with Suite {
 
   val additionalInfoList =
     s"""
@@ -85,34 +84,34 @@ class ReportingEntityDataSpec extends UnitSpec with Suite{
      """.stripMargin
 
   "ReportingEntityData" should {
-    "allow AdditionalInfo to contain a list of docRefIds" in{
-      Json.parse(additionalInfoList).as[ReportingEntityData] shouldBe a [ReportingEntityData]
+    "allow AdditionalInfo to contain a list of docRefIds" in {
+      Json.parse(additionalInfoList).as[ReportingEntityData] shouldBe a[ReportingEntityData]
     }
 
     "allow AdditionalInfo to contain a docRefId" in {
-      Json.parse(additionalInfoDocRefId).as[ReportingEntityData] shouldBe a [ReportingEntityData]
+      Json.parse(additionalInfoDocRefId).as[ReportingEntityData] shouldBe a[ReportingEntityData]
     }
 
     "allow AdditionalInfo to not exist" in {
-      Json.parse(noAdditionalInfo).as[ReportingEntityData] shouldBe a [ReportingEntityData]
+      Json.parse(noAdditionalInfo).as[ReportingEntityData] shouldBe a[ReportingEntityData]
     }
 
     "fail if AdditionalInfo is invalid" in {
       val caught = intercept[Exception](Json.parse(additionalInfoInvalid).as[ReportingEntityData])
-      assert(caught.getMessage contains("JsResultException"))
+      assert(caught.getMessage contains ("JsResultException"))
     }
   }
 
   "ReportingEntityDataModel" should {
-     "create oldModel and set value to true" in {
+    "create oldModel and set value to true" in {
       val oldModel = Json.parse(additionalInfoDocRefId).as[ReportingEntityDataModel]
-       oldModel shouldBe a [ReportingEntityDataModel]
-       oldModel.oldModel should equal(true)
+      oldModel shouldBe a[ReportingEntityDataModel]
+      oldModel.oldModel should equal(true)
     }
 
     "create oldModel and set value to false" in {
       val newModel = Json.parse(additionalInfoList).as[ReportingEntityDataModel]
-      newModel shouldBe a [ReportingEntityDataModel]
+      newModel shouldBe a[ReportingEntityDataModel]
       newModel.oldModel should equal(false)
 
     }

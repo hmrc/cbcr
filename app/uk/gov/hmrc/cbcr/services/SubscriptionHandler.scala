@@ -28,24 +28,31 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 trait SubscriptionHandler {
 
-  def createSubscription(sub:SubscriptionRequest)(implicit hc:HeaderCarrier) : Future[Result]
-  def updateSubscription(safeId:String, details:CorrespondenceDetails)(implicit hc: HeaderCarrier) : Future[Result]
-  def getSubscription(safeId:String)(implicit hc:HeaderCarrier) : Future[Result]
+  def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[Result]
+  def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier): Future[Result]
+  def getSubscription(safeId: String)(implicit hc: HeaderCarrier): Future[Result]
 
 }
 
 @Singleton
-class SubscriptionHandlerImpl @Inject() (configuration: Configuration, localCBCIdGenerator: LocalSubscription, remoteCBCIdGenerator: RemoteSubscription, runMode: RunMode) extends SubscriptionHandler{
+class SubscriptionHandlerImpl @Inject()(
+  configuration: Configuration,
+  localCBCIdGenerator: LocalSubscription,
+  remoteCBCIdGenerator: RemoteSubscription,
+  runMode: RunMode)
+    extends SubscriptionHandler {
 
   val useDESApi: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.useDESApi").valueOr(_ => false)
   Logger.info(s"useDESApi set to: $useDESApi")
 
-  val handler:SubscriptionHandler = if(useDESApi) remoteCBCIdGenerator else localCBCIdGenerator
+  val handler: SubscriptionHandler = if (useDESApi) remoteCBCIdGenerator else localCBCIdGenerator
 
-  override def createSubscription(sub: SubscriptionRequest)(implicit hc:HeaderCarrier) = handler.createSubscription(sub)
+  override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier) =
+    handler.createSubscription(sub)
 
-  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc:HeaderCarrier) = handler.updateSubscription(safeId,details)
+  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) =
+    handler.updateSubscription(safeId, details)
 
-  override def getSubscription(safeId: String)(implicit hc:HeaderCarrier) = handler.getSubscription(safeId)
+  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) = handler.getSubscription(safeId)
 
 }

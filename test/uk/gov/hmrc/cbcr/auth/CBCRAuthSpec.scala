@@ -38,10 +38,13 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
   val cBCRAuth = new CBCRAuth(mockMicroServiceAuthConnector, cc)
   private type AuthAction = Request[AnyContent] => Future[Result]
 
-  val authAction: AuthAction = { implicit request  => Future successful Ok }
+  val authAction: AuthAction = { implicit request =>
+    Future successful Ok
+  }
 
   private def agentAuthStub(returnValue: Future[Option[AffinityGroup]]) =
-    when(mockMicroServiceAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(),any())).thenReturn(returnValue)
+    when(mockMicroServiceAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(), any()))
+      .thenReturn(returnValue)
 
   val agentAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Agent)
@@ -52,7 +55,6 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
   val individualAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Individual)
   override def beforeEach(): Unit = reset(mockMicroServiceAuthConnector)
-
 
   "authCBCR" should {
     "return OK for an Agent" in {

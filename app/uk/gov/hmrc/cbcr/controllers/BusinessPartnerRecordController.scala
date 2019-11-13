@@ -24,17 +24,16 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class BusinessPartnerRecordController @Inject()(connector: DESConnector,
-                                                auth: CBCRAuth,
-                                                cc: ControllerComponents)
-                                               (implicit val ec: ExecutionContext) extends BackendController(cc) {
+class BusinessPartnerRecordController @Inject()(connector: DESConnector, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit val ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def getBusinessPartnerRecord(utr: String) = auth.authCBCR { implicit request =>
     connector.lookup(utr).map {
-      case response if response.status == OK => Ok(response.json)
+      case response if response.status == OK          => Ok(response.json)
       case response if response.status == BAD_REQUEST => BadRequest(response.json)
-      case response if response.status == NOT_FOUND => NotFound
-      case _ => InternalServerError
+      case response if response.status == NOT_FOUND   => NotFound
+      case _                                          => InternalServerError
     }
   }
 

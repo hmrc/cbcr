@@ -26,7 +26,6 @@ import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-
 trait MockAuth extends MockitoSugar {
   val mockAuthConnector = mock[AuthConnector]
   val cBCRAuth = new CBCRAuth(mockAuthConnector, cc)
@@ -34,7 +33,8 @@ trait MockAuth extends MockitoSugar {
     Future successful Some(AffinityGroup.Agent)
 
   private def agentAuthStub(returnValue: Future[Option[AffinityGroup]]) =
-    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(),any())).thenReturn(returnValue)
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(), any()))
+      .thenReturn(returnValue)
 
   agentAuthStub(agentAffinity)
 }

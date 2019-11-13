@@ -26,10 +26,11 @@ import uk.gov.hmrc.cbcr.auth.CBCRAuth
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 /**
   * Created by colm on 27/09/17.
   */
-package object controllers extends MockitoSugar{
+package object controllers extends MockitoSugar {
 
   val cc = stubControllerComponents()
   val mockAuthConnector = mock[AuthConnector]
@@ -37,7 +38,8 @@ package object controllers extends MockitoSugar{
   val agentAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Agent)
 
-   def passAuthMock() =
-    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(),any())).thenReturn(agentAffinity)
+  def passAuthMock() =
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(), any()))
+      .thenReturn(agentAffinity)
 
 }

@@ -34,25 +34,31 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerSuite {
 
-  val config                          = app.injector.instanceOf[Configuration]
-  implicit val ec                     = app.injector.instanceOf[ExecutionContext]
-  implicit val hc                     = HeaderCarrier()
-  val writeResult                     = DefaultWriteResult(true,1,Seq.empty,None,None,None)
-  val notFoundWriteResult             = DefaultWriteResult(true,0,Seq.empty,None,None,None)
-  lazy val reactiveMongoApi           = app.injector.instanceOf[ReactiveMongoApi]
-  val docRefId                        = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
-  val cbcId                           = CBCId.apply("XVCBC0000000056")
-  val corrRefId                       = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val reportingEntityDataRepository   = new ReportingEntityDataRepo(reactiveMongoApi)
+  val config = app.injector.instanceOf[Configuration]
+  implicit val ec = app.injector.instanceOf[ExecutionContext]
+  implicit val hc = HeaderCarrier()
+  val writeResult = DefaultWriteResult(true, 1, Seq.empty, None, None, None)
+  val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
+  val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
+  val cbcId = CBCId.apply("XVCBC0000000056")
+  val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
+  val reportingEntityDataRepository = new ReportingEntityDataRepo(reactiveMongoApi)
 
-  val creationDate                    = LocalDate.now
-  val updateForcreationDate           = (LocalDate.now).plusDays(5)
-  val reportingPeroid                 = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+  val creationDate = LocalDate.now
+  val updateForcreationDate = (LocalDate.now).plusDays(5)
+  val reportingPeroid = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-
-
-  val reportingEntityData = ReportingEntityData(NonEmptyList(docRefId, Nil), List(docRefId), docRefId,
-                                TIN("3590617086", "CGI"), UltimateParentEntity("ABCCorp"), CBC701, Some(creationDate),Some(reportingPeroid))
+  val reportingEntityData = ReportingEntityData(
+    NonEmptyList(docRefId, Nil),
+    List(docRefId),
+    docRefId,
+    TIN("3590617086", "CGI"),
+    UltimateParentEntity("ABCCorp"),
+    CBC701,
+    Some(creationDate),
+    Some(reportingPeroid)
+  )
 
   val adminReportingEntityData = AdminReportingEntityData(List(docRefId), Some(List(docRefId)), docRefId)
 
@@ -64,7 +70,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
     }
   }
-
 
   "Calls to save" should {
     "should save the reportingEntityData in the database" in {
@@ -87,13 +92,12 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   "Calls to getLatestReportingEntityData" should {
     "should return the ReportingEntityDataList sorted in ascending order" in {
 
-      val result: List[ReportingEntityData] = reportingEntityDataRepository.getLatestReportingEntityData(List(reportingEntityData))
+      val result: List[ReportingEntityData] =
+        reportingEntityDataRepository.getLatestReportingEntityData(List(reportingEntityData))
       result.size shouldBe 1
 
     }
   }
-
-
 
   "Calls to confirmCreationDate" should {
     "should confirm the creationDate for the docRefId" in {
@@ -116,7 +120,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   "Calls to updateReportingEntityDRI" should {
     "should update the reportingEntityDRI for the docRefId" in {
 
-      val result: Future[Boolean] = reportingEntityDataRepository.updateReportingEntityDRI(adminReportingEntityData, docRefId)
+      val result: Future[Boolean] =
+        reportingEntityDataRepository.updateReportingEntityDRI(adminReportingEntityData, docRefId)
       await(result) shouldBe true
 
     }
@@ -130,8 +135,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
     }
   }
-
-
 
   "Calls to queryReportingEntity" should {
     "should return the ReportingEntityData object for a given docRefId" in {
@@ -154,7 +157,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   "Calls to queryCbcId" should {
     "should return ReportingEntityData if it exists" in {
 
-      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryCbcId(cbcId.get, reportingPeroid)
+      val result: Future[Option[ReportingEntityData]] =
+        reportingEntityDataRepository.queryCbcId(cbcId.get, reportingPeroid)
       await(result.map(x => x.get.ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
 
     }
@@ -168,8 +172,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
     }
   }
-
-
 
   "Calls to deleteReportingPeriod" should {
     "should delete the reporting period for a given docRefId" in {
@@ -197,6 +199,5 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
     }
   }
-
 
 }

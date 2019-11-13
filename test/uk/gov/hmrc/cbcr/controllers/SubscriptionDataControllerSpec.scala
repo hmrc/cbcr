@@ -42,42 +42,52 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppPerSuite{
+class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppPerSuite {
 
   val store = mock[SubscriptionDataRepository]
 
-  val okResult = DefaultWriteResult(true,0,Seq.empty,None,None,None)
+  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
-  val failResult = DefaultWriteResult(false,1,Seq(WriteError(1,1,"Error")),None,None,Some("Error"))
+  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
   val config = app.injector.instanceOf[Configuration]
 
-  val bpr = BusinessPartnerRecord("MySafeID",Some(OrganisationResponse("Dave Corp")),EtmpAddress("13 Accacia Ave",None,None,None,None,"GB"))
-  val exampleSubscriptionData = SubscriptionDetails(bpr,SubscriberContact(name = None, "Dave","Jones",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com")),CBCId("XGCBC0000000001"),Utr("utr"))
-  val exampleSubscriberContact = SubscriberContact(None,"firstName","lastName",PhoneNumber("02072653787").get,EmailAddress("dave@dave.com"))
+  val bpr = BusinessPartnerRecord(
+    "MySafeID",
+    Some(OrganisationResponse("Dave Corp")),
+    EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
+  val exampleSubscriptionData = SubscriptionDetails(
+    bpr,
+    SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
+    CBCId("XGCBC0000000001"),
+    Utr("utr"))
+  val exampleSubscriberContact =
+    SubscriberContact(None, "firstName", "lastName", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
 
   val desConnector = mock[DESConnector]
   when(store.getSubscriptions(DataMigrationCriteria.LOCAL_CBCID_CRITERIA)) thenReturn Future.successful(List())
-  val controller = new SubscriptionDataController(store,desConnector,cBCRAuth,config, cc)
+  val controller = new SubscriptionDataController(store, desConnector, cBCRAuth, config, cc)
 
-  val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
+  val fakePostRequest: FakeRequest[JsValue] =
+    FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 
-  val BadFakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(Json.obj("bad" -> "request"))
+  val BadFakePostRequest: FakeRequest[JsValue] =
+    FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(Json.obj("bad" -> "request"))
 
-  val fakePutRequest= FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(toJson(exampleSubscriberContact))
+  val fakePutRequest =
+    FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(toJson(exampleSubscriberContact))
 
-  val badFakePutRequest= FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(Json.obj("bad" -> "request"))
+  val badFakePutRequest =
+    FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(Json.obj("bad" -> "request"))
 
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveSubscriptionData")
 
-  val fakeDeleteRequest = FakeRequest(Helpers.DELETE,"subscription-data")
-
+  val fakeDeleteRequest = FakeRequest(Helpers.DELETE, "subscription-data")
 
   implicit val as = ActorSystem()
   implicit val mat = ActorMaterializer()
 
   val cbcId = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
   val utr = Utr("7000000002")
-
 
   "The SubscriptionDataController" should {
     "respond with a 200 when asked to store SubscriptionData" in {
@@ -98,13 +108,13 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppP
     }
 
     "respond with a 200 when asked to update SubscriptionData" in {
-      when(store.update(any(),any(classOf[SubscriberContact]))) thenReturn Future.successful(true)
+      when(store.update(any(), any(classOf[SubscriberContact]))) thenReturn Future.successful(true)
       val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure during update" in {
-      when(store.update(any(),any(classOf[SubscriberContact]))) thenReturn Future.successful(false)
+      when(store.update(any(), any(classOf[SubscriberContact]))) thenReturn Future.successful(false)
       val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
@@ -115,7 +125,8 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppP
     }
 
     "respond with a 200 and a SubscriptionData when asked to retrieve an existing CBCID" in {
-      when(store.get(any(classOf[CBCId]))).thenReturn(OptionT.some[Future, SubscriptionDetails](exampleSubscriptionData))
+      when(store.get(any(classOf[CBCId])))
+        .thenReturn(OptionT.some[Future, SubscriptionDetails](exampleSubscriptionData))
       val result = controller.retrieveSubscriptionDataCBCId(cbcId)(fakeGetRequest)
       status(result) shouldBe Status.OK
       jsonBodyOf(result).validate[SubscriptionDetails].isSuccess shouldBe true
@@ -157,7 +168,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppP
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
-
 
   }
 }

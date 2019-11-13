@@ -28,17 +28,17 @@ import uk.gov.hmrc.cbcr.models.UploadFileResponse
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadRepository @Inject() (val mongo: ReactiveMongoApi)(implicit ec:ExecutionContext) {
+class FileUploadRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("FileUpload"))
 
-  def save(f:UploadFileResponse) : Future[WriteResult] = {
+  def save(f: UploadFileResponse): Future[WriteResult] = {
     val criteria = Json.obj("envelopeId" -> f.envelopeId)
     repository.flatMap(_.update(criteria, f, upsert = true))
   }
 
-  def get(envelopeId:String): Future[Option[UploadFileResponse]] = {
+  def get(envelopeId: String): Future[Option[UploadFileResponse]] = {
     val criteria = Json.obj("envelopeId" -> envelopeId)
     repository.flatMap(_.find(criteria, None).one[UploadFileResponse])
   }

@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.models
 import play.api.mvc.{Result, Results}
 import uk.gov.hmrc.cbcr.typeclasses.AsResult
 
-
 sealed trait DbOperationResult
 case object UpdateSuccess extends DbOperationResult
 case object UpdateFailed extends DbOperationResult
@@ -32,5 +31,3 @@ object DbOperationResult {
     }
   }
 }
-
-

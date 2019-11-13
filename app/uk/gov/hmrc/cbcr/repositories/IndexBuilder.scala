@@ -29,40 +29,44 @@ import reactivemongo.api.indexes.IndexType.Ascending
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-abstract class IndexBuilder(implicit ec:ExecutionContext) {
+abstract class IndexBuilder(implicit ec: ExecutionContext) {
 
   protected val mongo: ReactiveMongoApi
   protected val collectionName: String
 
   protected val cbcIndexes: List[CbcIndex]
 
-  private val indexManager: Future[CollectionIndexesManager] = mongo.database.map(_.collection[JSONCollection](collectionName).indexesManager)
+  private val indexManager: Future[CollectionIndexesManager] =
+    mongo.database.map(_.collection[JSONCollection](collectionName).indexesManager)
 
-  indexManager.map(manager => manager.list().foreach { mongoIndexes =>
-    Future.sequence(cbcIndexes.map { cbcIndex =>
-      if (!mongoIndexes.exists(_.name.contains(cbcIndex.name))) {
-        createUniqueIndex(manager, cbcIndex.id, cbcIndex.name)
-      } else {
-        Future.successful(())
-      }
-    }).onComplete {
-      case Success(result) =>
-        Logger.warn(s"Indexes exist or created. Result: $result")
-      case Failure(t)      =>
-        Logger.error("Failed to create Indexes", t)
-        throw t
+  indexManager
+    .map(manager =>
+      manager.list().foreach { mongoIndexes =>
+        Future
+          .sequence(cbcIndexes.map { cbcIndex =>
+            if (!mongoIndexes.exists(_.name.contains(cbcIndex.name))) {
+              createUniqueIndex(manager, cbcIndex.id, cbcIndex.name)
+            } else {
+              Future.successful(())
+            }
+          })
+          .onComplete {
+            case Success(result) =>
+              Logger.warn(s"Indexes exist or created. Result: $result")
+            case Failure(t) =>
+              Logger.error("Failed to create Indexes", t)
+              throw t
+          }
+    })
+    .recover {
+      case NonFatal(e) => Logger.error(s"Unable to create Index: ${e.getMessage}", e)
     }
-  }).recover{
-    case NonFatal(e) => Logger.error(s"Unable to create Index: ${e.getMessage}", e)
-  }
 
-
-  private def createUniqueIndex(manager:CollectionIndexesManager, fieldName:String, indexName:String): Future[Unit] = {
+  private def createUniqueIndex(manager: CollectionIndexesManager, fieldName: String, indexName: String): Future[Unit] =
     manager.create(Index(Seq(fieldName -> Ascending), Some(indexName), unique = true)).map {
       case d: DefaultWriteResult if !d.ok => throw new RuntimeException(s"${d.errmsg}")
-      case _ => ()
+      case _                              => ()
     }
-  }
 }
 
-case class CbcIndex (name:String,id:String)
+case class CbcIndex(name: String, id: String)

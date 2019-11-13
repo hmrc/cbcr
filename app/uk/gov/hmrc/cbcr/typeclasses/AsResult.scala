@@ -22,11 +22,11 @@ import play.api.mvc.Result
   * Typeclass to present some type A as a [[play.api.mvc.Result]]
   */
 trait AsResult[A] {
-  def asResult:Result
+  def asResult: Result
 }
 
 object AsResult {
 
-  def apply[A](implicit instance: AsResult[A]):AsResult[A] = instance
+  def apply[A](implicit instance: AsResult[A]): AsResult[A] = instance
 
 }

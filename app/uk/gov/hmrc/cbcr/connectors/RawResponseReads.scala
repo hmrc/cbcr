@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import uk.gov.hmrc.http.{ HttpReads, HttpResponse }
+import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 trait RawResponseReads {
 

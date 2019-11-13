@@ -25,12 +25,14 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RetrieveReportingEntityService @Inject() (repo:ReportingEntityDataRepo,
-                                                configuration:Configuration,
-                                                runMode: RunMode,
-                                                audit: AuditConnector) (implicit ex: ExecutionContext) {
+class RetrieveReportingEntityService @Inject()(
+  repo: ReportingEntityDataRepo,
+  configuration: Configuration,
+  runMode: RunMode,
+  audit: AuditConnector)(implicit ex: ExecutionContext) {
 
-  val retrieveReportingEntity: Boolean = configuration.getBoolean(s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
+  val retrieveReportingEntity: Boolean =
+    configuration.getBoolean(s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
 
   Logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
 
@@ -38,9 +40,12 @@ class RetrieveReportingEntityService @Inject() (repo:ReportingEntityDataRepo,
     val docRefId: String = configuration.getString(s"${runMode.env}.retrieve.docRefId").getOrElse("")
     Logger.info(s"docRefId to retireve = $docRefId")
 
-    repo.query(docRefId).map(red =>
-      if(red.nonEmpty) red.foreach(r => Logger.info(s"reportingEntityData for doc RefId $docRefId = ${Json.toJson(r)}"))
-      else Logger.info(s"no reportingEntityData found for docRefIds matching $docRefId")
-    )
+    repo
+      .query(docRefId)
+      .map(
+        red =>
+          if (red.nonEmpty)
+            red.foreach(r => Logger.info(s"reportingEntityData for doc RefId $docRefId = ${Json.toJson(r)}"))
+          else Logger.info(s"no reportingEntityData found for docRefIds matching $docRefId"))
   }
 }

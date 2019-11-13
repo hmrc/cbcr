@@ -27,31 +27,35 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector,
-                         cc: ControllerComponents)(implicit val ec: ExecutionContext) extends BackendController(cc) with AuthorisedFunctions {
+class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: ControllerComponents)(
+  implicit val ec: ExecutionContext)
+    extends BackendController(cc) with AuthorisedFunctions {
   override def authConnector: AuthConnector = microServiceAuthConnector
 
   private val AuthProvider: AuthProviders = AuthProviders(GovernmentGateway)
   private type AuthAction[A] = Request[A] => Future[Result]
 
-  private def isAgentOrOrganisation(group: AffinityGroup): Boolean = {
+  private def isAgentOrOrganisation(group: AffinityGroup): Boolean =
     group.toString.contains("Agent") || group.toString.contains("Organisation")
-  }
 
-  def authCBCR(action: AuthAction[AnyContent]): Action[AnyContent] = Action.async {
-    implicit request ⇒ authCommon(action)
+  def authCBCR(action: AuthAction[AnyContent]): Action[AnyContent] = Action.async { implicit request ⇒
+    authCommon(action)
   }
 
   def authCBCRWithJson(action: AuthAction[JsValue], json: BodyParser[JsValue]): Action[JsValue] =
-    Action.async(json) { implicit request ⇒ authCommon(action) }
+    Action.async(json) { implicit request ⇒
+      authCommon(action)
+    }
 
   def authCommon[A](action: AuthAction[A])(implicit request: Request[A]): Future[Result] = {
     implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
-    authorised(AuthProvider).retrieve(affinityGroup) {
-      case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)
-      case _ => Future.successful(Unauthorized)
-    }.recover[Result] {
-      case e: NoActiveSession => Unauthorized(e.reason)
-    }
+    authorised(AuthProvider)
+      .retrieve(affinityGroup) {
+        case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)
+        case _ => Future.successful(Unauthorized)
+      }
+      .recover[Result] {
+        case e: NoActiveSession => Unauthorized(e.reason)
+      }
   }
 }

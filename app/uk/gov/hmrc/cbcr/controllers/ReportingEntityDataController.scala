@@ -29,99 +29,122 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo,
-                                              auth: CBCRAuth,
-                                              cc: ControllerComponents)
-                                             (implicit ec: ExecutionContext) extends BackendController(cc) {
+class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
-
-  def save() = auth.authCBCRWithJson({ implicit request =>
-    request.body.validate[ReportingEntityData].fold(
-      error => {
-        Logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
-        Future.successful(BadRequest)
+  def save() =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[ReportingEntityData]
+          .fold(
+            error => {
+              Logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
+              Future.successful(BadRequest)
+            },
+            (data: ReportingEntityData) =>
+              repo.save(data).map {
+                case result if result.ok => Ok
+                case result              => InternalServerError(result.writeErrors.mkString)
+            }
+          )
       },
-      (data: ReportingEntityData) => repo.save(data).map {
-        case result if result.ok => Ok
-        case result => InternalServerError(result.writeErrors.mkString)
-      }
-
+      parse.json
     )
-  }, parse.json)
 
-  def update() = auth.authCBCRWithJson({ implicit request =>
-    request.body.validate[PartialReportingEntityData].fold(
-      error => {
-        Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
-        Future.successful(BadRequest)
+  def update() =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[PartialReportingEntityData]
+          .fold(
+            error => {
+              Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
+              Future.successful(BadRequest)
+            },
+            (data: PartialReportingEntityData) =>
+              repo.update(data).map {
+                case true  => Ok
+                case false => NotModified
+            }
+          )
       },
-      (data: PartialReportingEntityData) => repo.update(data).map {
-        case true => Ok
-        case false => NotModified
-      }
+      parse.json
     )
-  }, parse.json)
 
   def queryDocRefId(d: DocRefId) = auth.authCBCR { implicit request =>
-    repo.queryReportingEntity(d).map {
-      case None => NotFound
-      case Some(data) => Ok(Json.toJson(data))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
-    }
+    repo
+      .queryReportingEntity(d)
+      .map {
+        case None       => NotFound
+        case Some(data) => Ok(Json.toJson(data))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
 
   }
 
   def query(d: DocRefId) = auth.authCBCR { implicit request =>
-    repo.query(d).map {
-      case None => NotFound
-      case Some(data) => Ok(Json.toJson(data))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
-    }
+    repo
+      .query(d)
+      .map {
+        case None       => NotFound
+        case Some(data) => Ok(Json.toJson(data))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
 
   }
 
   def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { implicit request =>
-
-    repo.queryCbcId(cbcId, LocalDate.parse(reportingPeriod)).map {
-      case None => NotFound
-      case Some(data) => Ok(Json.toJson(data))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
-    }
+    repo
+      .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
+      .map {
+        case None       => NotFound
+        case Some(data) => Ok(Json.toJson(data))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
 
   }
 
   def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { implicit request =>
-    repo.queryTIN(tin, reportingPeriod).map { reportEntityData =>
-
-      if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
-    }
+    repo
+      .queryTIN(tin, reportingPeriod)
+      .map { reportEntityData =>
+        if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
+      }
   }
 
   def queryModel(d: DocRefId) = auth.authCBCR { implicit request =>
-    repo.queryModel(d).map {
-      case None => NotFound
-      case Some(data) => Ok(Json.toJson(data))
-    }.recover {
-      case NonFatal(t) =>
-        Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-        InternalServerError
+    repo
+      .queryModel(d)
+      .map {
+        case None       => NotFound
+        case Some(data) => Ok(Json.toJson(data))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
 
-    }
+      }
 
   }
-
 
 }

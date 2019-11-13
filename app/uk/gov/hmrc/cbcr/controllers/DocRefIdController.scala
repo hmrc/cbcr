@@ -28,38 +28,40 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdController @Inject()(repo: DocRefIdRepository,
-                                   config: Configuration,
-                                   auth: CBCRAuth,
-                                   runMode: RunMode,
-                                   cc: ControllerComponents)
-                                  (implicit ec: ExecutionContext) extends BackendController(cc) {
+class DocRefIdController @Inject()(
+  repo: DocRefIdRepository,
+  config: Configuration,
+  auth: CBCRAuth,
+  runMode: RunMode,
+  cc: ControllerComponents)(implicit ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def query(docRefId: DocRefId) = auth.authCBCR { implicit request =>
     repo.query(docRefId).map {
-      case DocRefIdResponses.Valid => Ok
-      case DocRefIdResponses.Invalid => Conflict
+      case DocRefIdResponses.Valid        => Ok
+      case DocRefIdResponses.Invalid      => Conflict
       case DocRefIdResponses.DoesNotExist => NotFound
     }
   }
 
   def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { implicit request =>
     repo.save(docRefId).map {
-      case DocRefIdResponses.Ok => Ok
+      case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
-      case DocRefIdResponses.Failed => InternalServerError
+      case DocRefIdResponses.Failed        => InternalServerError
     }
   }
 
   def saveCorrDocRefId(corrDocRefId: CorrDocRefId) = auth.authCBCR { implicit request =>
-    val docRefId = request.body.asJson.getOrElse(throw new NotFoundException("No doc ref id found in the body")).as[DocRefId]
+    val docRefId =
+      request.body.asJson.getOrElse(throw new NotFoundException("No doc ref id found in the body")).as[DocRefId]
     repo.save(corrDocRefId, docRefId).map {
-      case (DocRefIdResponses.Invalid, _) => BadRequest
-      case (DocRefIdResponses.DoesNotExist, _) => NotFound
-      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok)) => Ok
-      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Failed)) => InternalServerError
+      case (DocRefIdResponses.Invalid, _)                                   => BadRequest
+      case (DocRefIdResponses.DoesNotExist, _)                              => NotFound
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok))            => Ok
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Failed))        => InternalServerError
       case (DocRefIdResponses.Valid, Some(DocRefIdResponses.AlreadyExists)) => BadRequest
-      case (DocRefIdResponses.Valid, None) => InternalServerError
+      case (DocRefIdResponses.Valid, None)                                  => InternalServerError
 
     }
   }
@@ -69,7 +71,7 @@ class DocRefIdController @Inject()(repo: DocRefIdRepository,
       repo.delete(docRefId).map {
         case w if w.ok && w.n >= 1 => Ok
         case w if w.ok && w.n == 0 => NotFound
-        case _ => InternalServerError
+        case _                     => InternalServerError
       }
     } else {
       Future.successful(NotImplemented)

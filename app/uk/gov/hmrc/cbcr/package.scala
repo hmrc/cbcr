@@ -24,33 +24,31 @@ import scala.concurrent.{ExecutionContext, Future}
 
 package object cbcr {
 
-
   type ServiceResponse[A] = EitherT[Future, InvalidState, A]
   type ServiceResponseOpt[A] = OptionT[Future, A]
-  
+
   type UnexpectedOr[A] = Either[InvalidState, A]
 
-  def fromFutureOptA[A](fa: Future[UnexpectedOr[A]]): ServiceResponse[A] = {
+  def fromFutureOptA[A](fa: Future[UnexpectedOr[A]]): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](fa)
-  }
 
-  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](fa.map(Right(_)))
-  }
 
-  def fromOptA[A](oa: UnexpectedOr[A])(implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromOptA[A](oa: UnexpectedOr[A])(implicit ec: ExecutionContext): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](Future.successful(oa))
-  }
 
-  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => InvalidState)(implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => InvalidState)(
+    implicit ec: ExecutionContext): ServiceResponse[A] = {
     val futureA = fo.map {
       case Some(a) => Right(a)
-      case None => Left(invalid)
+      case None    => Left(invalid)
     }
     EitherT[Future, InvalidState, A](futureA)
   }
 
-  implicit def listTupleJsWrapper[T:Writes](l:List[(String,T)]) : List[(String,JsValueWrapper)] = l.map(t => t._1 -> toJsFieldJsValueWrapper(t._2))
-  implicit def listJsWrapper[T:Writes](l:List[T]) : List[JsValueWrapper] = l.map(toJsFieldJsValueWrapper[T])
+  implicit def listTupleJsWrapper[T: Writes](l: List[(String, T)]): List[(String, JsValueWrapper)] =
+    l.map(t => t._1 -> toJsFieldJsValueWrapper(t._2))
+  implicit def listJsWrapper[T: Writes](l: List[T]): List[JsValueWrapper] = l.map(toJsFieldJsValueWrapper[T])
 
 }

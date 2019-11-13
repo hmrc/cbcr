@@ -36,8 +36,8 @@ trait EmailConnector {
 }
 
 @Singleton
-class EmailConnectorImpl @Inject()(config: Configuration,
-                                   httpClient: HttpClient)(implicit ec: ExecutionContext) extends EmailConnector {
+class EmailConnectorImpl @Inject()(config: Configuration, httpClient: HttpClient)(implicit ec: ExecutionContext)
+    extends EmailConnector {
   val http = httpClient
   val conf: Config = config.underlying.getConfig("microservice.services.email")
   val host = conf.getString("host")
@@ -45,7 +45,6 @@ class EmailConnectorImpl @Inject()(config: Configuration,
   val protocol = conf.getString("protocol")
   val serviceUrl = s"$protocol://$host:$port/hmrc"
 
-  def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[HttpResponse] =
     http.POST[Email, HttpResponse](s"$serviceUrl/email/", email)
-  }
 }

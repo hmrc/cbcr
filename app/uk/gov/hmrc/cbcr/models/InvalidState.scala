@@ -21,14 +21,12 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Ok
 import uk.gov.hmrc.cbcr.typeclasses.AsResult
 
-
 final case class InvalidState(errorMsg: String, json: Option[JsValue] = None)
 
-
-object InvalidState{
+object InvalidState {
   implicit val invalidStateFormat: OFormat[InvalidState] = Json.format[InvalidState]
 
-  implicit def invalidStateResponse(i:InvalidState): AsResult[InvalidState] = new AsResult[InvalidState] {
+  implicit def invalidStateResponse(i: InvalidState): AsResult[InvalidState] = new AsResult[InvalidState] {
     override def asResult: Result = Ok(Json.toJson(i))
   }
 }

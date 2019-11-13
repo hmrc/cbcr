@@ -35,7 +35,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.Future
 
-class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutures with MockAuth{
+class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutures with MockAuth {
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
 
@@ -55,7 +55,7 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutu
   val repo = mock[DocRefIdRepository]
 
   val runMode = mock[RunMode]
-  val controller = new DocRefIdController(repo,config,cBCRAuth, runMode, cc)
+  val controller = new DocRefIdController(repo, config, cBCRAuth, runMode, cc)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
@@ -97,42 +97,52 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutu
         status(result) shouldBe Status.CONFLICT
       }
     }
-    "be able to save a CorrRefId and DocRefId pair, and "  should {
+    "be able to save a CorrRefId and DocRefId pair, and " should {
       "respond with a 200 when CorrRefId and DocRefId are both valid" in {
-        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Ok)))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefId")))
+        when(repo.save(any(), any()))
+          .thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Ok)))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
+          fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.OK
       }
       "respond with a 404 when CorrRefId referrs to a non-existant DocRefId" in {
-        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist -> None))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefId")))
+        when(repo.save(any(), any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist -> None))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
+          fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.NOT_FOUND
       }
-      "respond with a BadRequest when the CorrRefId refers to an INVALID DocRefId"  in {
-        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Invalid -> None))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefId")))
+      "respond with a BadRequest when the CorrRefId refers to an INVALID DocRefId" in {
+        when(repo.save(any(), any())).thenReturn(Future.successful(DocRefIdResponses.Invalid -> None))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
+          fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.BAD_REQUEST
       }
       "respond with a BadRequest when the DocRefId is not unique" in {
-        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.AlreadyExists)))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefid")))
+        when(repo.save(any(), any()))
+          .thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.AlreadyExists)))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
+          fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.BAD_REQUEST
       }
       "respond with a 500 if mongo fails" in {
-        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Failed)))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefid")))
+        when(repo.save(any(), any()))
+          .thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Failed)))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
+          fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
       "respond with a 500 if returns none" in {
-        when(repo.save(any(),any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> None))
-        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(fakePutRequest.withJsonBody(JsString("DocRefid")))
+        when(repo.save(any(), any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> None))
+        val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
+          fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
     }
     "be able to delete a DocRefId" when {
       val runMode = mock[RunMode]
       when(runMode.env) thenReturn "Dev"
-      val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> true),cBCRAuth, runMode, cc)
+      val controller =
+        new DocRefIdController(repo, config ++ Configuration("Dev.CBCId.enableTestApis" -> true), cBCRAuth, runMode, cc)
       "it exists and return a 200" in {
         when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 1, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
@@ -144,12 +154,18 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutu
         status(result) shouldBe Status.NOT_FOUND
       }
       "something goes wrong return a 500" in {
-        when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(false, 0, Seq.empty, None, None, None)))
+        when(repo.delete(any()))
+          .thenReturn(Future.successful(DefaultWriteResult(false, 0, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
       "return NOT_IMPLEMENTED if enableTestApis = false" in {
-        val controller = new DocRefIdController(repo,config ++ Configuration("Dev.CBCId.enableTestApis" -> false),cBCRAuth, runMode, cc)
+        val controller = new DocRefIdController(
+          repo,
+          config ++ Configuration("Dev.CBCId.enableTestApis" -> false),
+          cBCRAuth,
+          runMode,
+          cc)
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.NOT_IMPLEMENTED
       }

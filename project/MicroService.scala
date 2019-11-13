@@ -3,7 +3,7 @@ import sbt.Tests.{Group, SubProcess}
 import sbt._
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import play.sbt.PlayImport.PlayKeys.playDefaultPort
-
+import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 trait MicroService {
 
   import uk.gov.hmrc._
@@ -71,7 +71,9 @@ trait MicroService {
       scalaVersion := "2.11.11",
       libraryDependencies ++= appDependencies,
       retrieveManaged := true,
-      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+      scalafmtOnCompile in Compile := true,
+      scalafmtOnCompile in Test := true
     )
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
@@ -80,7 +82,8 @@ trait MicroService {
       unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
       addTestReportOption(IntegrationTest, "int-test-reports"),
       testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-      parallelExecution in IntegrationTest := false)
+      parallelExecution in IntegrationTest := false,
+      scalafmtOnCompile in IntegrationTest := true)
     .settings(resolvers ++= Seq(
       "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/",
       Resolver.jcenterRepo

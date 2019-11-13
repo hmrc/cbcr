@@ -26,25 +26,27 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadResponseController @Inject()(repo: FileUploadRepository,
-                                             auth: CBCRAuth,
-                                             cc: ControllerComponents)
-                                            (implicit val ec: ExecutionContext) extends BackendController(cc) {
+class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit val ec: ExecutionContext)
+    extends BackendController(cc) {
 
   def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
-    request.body.validate[UploadFileResponse].fold(
-      error => Future.successful(BadRequest(JsError.toJson(error))),
-      response => repo.save(response).map {
-        case result if result.ok => Ok
-        case result => InternalServerError(result.writeErrors.mkString)
-      }
-    )
+    request.body
+      .validate[UploadFileResponse]
+      .fold(
+        error => Future.successful(BadRequest(JsError.toJson(error))),
+        response =>
+          repo.save(response).map {
+            case result if result.ok => Ok
+            case result              => InternalServerError(result.writeErrors.mkString)
+        }
+      )
   }
 
   def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { implicit request =>
     repo.get(envelopeId).map {
       case Some(obj) => Ok(Json.toJson(obj))
-      case None => NoContent
+      case None      => NoContent
     }
   }
 
