@@ -24,7 +24,7 @@ import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, MigrationRequest, Subscri
 import uk.gov.hmrc.play.audit.model.Audit
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpGet, HttpPost, HttpPut, HttpResponse}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
 import configs.syntax._
 import uk.gov.hmrc.cbcr.services.RunMode
@@ -74,6 +74,9 @@ trait DESConnector extends RawResponseReads {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     Logger.info(s"Lookup Request sent to DES: POST $serviceUrl/$orgLookupURI/utr/$utr")
     http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover {
+      case Upstream4xxResponse(msg, 429, _, _) =>
+        Logger.error("[RATE LIMITED]: Received status 429 from DES")
+        HttpResponse(503, responseString = Some(msg))
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
   }
@@ -83,6 +86,9 @@ trait DESConnector extends RawResponseReads {
     implicit val writes = SubscriptionRequest.subscriptionWriter
     Logger.info(s"Create Request sent to DES: ${Json.toJson(sub)} for safeID: ${sub.safeId}")
     http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover {
+      case Upstream4xxResponse(msg, 429, _, _) =>
+        Logger.error("[RATE LIMITED]: Received status 429 from DES")
+        HttpResponse(503, responseString = Some(msg))
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
   }
@@ -101,6 +107,9 @@ trait DESConnector extends RawResponseReads {
         http
           .POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig)
           .recover {
+            case Upstream4xxResponse(msg, 429, _, _) =>
+              Logger.error("[RATE LIMITED]: Received status 429 from DES")
+              HttpResponse(503, responseString = Some(msg))
             case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
           }
           .map(r => {
@@ -122,6 +131,9 @@ trait DESConnector extends RawResponseReads {
     implicit val format = CorrespondenceDetails.updateWriter
     Logger.info(s"Update Request sent to DES: $cor for safeID: $safeId")
     http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor).recover {
+      case Upstream4xxResponse(msg, 429, _, _) =>
+        Logger.error("[RATE LIMITED]: Received status 429 from DES")
+        HttpResponse(503, responseString = Some(msg))
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
   }
@@ -130,6 +142,9 @@ trait DESConnector extends RawResponseReads {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     Logger.info(s"Get Request sent to DES for safeID: $safeId")
     http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId").recover {
+      case Upstream4xxResponse(msg, 429, _, _) =>
+        Logger.error("[RATE LIMITED]: Received status 429 from DES")
+        HttpResponse(503, responseString = Some(msg))
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
   }
