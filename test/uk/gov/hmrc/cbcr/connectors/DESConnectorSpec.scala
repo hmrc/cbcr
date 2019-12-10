@@ -27,7 +27,7 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream4xxResponse}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
@@ -45,13 +45,13 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
       val result: Future[HttpResponse] = connector.lookup(utr)
       await(result).status shouldBe 202
     }
+  }
 
-    "submit request to lookup and get 429 response status which is converted to 503" in new Setup {
-      val utr = "700000002"
-      when(httpMock.POST[JsValue, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.failed(Upstream4xxResponse("Rate Limited", 429, 429)))
-      val result: Future[HttpResponse] = connector.lookup(utr)
-      await(result).status shouldBe 503
+  "customDesRead" should {
+    "successfully convert 429 from DES to 503" in new Setup {
+      val httpResponse = HttpResponse(429)
+      val ex = intercept[Upstream5xxResponse](connector.customDESRead("test", "testUrl", httpResponse))
+      ex shouldBe Upstream5xxResponse("429 received from DES - converted to 503", 429, 503)
     }
   }
 
@@ -64,14 +64,6 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
       val result: Future[HttpResponse] = connector.createSubscription(sub)
       await(result).status shouldBe 202
     }
-
-    "submit request to createSubscription and get 429 which is converted into 503" in new Setup {
-      val sub = SubscriptionRequest("safeid", false, cd)
-      when(httpMock.POST[SubscriptionRequest, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.failed(Upstream4xxResponse("Rate limited", 429, 429)))
-      val result: Future[HttpResponse] = connector.createSubscription(sub)
-      await(result).status shouldBe 503
-    }
   }
   "updateSubscription" should {
 
@@ -80,13 +72,6 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
         .thenReturn(Future.successful(HttpResponse(202)))
       val result: Future[HttpResponse] = connector.updateSubscription("safeID", cd)
       await(result).status shouldBe 202
-    }
-
-    "submit request to updateSubscription and get 429 response which is converted into 503" in new Setup {
-      when(httpMock.PUT[CorrespondenceDetails, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.failed(Upstream4xxResponse("Rate limited", 429, 429)))
-      val result: Future[HttpResponse] = connector.updateSubscription("safeID", cd)
-      await(result).status shouldBe 503
     }
   }
 
