@@ -24,7 +24,7 @@ import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, MigrationRequest, Subscri
 import uk.gov.hmrc.play.audit.model.Audit
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpGet, HttpPost, HttpPut, HttpResponse}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
 import configs.syntax._
 import uk.gov.hmrc.cbcr.services.RunMode
@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 @ImplementedBy(classOf[DESConnectorImpl])
-trait DESConnector extends RawResponseReads {
+trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   implicit val ec: ExecutionContext
   implicit val configuration: Configuration
@@ -51,6 +51,18 @@ trait DESConnector extends RawResponseReads {
   def http: HttpPost with HttpGet with HttpPut
 
   val audit: Audit
+
+  private[connectors] def customDESRead(http: String, url: String, response: HttpResponse): HttpResponse =
+    response.status match {
+      case 429 =>
+        Logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
+        throw Upstream5xxResponse("429 received from DES - converted to 503", 429, 503)
+      case _ => handleResponse(http, url)(response)
+    }
+
+  implicit val httpRds = new HttpReads[HttpResponse] {
+    def read(http: String, url: String, res: HttpResponse) = customDESRead(http, url, res)
+  }
 
   val lookupData: JsObject = Json.obj(
     "regime"            -> "ITSA",
