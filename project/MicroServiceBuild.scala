@@ -12,12 +12,12 @@ object MicroServiceBuild extends Build with MicroService {
     "org.reactivemongo" %% "play2-reactivemongo" % "0.18.6-play26",
     "org.reactivemongo" %% "reactivemongo-bson" % "0.18.6",
     ws,
-    "uk.gov.hmrc" %% "auth-client" % "2.31.0-play-26",
-    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0",
+    "uk.gov.hmrc" %% "auth-client" % "2.32.0-play-26",
+    "uk.gov.hmrc" %% "bootstrap-play-26" % "1.3.0",
     "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
     "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
     "com.github.kxbmap" %% "configs" % "0.4.4",
-    "uk.gov.hmrc" %% "emailaddress" % "3.2.0",
+    "uk.gov.hmrc" %% "emailaddress" % "3.4.0",
     "uk.gov.hmrc" %% "simple-reactivemongo" % "7.22.0-play-26"
 
   )
