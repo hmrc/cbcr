@@ -73,7 +73,7 @@ class AdminService @Inject()(
       .recover {
         case NonFatal(t) =>
           Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+          Ok(s"Could not find Reporting Entity with $d")
       }
 
   }
@@ -87,7 +87,7 @@ class AdminService @Inject()(
       .recover {
         case NonFatal(t) =>
           Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+          Ok(s"Could not find Reporting Entity with $tin and $reportingPeriod")
       }
   }
 
@@ -101,7 +101,7 @@ class AdminService @Inject()(
       .recover {
         case NonFatal(t) =>
           Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+          Ok(s"Could not find Reporting Entity with $cbcId and $reportingPeriod")
       }
 
   }
