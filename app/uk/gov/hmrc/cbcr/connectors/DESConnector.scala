@@ -84,7 +84,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   def lookup(utr: String): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
-    Logger.info(s"Lookup Request sent to DES: POST $serviceUrl/$orgLookupURI/utr/$utr")
+    Logger.info(s"Lookup Request sent to DES")
     http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover {
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
@@ -93,7 +93,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def createSubscription(sub: SubscriptionRequest): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     implicit val writes = SubscriptionRequest.subscriptionWriter
-    Logger.info(s"Create Request sent to DES: ${Json.toJson(sub)} for safeID: ${sub.safeId}")
+    Logger.info(s"Create Request sent to DES")
     http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover {
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
@@ -102,7 +102,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def createMigration(mig: MigrationRequest): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     implicit val writes = MigrationRequest.migrationWriter
-    Logger.info(s"Migration Request sent to DES for safeId: ${mig.safeId} and CBCId: ${mig.cBCId}")
+    Logger.info(s"Migration Request sent to DES")
 
     Logger.warn(s"stubMigration set to: $stubMigration")
     val res = Promise[HttpResponse]()
@@ -132,7 +132,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def updateSubscription(safeId: String, cor: CorrespondenceDetails): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     implicit val format = CorrespondenceDetails.updateWriter
-    Logger.info(s"Update Request sent to DES: $cor for safeID: $safeId")
+    Logger.info(s"Update Request sent to DES")
     http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor).recover {
       case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
     }
