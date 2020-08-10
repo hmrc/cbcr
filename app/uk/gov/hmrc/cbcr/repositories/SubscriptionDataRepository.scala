@@ -19,22 +19,16 @@ package uk.gov.hmrc.cbcr.repositories
 import javax.inject.{Inject, Singleton}
 import cats.data.OptionT
 import cats.instances.future._
-import play.api.Logger
-import play.api.libs.iteratee.Enumerator
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
-import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
-import reactivemongo.api.indexes.{CollectionIndexesManager, Index}
-import reactivemongo.api.indexes.IndexType.{Ascending, Text}
-import reactivemongo.bson.BSONDocument
+import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import reactivemongo.play.json.collection.{Helpers, JSONCollection}
+import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
-
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+
 @Singleton
 class SubscriptionDataRepository @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext)
     extends IndexBuilder {

@@ -20,12 +20,11 @@ import javax.inject.{Inject, Singleton}
 
 import play.api.Logger
 import play.api.http.Status._
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json.{Json, Reads}
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
-
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 

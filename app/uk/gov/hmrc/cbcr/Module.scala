@@ -18,39 +18,39 @@ package uk.gov.hmrc.cbcr
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
-
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
-import com.google.inject.{AbstractModule, Provides}
+import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
-import uk.gov.hmrc.play.bootstrap.http.{DefaultHttpClient, HttpClient}
+import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
   val graphiteConfig: Configuration = configuration
-    .getConfig("microservice.metrics.graphite")
+    .getOptional[Configuration]("microservice.metrics.graphite")
     .getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
 
-  val metricsPluginEnabled: Boolean = configuration.getBoolean("metrics.enabled").getOrElse(false)
+  val metricsPluginEnabled: Boolean = configuration.getOptional[Boolean]("metrics.enabled").getOrElse(false)
 
-  val graphitePublisherEnabled: Boolean = graphiteConfig.getBoolean("enabled").getOrElse(false)
+  val graphitePublisherEnabled: Boolean = graphiteConfig.getOptional[Boolean]("enabled").getOrElse(false)
 
   val graphiteEnabled: Boolean = metricsPluginEnabled && graphitePublisherEnabled
 
-  val registryName: String = configuration.getString("metrics.name").getOrElse("default")
+  val registryName: String = configuration.getOptional[String]("metrics.name").getOrElse("default")
 
   private def startGraphite(): Unit = {
     Logger.info("Graphite metrics enabled, starting the reporter")
 
     val graphite = new Graphite(
       new InetSocketAddress(
-        graphiteConfig.getString("host").getOrElse("graphite"),
-        graphiteConfig.getInt("port").getOrElse(2003)))
+        graphiteConfig.getOptional[String]("host").getOrElse("graphite"),
+        graphiteConfig.getOptional[Int]("port").getOrElse(2003)))
 
-    val prefix = graphiteConfig.getString("prefix").getOrElse("play.cbcr")
+    val prefix = graphiteConfig.getOptional[String]("prefix").getOrElse("play.cbcr")
 
     val reporter = GraphiteReporter
       .forRegistry(SharedMetricRegistries.getOrCreate(registryName))
@@ -60,13 +60,13 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       .filter(MetricFilter.ALL)
       .build(graphite)
 
-    reporter.start(graphiteConfig.getLong("interval").getOrElse(10L), SECONDS)
+    reporter.start(graphiteConfig.getOptional[Long]("interval").getOrElse(10L), SECONDS)
   }
 
   def configure(): Unit = {
     Logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
-    lazy val appName = configuration.getString("appName").get
-    lazy val loggerDateFormat: Option[String] = configuration.getString("logger.json.dateformat")
+    lazy val appName = configuration.getOptional[String]("appName").get
+    lazy val loggerDateFormat: Option[String] = configuration.getOptional[String]("logger.json.dateformat")
 
     if (graphiteEnabled) startGraphite
 

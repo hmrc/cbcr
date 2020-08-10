@@ -36,7 +36,7 @@ class EmailService @Inject()(
   runMode: RunMode)(implicit val ec: ExecutionContext) {
 
   private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
-    configuration.getString(s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
+    configuration.getOptional[String](s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
 
   def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[Result] =
     emailConnector

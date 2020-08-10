@@ -22,7 +22,6 @@ import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, MigrationRequest, SubscriptionRequest}
 import uk.gov.hmrc.play.audit.model.Audit
-
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.logging.Authorization
@@ -86,7 +85,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     Logger.info(s"Lookup Request sent to DES")
     http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover {
-      case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+      case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }
 
@@ -95,7 +94,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     implicit val writes = SubscriptionRequest.subscriptionWriter
     Logger.info(s"Create Request sent to DES")
     http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover {
-      case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+      case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }
 
@@ -113,7 +112,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
         http
           .POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig)
           .recover {
-            case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+            case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
           }
           .map(r => {
             Logger.info(s"Migration Status for safeId: ${mig.safeId} and cBCId: ${mig.cBCId} ${r.status}")
@@ -123,7 +122,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
         Logger.info("in migration stub")
 
         Thread.sleep(delayMigration)
-        res.success(HttpResponse(200, responseString = Some(s"migrated ${mig.cBCId}")))
+        res.success(HttpResponse.apply(status = 200, body = s"migrated ${mig.cBCId}"))
       }
     }
     res.future
@@ -134,7 +133,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     implicit val format = CorrespondenceDetails.updateWriter
     Logger.info(s"Update Request sent to DES")
     http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor).recover {
-      case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+      case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }
 
@@ -142,7 +141,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     Logger.info(s"Get Request sent to DES for safeID: $safeId")
     http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId").recover {
-      case e: HttpException => HttpResponse(e.responseCode, responseString = Some(e.message))
+      case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }
 

@@ -18,7 +18,6 @@ package uk.gov.hmrc.cbcr.services
 
 import java.time.LocalDate
 
-import cats.data.NonEmptyList
 import com.google.inject.Singleton
 import javax.inject.Inject
 import play.api.libs.json.{Format, Json}
@@ -27,7 +26,7 @@ import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord, DocRefIdResponses}
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal

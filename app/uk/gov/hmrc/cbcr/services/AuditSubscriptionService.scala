@@ -32,12 +32,18 @@ class AuditSubscriptionService @Inject()(
   runMode: RunMode,
   audit: AuditConnector)(implicit ex: ExecutionContext) {
 
-  val auditSubscriptions: Boolean = configuration.getBoolean(s"${runMode.env}.audit.subscriptions").getOrElse(false)
+  val auditSubscriptions: Boolean =
+    configuration.getOptional[Boolean](s"${runMode.env}.audit.subscriptions").getOrElse(false)
   Logger.info(s"auditSubscriptions set to: $auditSubscriptions")
 
   if (auditSubscriptions) {
     val cbcIds: List[CBCId] =
-      configuration.getString(s"${runMode.env}.audit.cbcIds").getOrElse("").split("_").toList.flatMap(CBCId.apply)
+      configuration
+        .getOptional[String](s"${runMode.env}.audit.cbcIds")
+        .getOrElse("")
+        .split("_")
+        .toList
+        .flatMap(CBCId.apply)
     val subscriptions = Json.obj("cbcId" -> Json.obj("$in" -> cbcIds))
 
     repo

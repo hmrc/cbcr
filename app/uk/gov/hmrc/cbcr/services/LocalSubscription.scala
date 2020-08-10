@@ -17,15 +17,13 @@
 package uk.gov.hmrc.cbcr.services
 import java.time.LocalDateTime
 import javax.inject._
-import configs.syntax._
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import cats.instances.future._
 import uk.gov.hmrc.http.HeaderCarrier
