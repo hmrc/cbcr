@@ -20,6 +20,7 @@ import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.Email
@@ -29,7 +30,7 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
-class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with OneAppPerSuite {
+class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with GuiceOneAppPerSuite {
 
   "send email" should {
 
@@ -52,7 +53,7 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with O
 
   sealed trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val executionContext: ExecutionContextExecutor = ExecutionContext.Implicits.global
+    implicit val executionContext: ExecutionContext = ExecutionContext.Implicits.global
     val httpMock: HttpClient = mock[HttpClient]
     val templateId = "cbcr_subscription"
     val recipient = "user@example.com"

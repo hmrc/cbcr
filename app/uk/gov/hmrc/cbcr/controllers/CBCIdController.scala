@@ -22,7 +22,8 @@ import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton

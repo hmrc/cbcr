@@ -36,12 +36,12 @@ val compile = Seq(
   "org.reactivemongo" %% "reactivemongo-bson" % "0.18.8",
   ws,
   "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.7.0",
-  "uk.gov.hmrc" %% "domain" % "5.8.0-play-26",
-  "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.11"),
+  "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "2.24.0",
+  "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
+  "org.typelevel" %% "cats" % "0.9.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
-  "uk.gov.hmrc" %% "emailaddress" % "3.4.0",
-  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.26.0-play-26"
+  "uk.gov.hmrc" %% "emailaddress" % "3.5.0",
+  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26"
 
 )
 
@@ -52,8 +52,7 @@ def test(scope: String = "test,it") = Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
   "org.mockito" % "mockito-core" % "3.2.4" % scope,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % scope,
-  "org.eu.acolyte" % "play-reactive-mongo_2.11" % "1.0.43-j7p" % scope,
-  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.7.0" % Test classifier "tests"
+  "org.eu.acolyte" %% "play-reactive-mongo" % "1.0.45" % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -108,7 +107,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(defaultSettings(): _*)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
-    scalaVersion := "2.11.12",
+    scalaVersion := "2.12.11",
     libraryDependencies ++= appDependencies,
     retrieveManaged := true,
     evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),

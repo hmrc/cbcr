@@ -30,7 +30,7 @@ import configs.syntax._
 import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+
 @ImplementedBy(classOf[DESConnectorImpl])
 trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
