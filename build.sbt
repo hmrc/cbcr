@@ -38,7 +38,7 @@ val compile = Seq(
   "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
   "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "2.24.0",
   "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
-  "org.typelevel" %% "cats" % "0.9.0",
+  "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
   "com.github.kxbmap" %% "configs" % "0.4.4",
   "uk.gov.hmrc" %% "emailaddress" % "3.5.0",
   "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26"
