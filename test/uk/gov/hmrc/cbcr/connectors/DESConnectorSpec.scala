@@ -20,6 +20,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.cbcr.controllers.MockAuth
@@ -34,7 +35,7 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
-class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with OneAppPerSuite {
+class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with GuiceOneAppPerSuite {
 
   "lookup" should {
 
@@ -77,7 +78,7 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with One
 
   sealed trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
-    implicit val executionContext: ExecutionContextExecutor = ExecutionContext.Implicits.global
+    implicit val executionContext: ExecutionContext = ExecutionContext.Implicits.global
     val mockAuditConnector = mock[AuditConnector]
     val runMode = mock[RunMode]
     val httpMock: HttpClient = mock[HttpClient]

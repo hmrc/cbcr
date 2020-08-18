@@ -20,10 +20,8 @@ import javax.inject.Inject
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.cbcr.models.DocRefId
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class RetrieveReportingEntityService @Inject()(
   repo: ReportingEntityDataRepo,
@@ -32,12 +30,12 @@ class RetrieveReportingEntityService @Inject()(
   audit: AuditConnector)(implicit ex: ExecutionContext) {
 
   val retrieveReportingEntity: Boolean =
-    configuration.getBoolean(s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
+    configuration.getOptional[Boolean](s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
 
   Logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
 
   if (retrieveReportingEntity) {
-    val docRefId: String = configuration.getString(s"${runMode.env}.retrieve.docRefId").getOrElse("")
+    val docRefId: String = configuration.getOptional[String](s"${runMode.env}.retrieve.docRefId").getOrElse("")
     Logger.info(s"docRefId to retireve = $docRefId")
 
     repo
