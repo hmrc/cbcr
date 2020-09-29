@@ -65,7 +65,7 @@ object CBCId extends Modulus23Check {
       None
     }
 
-  private val cbcRegex = """^X[A-Z]CBC\d{10}$"""
+  private[models] val cbcRegex = """^X[A-Z]CBC\d{10}$"""
   private def isValidCBC(s: String): Boolean = s.matches(cbcRegex)
 
   def create(i: Int): Validated[Throwable, CBCId] =
