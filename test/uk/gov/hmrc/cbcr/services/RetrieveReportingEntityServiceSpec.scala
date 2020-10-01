@@ -57,6 +57,7 @@ class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with
       ultimateParentEntity,
       reportingRole = CBC701,
       None,
+      None,
       None)
 
   private def isRetrieveReportingEntityTrue(rrEntityService: RetrieveReportingEntityService) =

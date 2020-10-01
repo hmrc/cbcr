@@ -57,7 +57,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     UltimateParentEntity("ABCCorp"),
     CBC701,
     Some(creationDate),
-    Some(reportingPeroid)
+    Some(reportingPeroid),
+    None
   )
 
   val adminReportingEntityData = AdminReportingEntityData(List(docRefId), Some(List(docRefId)), docRefId)

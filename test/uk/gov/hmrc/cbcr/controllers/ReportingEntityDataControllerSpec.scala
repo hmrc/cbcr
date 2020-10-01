@@ -46,7 +46,8 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     UltimateParentEntity("Foo Corp"),
     CBC701,
     Some(LocalDate.now()),
-    Some(LocalDate.now())
+    Some(LocalDate.now()),
+    None
   )
 
   val pred = PartialReportingEntityData(
@@ -57,7 +58,8 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     UltimateParentEntity("Foo Corp"),
     CBC701,
     Some(LocalDate.now()),
-    Some(LocalDate.now())
+    Some(LocalDate.now()),
+    Some("USD")
   )
 
   val redm = ReportingEntityDataModel(
@@ -69,7 +71,8 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
-    oldModel = false
+    oldModel = false,
+    None
   )
 
   val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
