@@ -27,6 +27,7 @@ import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONBatchCommands.FindAndModifyCommand
 import reactivemongo.play.json.collection.JSONCollection
+import uk.gov.hmrc.cbcr.models
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
 
@@ -80,8 +81,9 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
                                                             criteria,
                                                             repo.updateModifier(
                                                               BSONDocument("$set" -> BSONDocument("valid" -> false))))
+          validFlag = DocRefIdRecord.docRefIdValidity(d.id)
           x <- if (doc.result[DocRefIdRecord].isDefined) {
-                repo.insert(DocRefIdRecord(d, valid = true)).map(w => if (w.ok) { Ok } else { Failed })
+                repo.insert(DocRefIdRecord(d, valid = validFlag)).map(w => if (w.ok) { Ok } else { Failed })
               } else {
                 Logger.error(doc.toString)
                 Future.successful(Failed)
