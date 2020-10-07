@@ -233,7 +233,8 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       Some("reportingRole"        -> JsString(p.reportingRole.toString)),
       Some("tin"                  -> JsString(p.tin.value)),
       Some("ultimateParentEntity" -> JsString(p.ultimateParentEntity.ultimateParentEntity)),
-      p.reportingPeriod.map(rd => "reportingPeriod" -> JsString(rd.toString))
+      p.reportingPeriod.map(rd => "reportingPeriod" -> JsString(rd.toString)),
+      p.currencyCode.map(cc => "currencyCode"       -> JsString(cc))
     ).flatten
 
     Json.obj("$set" -> JsObject(x))
