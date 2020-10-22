@@ -98,14 +98,15 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     } else {
       val criteria: JsObject = buildUpdateCriteria(p)
       for {
-        om <- query(criteria)
-               .map(_ match {
-                 case None =>
-                   throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
-                 case Some(record) => record
-               })
-               .map((red: ReportingEntityDataModel) => red.oldModel)
-        modifier = buildModifier(p, om)
+        record: ReportingEntityDataModel <- query(criteria)
+                                             .map(_ match {
+                                               case None =>
+                                                 throw new NoSuchElementException(
+                                                   "Original report not found in Mongo, while trying to update.")
+                                               case Some(record) => record
+                                             })
+        om = record.oldModel
+        modifier = buildModifier(p, om, record)
         collection <- repository
         update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
       } yield update.lastError.exists(_.updatedExisting)
@@ -219,15 +220,18 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         .cursor[ReportingEntityDataOld]()
         .collect[List](-1, Cursor.FailOnError[List[ReportingEntityDataOld]]()))
 
-  private def buildModifier(p: PartialReportingEntityData, aiOldModel: Boolean): JsObject = {
+  private def buildModifier(
+    p: PartialReportingEntityData,
+    aiOldModel: Boolean,
+    r: ReportingEntityDataModel): JsObject = {
     val x: immutable.Seq[(String, JsValue)] = List(
       if (aiOldModel) p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
       else
         p.additionalInfoDRI.headOption.map { _ =>
-          "additionalInfoDRI" -> JsArray(p.additionalInfoDRI.map(d => JsString(d.docRefId.id)))
+          "additionalInfoDRI" -> JsArray(mergeListsAddInfo(p, r).map(d => JsString(d)))
         },
       p.cbcReportsDRI.headOption.map { _ =>
-        "cbcReportsDRI" -> JsArray(p.cbcReportsDRI.map(d => JsString(d.docRefId.id)))
+        "cbcReportsDRI" -> JsArray(mergeListsReports(p, r).map(d => JsString(d)))
       },
       p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> JsString(p.reportingEntityDRI.docRefId.id)),
       Some("reportingRole"        -> JsString(p.reportingRole.toString)),
@@ -239,6 +243,22 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     Json.obj("$set" -> JsObject(x))
 
+  }
+
+  def mergeListsAddInfo(p: PartialReportingEntityData, r: ReportingEntityDataModel) = {
+    val databaseRefIds = r.additionalInfoDRI.map(_.id)
+    val corrDocRefIds = p.additionalInfoDRI.filter(_.corrDocRefId.isDefined).map(_.corrDocRefId.get.cid.id)
+    val notModifiedDocRefIds = databaseRefIds.diff(corrDocRefIds)
+    val updatedDocRefIds = p.additionalInfoDRI.map(_.docRefId.id)
+    updatedDocRefIds ++ notModifiedDocRefIds
+  }
+
+  def mergeListsReports(p: PartialReportingEntityData, r: ReportingEntityDataModel) = {
+    val databaseRefIds = r.cbcReportsDRI.map(_.id).toList
+    val corrDocRefIds = p.cbcReportsDRI.filter(_.corrDocRefId.isDefined).map(_.corrDocRefId.get.cid.id)
+    val notModifiedDocRefIds = databaseRefIds.diff(corrDocRefIds)
+    val updatedDocRefIds = p.cbcReportsDRI.map(_.docRefId.id)
+    updatedDocRefIds ++ notModifiedDocRefIds
   }
 
   private def buildUpdateCriteria(p: PartialReportingEntityData): JsObject = {
