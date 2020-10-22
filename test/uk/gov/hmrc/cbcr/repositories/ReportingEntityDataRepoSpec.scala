@@ -25,7 +25,8 @@ import play.api.Configuration
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.{CBC701, CBCId, CorrDocRefId, DocRefId, ReportingEntityData, TIN, UltimateParentEntity}
+import uk.gov.hmrc.cbcr.models
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
@@ -197,6 +198,79 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
       val result: Future[WriteResult] = reportingEntityDataRepository.delete(docRefId)
       await(result.map(r => r.ok)) shouldBe true
+
+    }
+  }
+
+  val docRefId1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP1")
+  val docRefId2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP2")
+  val addDocRefId1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ADD1")
+  val addDocRefId2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ADD2")
+
+  val corr1 = CorrDocRefId(docRefId1)
+  val corr2 = CorrDocRefId(docRefId2)
+  val corr3 = CorrDocRefId(addDocRefId1)
+  val corr4 = CorrDocRefId(addDocRefId2)
+
+  val newDocRef1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP1Corr")
+  val newDocRef2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP2Corr")
+  val newAddInfo3 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD1Corr")
+  val newAddInfo4 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD2Corr")
+
+  val corrPair1 = DocRefIdPair(newDocRef1, Some(corr1))
+  val corrPair2 = DocRefIdPair(newDocRef2, Some(corr2))
+  val corrPair3 = DocRefIdPair(newAddInfo3, Some(corr3))
+  val corrPair4 = DocRefIdPair(newAddInfo4, Some(corr4))
+
+  def rData(reps: NonEmptyList[DocRefId], add: List[DocRefId]) = ReportingEntityDataModel(
+    reps,
+    add,
+    docRefId,
+    TIN("3590617086", "CGI"),
+    UltimateParentEntity("ABCCorp"),
+    CBC701,
+    Some(creationDate),
+    Some(reportingPeroid),
+    false,
+    None
+  )
+
+  def partialData(reps: List[DocRefIdPair], add: List[DocRefIdPair]) = PartialReportingEntityData(
+    reps,
+    add,
+    DocRefIdPair(docRefId1, Some(corr1)),
+    TIN("3590617086", "CGI"),
+    UltimateParentEntity("ABCCorp"),
+    CBC701,
+    Some(creationDate),
+    Some(reportingPeroid),
+    None,
+  )
+  "Updates to CBCReports and AdditionalInfo" should {
+
+    "partial corrections should work as expected when correcting just one report and one add info" in {
+      val res1 = reportingEntityDataRepository.mergeListsReports(
+        partialData(List(corrPair1), List(corrPair3)),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
+        partialData(List(corrPair1), List(corrPair3)),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+
+      res1.size shouldBe 2
+      res1.equals(List(newDocRef1.id, docRefId2.id)) shouldBe true
+      res2.size shouldBe 2
+      res2.equals(List(newAddInfo3.id, addDocRefId2.id)) shouldBe true
+    }
+
+    "correct only the reporting entity" in {
+      val res1 = reportingEntityDataRepository.mergeListsReports(
+        partialData(List(), List()),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
+        partialData(List(), List()),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      res1.equals(List(docRefId1.id, docRefId2.id)) shouldBe true
+      res2.equals(List(addDocRefId1.id, addDocRefId2.id)) shouldBe true
 
     }
   }
