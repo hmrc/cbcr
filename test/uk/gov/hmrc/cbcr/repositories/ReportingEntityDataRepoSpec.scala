@@ -212,10 +212,10 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val corr3 = CorrDocRefId(addDocRefId1)
   val corr4 = CorrDocRefId(addDocRefId2)
 
-  val newDocRef1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP1Corr")
-  val newDocRef2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP2Corr")
-  val newAddInfo3 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD1Corr")
-  val newAddInfo4 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD2Corr")
+  val newDocRef1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP1")
+  val newDocRef2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP2")
+  val newAddInfo3 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD1")
+  val newAddInfo4 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD2")
 
   val corrPair1 = DocRefIdPair(newDocRef1, Some(corr1))
   val corrPair2 = DocRefIdPair(newDocRef2, Some(corr2))
@@ -256,13 +256,11 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
         partialData(List(corrPair1), List(corrPair3)),
         rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
 
-      res1.size shouldBe 2
       res1.equals(List(newDocRef1.id, docRefId2.id)) shouldBe true
-      res2.size shouldBe 2
       res2.equals(List(newAddInfo3.id, addDocRefId2.id)) shouldBe true
     }
 
-    "correct only the reporting entity" in {
+    "correct only the reporting entity without affecting cbc reports and additional info" in {
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(), List()),
         rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
@@ -271,7 +269,32 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
         rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
       res1.equals(List(docRefId1.id, docRefId2.id)) shouldBe true
       res2.equals(List(addDocRefId1.id, addDocRefId2.id)) shouldBe true
+    }
 
+    "correct only either one of the additional info or one of the cbc reports" in {
+      val res1 = reportingEntityDataRepository.mergeListsReports(
+        partialData(List(corrPair2), List()),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
+        partialData(List(), List(corrPair4)),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+
+      res1.equals(List(newDocRef2.id, docRefId1.id)) shouldBe true
+      res2.equals(List(newAddInfo4.id, addDocRefId1.id)) shouldBe true
+    }
+
+    "full corrections for both reports and add info" in {
+      val res1 = reportingEntityDataRepository.mergeListsReports(
+        partialData(List(corrPair1, corrPair2), List(corrPair3, corrPair4)),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2))
+      )
+      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
+        partialData(List(corrPair1, corrPair2), List(corrPair3, corrPair4)),
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2))
+      )
+
+      res1.equals(List(newDocRef1.id, newDocRef2.id)) shouldBe true
+      res2.equals(List(newAddInfo3.id, newAddInfo4.id)) shouldBe true
     }
   }
 
