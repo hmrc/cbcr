@@ -30,7 +30,8 @@ case class ReportingEntityDataOld(
   reportingEntityDRI: DocRefId,
   tin: TIN,
   ultimateParentEntity: UltimateParentEntity,
-  reportingRole: ReportingRole)
+  reportingRole: ReportingRole,
+  currencyCode: Option[String])
 
 object ReportingEntityDataOld { implicit val format = Json.format[ReportingEntityDataOld] }
 
@@ -42,7 +43,8 @@ case class ReportingEntityData(
   ultimateParentEntity: UltimateParentEntity,
   reportingRole: ReportingRole,
   creationDate: Option[LocalDate],
-  reportingPeriod: Option[LocalDate])
+  reportingPeriod: Option[LocalDate],
+  currencyCode: Option[String])
 
 case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair { implicit val format = Json.format[DocRefIdPair] }
@@ -55,7 +57,8 @@ case class PartialReportingEntityData(
   ultimateParentEntity: UltimateParentEntity,
   reportingRole: ReportingRole,
   creationDate: Option[LocalDate],
-  reportingPeriod: Option[LocalDate])
+  reportingPeriod: Option[LocalDate],
+  currencyCode: Option[String])
 
 object PartialReportingEntityData {
   implicit def formatNEL[A: Format] = new Format[NonEmptyList[A]] {
@@ -87,8 +90,9 @@ object ReportingEntityData {
       (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
       (JsPath \ "reportingRole").read[ReportingRole] and
       (JsPath \ "creationDate").readNullable[LocalDate] and
-      (JsPath \ "reportingPeriod").readNullable[LocalDate]
-  )(ReportingEntityData.apply(_, _, _, _, _, _, _, _))
+      (JsPath \ "reportingPeriod").readNullable[LocalDate] and
+      (JsPath \ "currencyCode").readNullable[String]
+  )(ReportingEntityData.apply(_, _, _, _, _, _, _, _, _))
 
   implicit val writes = Json.writes[ReportingEntityData]
 
@@ -103,7 +107,8 @@ case class PartialReportingEntityDataModel(
   reportingRole: ReportingRole,
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
-  oldModel: Boolean)
+  oldModel: Boolean,
+  currencyCode: Option[String])
 
 object PartialReportingEntityDataModel {
   implicit def formatNEL[A: Format] = new Format[NonEmptyList[A]] {
@@ -132,7 +137,8 @@ case class ReportingEntityDataModel(
   reportingRole: ReportingRole,
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
-  oldModel: Boolean)
+  oldModel: Boolean,
+  currencyCode: Option[String])
 
 object ReportingEntityDataModel {
   import PartialReportingEntityDataModel.formatNEL
@@ -150,8 +156,9 @@ object ReportingEntityDataModel {
       (JsPath \ "additionalInfoDRI")
         .read[List[DocRefId]]
         .map(_ => false)
-        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true))
-  )(ReportingEntityDataModel.apply(_, _, _, _, _, _, _, _, _))
+        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true)) and
+      (JsPath \ "currencyCode").readNullable[String]
+  )(ReportingEntityDataModel.apply(_, _, _, _, _, _, _, _, _, _))
 
   implicit val writes = Json.writes[ReportingEntityDataModel]
 

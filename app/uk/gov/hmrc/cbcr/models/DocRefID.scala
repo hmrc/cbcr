@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.cbcr.models
 
+import java.time.format.DateTimeFormatter
+
 import play.api.libs.json._
 import play.api.mvc.PathBindable
 
@@ -56,7 +58,23 @@ object CorrDocRefId {
 
 case class DocRefIdRecord(id: DocRefId, valid: Boolean)
 object DocRefIdRecord {
+  //Keep in sync with any future frontend changes
   implicit val format = Json.format[DocRefIdRecord]
+  val dateFmt = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
+  val cbcRegex: String = CBCId.cbcRegex.init.tail // strip the ^ and $ characters from the cbcRegex
+  val dateRegex = """\d{8}T\d{6}"""
+  val messageRefIDRegex = ("""GB(\d{4})(\w{2})(""" + cbcRegex + """)(CBC40[1,2])(""" + dateRegex + """)(\w{1,56})""").r
+  val docRefIdRegex = s"""($messageRefIDRegex)_(.{1,30})(OECD[0123])(ENT|REP|ADD)(.{0,25})""".r
+
+  def extractDocTypeIndicator(docRefId: String): Option[String] = docRefId match {
+    case docRefIdRegex(_, _, _, _, _, _, _, _, docType, _, _) => Some(docType)
+    case _                                                    => None
+  }
+
+  def docRefIdValidity(docRefId: String): Boolean = DocRefIdRecord.extractDocTypeIndicator(docRefId) match {
+    case Some(docTypeIndicator: String) if docTypeIndicator == "OECD3" => false
+    case _                                                             => true
+  }
 }
 
 object DocRefIdResponses {
