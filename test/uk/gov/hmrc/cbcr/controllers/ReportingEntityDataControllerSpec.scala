@@ -47,6 +47,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
+    None,
     None
   )
 
@@ -59,7 +60,8 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
-    Some("USD")
+    Some("USD"),
+    Some(EntityReportingPeriod(LocalDate.now(), LocalDate.now()))
   )
 
   val redm = ReportingEntityDataModel(
@@ -72,6 +74,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     Some(LocalDate.now()),
     Some(LocalDate.now()),
     oldModel = false,
+    None,
     None
   )
 

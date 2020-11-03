@@ -65,6 +65,7 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
+    None,
     None
   )
   implicit val mat: Materializer = app.injector.instanceOf[Materializer]
