@@ -24,6 +24,9 @@ import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import uk.gov.hmrc.emailaddress.EmailAddress // Combinator syntax
 
+case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
+object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }
+
 case class ReportingEntityDataOld(
   cbcReportsDRI: DocRefId,
   additionalInfoDRI: Option[DocRefId],
@@ -50,9 +53,6 @@ case class ReportingEntityData(
 
 case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair { implicit val format = Json.format[DocRefIdPair] }
-
-case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
-object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }
 
 case class PartialReportingEntityData(
   cbcReportsDRI: List[DocRefIdPair],
@@ -98,7 +98,7 @@ object ReportingEntityData {
       (JsPath \ "creationDate").readNullable[LocalDate] and
       (JsPath \ "reportingPeriod").readNullable[LocalDate] and
       (JsPath \ "currencyCode").readNullable[String] and
-      (JsPath \ "entityReportinPeriod").readNullable[EntityReportingPeriod]
+      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
   )(ReportingEntityData.apply(_, _, _, _, _, _, _, _, _, _))
 
   implicit val writes = Json.writes[ReportingEntityData]
@@ -167,7 +167,7 @@ object ReportingEntityDataModel {
         .map(_ => false)
         .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true)) and
       (JsPath \ "currencyCode").readNullable[String] and
-      (JsPath \ "entityReportinPeriod").readNullable[EntityReportingPeriod]
+      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
   )(ReportingEntityDataModel.apply(_, _, _, _, _, _, _, _, _, _, _))
 
   implicit val writes = Json.writes[ReportingEntityDataModel]
