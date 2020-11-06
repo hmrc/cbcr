@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import java.time.LocalDate
+
 import cats.data.NonEmptyList
 import ch.qos.logback.classic.Level
 import org.mockito.Mockito.when
@@ -58,7 +60,9 @@ class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with
       reportingRole = CBC701,
       None,
       None,
-      None)
+      None,
+      Some(EntityReportingPeriod(LocalDate.of(2015, 4, 1), LocalDate.of(2016, 3, 31)))
+    )
 
   private def isRetrieveReportingEntityTrue(rrEntityService: RetrieveReportingEntityService) =
     rrEntityService.retrieveReportingEntity

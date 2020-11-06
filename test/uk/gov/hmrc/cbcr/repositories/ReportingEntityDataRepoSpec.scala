@@ -59,6 +59,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     CBC701,
     Some(creationDate),
     Some(reportingPeroid),
+    None,
     None
   )
 
@@ -232,6 +233,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     Some(creationDate),
     Some(reportingPeroid),
     false,
+    None,
     None
   )
 
@@ -245,6 +247,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     Some(creationDate),
     Some(reportingPeroid),
     None,
+    None
   )
   "Updates to CBCReports and AdditionalInfo" should {
 
