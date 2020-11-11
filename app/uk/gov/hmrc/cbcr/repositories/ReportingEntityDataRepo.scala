@@ -94,7 +94,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     if (p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
         p.cbcReportsDRI.flatMap(_.corrDocRefId).isEmpty &&
         p.reportingEntityDRI.corrDocRefId.isEmpty) {
-      Future.successful(true)
+      updateEntityReportingPeriod(
+        p.reportingEntityDRI.docRefId,
+        p.entityReportingPeriod.getOrElse(throw new RuntimeException("EntityReportingPeriod missing")))
     } else {
       val criteria: JsObject = buildUpdateCriteria(p)
       for {
@@ -291,6 +293,22 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       collection <- repository
       update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("creationDate" -> c)))
     } yield update.nModified
+  }
+
+  def updateEntityReportingPeriod(d: DocRefId, erp: EntityReportingPeriod): Future[Boolean] = {
+    val criteria = Json.obj("reportingEntityDRI" -> d.id)
+    for {
+      collection <- repository
+      update <- collection.update(
+                 criteria,
+                 Json.obj(
+                   "$set" -> Json.obj(
+                     "entityReportingPeriod" ->
+                       Json.obj(
+                         "startDate" -> JsString(erp.startDate.toString),
+                         "endDate"   -> JsString(erp.endDate.toString))))
+               )
+    } yield update.ok
   }
 
   def deleteCreationDate(d: DocRefId): Future[Int] = {
