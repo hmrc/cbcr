@@ -23,7 +23,7 @@ import akka.util.ByteString
 import org.scalatest.{Matchers, OptionValues, WordSpecLike}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
-import uk.gov.hmrc.cbcr.models.{ReportingEntityData, ReportingEntityDataModel}
+import uk.gov.hmrc.cbcr.models.{DatesOverlap, ReportingEntityData, ReportingEntityDataModel}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
@@ -62,6 +62,9 @@ trait UnitSpec extends WordSpecLike with Matchers with OptionValues {
 
   def verifyResult(result: Future[Result], red: ReportingEntityDataModel)(implicit mat: Materializer) =
     Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
+
+  def verifyResult(result: Future[Result], datesOverlap: DatesOverlap)(implicit mat: Materializer) =
+    Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(datesOverlap)
 
   def verifyStatusCode(result: Future[Result], statusCode: Int) = status(result) shouldBe statusCode
 
