@@ -351,14 +351,16 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   def filterOutDeletion(record: ReportingEntityData): Boolean = {
     val entDocRefId = record.reportingEntityDRI.id
-    DocRefIdRecord.docRefIdValidity(entDocRefId)
+    if (entDocRefId.contains("OECD3"))
+      false
+    else
+      true
   }
 
   def checkBySingleDate(entityReportingPeriod: EntityReportingPeriod, reportingPeriod: LocalDate) = {
     val check1 = reportingPeriod.isAfter(entityReportingPeriod.startDate) && reportingPeriod.isBefore(
       entityReportingPeriod.endDate)
-    val check2 = reportingPeriod.isEqual(entityReportingPeriod.startDate) || reportingPeriod.isEqual(
-      entityReportingPeriod.endDate)
+    val check2 = reportingPeriod.isEqual(entityReportingPeriod.startDate)
     if (check1 || check2) true else false
   }
 
@@ -368,7 +370,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val check3 = erp2.startDate.isAfter(erp1.startDate) && erp2.startDate.isBefore(erp1.endDate)
     val check4 = erp2.endDate.isAfter(erp1.startDate) && erp2.endDate.isBefore(erp1.endDate)
     val check5 = erp1.startDate.isEqual(erp2.startDate) || erp1.startDate.isEqual(erp2.endDate)
-    val check6 = erp2.startDate.isEqual(erp1.endDate) || erp1.endDate.isEqual(erp2.endDate)
+    val check6 = erp2.startDate.isEqual(erp1.endDate)
     val results = List(check1, check2, check3, check4, check5, check6)
     if (results.contains(true)) true else false
 
