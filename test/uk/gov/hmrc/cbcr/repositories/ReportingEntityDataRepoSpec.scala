@@ -82,6 +82,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val doc3 = DocRefId("GB2017RGXVCBC0000000056CBC40120170312T090000X_7000000002OECD1ENT3")
   val doc4 = DocRefId("GB2018RGXVCBC0000000056CBC40120180312T090000X_7000000002OECD1ENT4")
   val doc5 = DocRefId("GB2019RGXVCBC0000000056CBC40120190312T090000X_7000000002OECD1ENT5")
+  val doc6 = DocRefId("GB2019RGXVCBC0000000056CBC40120190312T090000X_7000000002OECD1ENT6")
   val red1 = red(doc1, LocalDate.parse("2017-11-11"), None)
   val red2 = red(doc2, LocalDate.parse("2017-11-11"), None)
   val red3 = red(doc3, LocalDate.parse("2017-12-01"), None)
@@ -474,6 +475,57 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
           EntityReportingPeriod(LocalDate.parse("2019-10-30"), LocalDate.parse("2020-01-29")))
       val finalRes3 = await(res2)
       finalRes3 shouldBe true
+    }
+  }
+
+  "Calls to updateReportingEntityPeriod" should {
+    "should update the reportingEntityPeriod for the docRefId" in {
+
+      val result: Future[Boolean] =
+        reportingEntityDataRepository.updateEntityReportingPeriod(
+          doc5,
+          EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
+      await(result) shouldBe true
+
+      val updatedResult: Future[Option[ReportingEntityData]] =
+        reportingEntityDataRepository.query(doc5.id, "2019-12-01")
+      await(updatedResult.map(x => x.get.entityReportingPeriod)) shouldBe Some(
+        EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
+
+    }
+
+    "update functionality should work as expected when updating only entity reporting period but no doc ref ids updates" in {
+      val partialData = PartialReportingEntityData(
+        List(),
+        List(),
+        DocRefIdPair(doc5, None),
+        TIN("3590617086", "CGI"),
+        UltimateParentEntity("ABCCorp"),
+        CBC701,
+        Some(creationDate),
+        Some(reportingPeriod),
+        None,
+        Some(EntityReportingPeriod(LocalDate.parse("2020-02-15"), LocalDate.parse("2020-11-30")))
+      )
+      val updatedRes = reportingEntityDataRepository.update(partialData)
+      await(updatedRes) shouldBe true
+    }
+
+    "update functionality should work as expected when updating at least one DocRefID" in {
+      val partialData = PartialReportingEntityData(
+        List(),
+        List(),
+        DocRefIdPair(doc6, Some(CorrDocRefId(doc5))),
+        TIN("3590617086", "CGI"),
+        UltimateParentEntity("ABCCorp"),
+        CBC701,
+        Some(creationDate),
+        Some(reportingPeriod),
+        None,
+        Some(EntityReportingPeriod(LocalDate.parse("2020-02-15"), LocalDate.parse("2020-11-30")))
+      )
+      val updatedRes = reportingEntityDataRepository.update(partialData)
+      await(updatedRes) shouldBe true
     }
   }
 
