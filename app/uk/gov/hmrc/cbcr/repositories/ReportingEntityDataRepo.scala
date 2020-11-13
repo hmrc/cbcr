@@ -94,7 +94,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     if (p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
         p.cbcReportsDRI.flatMap(_.corrDocRefId).isEmpty &&
         p.reportingEntityDRI.corrDocRefId.isEmpty) {
-      Future.successful(true)
+      updateEntityReportingPeriod(
+        p.reportingEntityDRI.docRefId,
+        p.entityReportingPeriod.getOrElse(throw new RuntimeException("EntityReportingPeriod missing")))
     } else {
       val criteria: JsObject = buildUpdateCriteria(p)
       for {
@@ -162,6 +164,17 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]()))
 
     result.map(x => getLatestReportingEntityData(x))
+
+  }
+
+  def queryTINDatesOverlapping(tin: String, entityReportingPeriod: EntityReportingPeriod) = {
+    val criteria = Json.obj("tin" -> tin)
+    val result: Future[List[ReportingEntityData]] = repository.flatMap(
+      _.find(criteria, None)
+        .cursor[ReportingEntityData]()
+        .collect[List](-1, Cursor.FailOnError[List[ReportingEntityData]]()))
+
+    result.map(d => datesAreOverlapping(d, entityReportingPeriod))
 
   }
 
@@ -282,6 +295,22 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     } yield update.nModified
   }
 
+  def updateEntityReportingPeriod(d: DocRefId, erp: EntityReportingPeriod): Future[Boolean] = {
+    val criteria = Json.obj("reportingEntityDRI" -> d.id)
+    for {
+      collection <- repository
+      update <- collection.update(
+                 criteria,
+                 Json.obj(
+                   "$set" -> Json.obj(
+                     "entityReportingPeriod" ->
+                       Json.obj(
+                         "startDate" -> JsString(erp.startDate.toString),
+                         "endDate"   -> JsString(erp.endDate.toString))))
+               )
+    } yield update.ok
+  }
+
   def deleteCreationDate(d: DocRefId): Future[Int] = {
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
@@ -312,6 +341,57 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       collection <- repository
       update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("additionalInfoDRI" -> d.id)))
     } yield update.nModified
+  }
+
+  def datesAreOverlapping(existingData: List[ReportingEntityData], entityReportingPeriod: EntityReportingPeriod) = {
+    val groupedData =
+      existingData
+        .filter(_.reportingPeriod.isDefined)
+        .groupBy(_.reportingPeriod.get)
+    val res = groupedData.map(data => getLatestReportingEntityData(data._2)).filterNot(_.isEmpty).map(_.head)
+
+    val filteredDeletionsAndSamePeriod =
+      res.filter(data => filterOutDeletion(data)).filter(p => p.reportingPeriod.get != entityReportingPeriod.endDate)
+
+    //mainly for backward compatibility make sure reporting period doesn't overlap with the new submission
+    //true = no overlapping
+    val firstCheck: Boolean =
+      filteredDeletionsAndSamePeriod.forall(d => !checkBySingleDate(entityReportingPeriod, d.reportingPeriod.get))
+
+    val secondCheckList = filteredDeletionsAndSamePeriod.filter(_.entityReportingPeriod.isDefined)
+
+    //Make sure when we have both dates that they don't overlap true = no overlapping
+    val secondCheck: Boolean =
+      secondCheckList.forall(d => !checkBothDates(entityReportingPeriod, d.entityReportingPeriod.get))
+
+    if (firstCheck && secondCheck) false else true
+  }
+
+  def filterOutDeletion(record: ReportingEntityData): Boolean = {
+    val entDocRefId = record.reportingEntityDRI.id
+    if (entDocRefId.contains("OECD3"))
+      false
+    else
+      true
+  }
+
+  def checkBySingleDate(entityReportingPeriod: EntityReportingPeriod, reportingPeriod: LocalDate) = {
+    val check1 = reportingPeriod.isAfter(entityReportingPeriod.startDate) && reportingPeriod.isBefore(
+      entityReportingPeriod.endDate)
+    val check2 = reportingPeriod.isEqual(entityReportingPeriod.startDate)
+    if (check1 || check2) true else false
+  }
+
+  def checkBothDates(erp1: EntityReportingPeriod, erp2: EntityReportingPeriod) = {
+    val check1 = erp1.startDate.isAfter(erp2.startDate) && erp1.startDate.isBefore(erp2.endDate)
+    val check2 = erp1.endDate.isAfter(erp2.startDate) && erp1.endDate.isBefore(erp2.endDate)
+    val check3 = erp2.startDate.isAfter(erp1.startDate) && erp2.startDate.isBefore(erp1.endDate)
+    val check4 = erp2.endDate.isAfter(erp1.startDate) && erp2.endDate.isBefore(erp1.endDate)
+    val check5 = erp1.startDate.isEqual(erp2.startDate) || erp1.startDate.isEqual(erp2.endDate)
+    val check6 = erp2.startDate.isEqual(erp1.endDate)
+    val results = List(check1, check2, check3, check4, check5, check6)
+    if (results.contains(true)) true else false
+
   }
 
 }

@@ -221,6 +221,21 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
         val result = controller.queryTin(tin, reportingPeriod)(fakeGetRequest)
         verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
       }
+
+      "isOverlapping return an OK response, with a json body containing DatesOverlap" in {
+        when(repo.queryTINDatesOverlapping(any(), any())) thenReturn Future.successful(true)
+
+        val result = controller.isOverlapping(tin, "2018-01-01", "2018-12-01")(fakeGetRequest)
+        verifyStatusCode(result, Status.OK)
+        verifyResult(result, DatesOverlap(true))
+      }
+
+      "isOverlapping recover from a future failed and return an internalServerError" in {
+        when(repo.queryTINDatesOverlapping(any(), any())) thenReturn Future.failed(
+          new Exception("something went wrong"))
+        val result = controller.isOverlapping(tin, "2018-01-01", "2018-12-01")(fakeGetRequest)
+        verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
+      }
     }
 
     "queryModel" should {
