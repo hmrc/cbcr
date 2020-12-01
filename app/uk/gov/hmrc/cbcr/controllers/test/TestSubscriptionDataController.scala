@@ -139,6 +139,17 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
+  def deleteReportingPeriodByRepEntDocRefId(docRefId: String) = Action.async { implicit request =>
+    {
+      val dri = DocRefId(docRefId)
+
+      reportingEntityDataRepo.deleteReportingPeriodByRepEntDocRefId(dri).map {
+        case n if n > 0 => Ok
+        case _          => NotModified
+      }
+    }
+  }
+
   def validateNumberOfCbcIdForUtr(utr: String): Action[AnyContent] = Action.async { implicit request =>
     {
 
