@@ -42,6 +42,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
   lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
+  val docRefIdForDelete = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP10")
   val cbcId = CBCId.apply("XVCBC0000000056")
   val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
   val reportingEntityDataRepository = new ReportingEntityDataRepo(reactiveMongoApi)
@@ -54,6 +55,19 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     NonEmptyList(docRefId, Nil),
     List(docRefId),
     docRefId,
+    TIN("3590617086", "CGI"),
+    UltimateParentEntity("ABCCorp"),
+    CBC701,
+    Some(creationDate),
+    Some(reportingPeriod),
+    None,
+    None
+  )
+
+  val reportingEntityData1 = ReportingEntityData(
+    NonEmptyList(docRefIdForDelete, Nil),
+    List(docRefIdForDelete),
+    docRefIdForDelete,
     TIN("3590617086", "CGI"),
     UltimateParentEntity("ABCCorp"),
     CBC701,
@@ -221,6 +235,24 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     }
   }
 
+  "Calls to save a RepEntity" should {
+    "should save the reportingEntityData in the database for deleting purposes" in {
+
+      val result: Future[WriteResult] = reportingEntityDataRepository.save(reportingEntityData1)
+      await(result.map(r => r.ok)) shouldBe true
+
+    }
+  }
+
+  "Calls to deleteReportingPeriod by RepEntDocRefId" should {
+    "should delete the reporting period for a given docRefId" in {
+
+      val result: Future[Int] = reportingEntityDataRepository.deleteReportingPeriodByRepEntDocRefId(docRefIdForDelete)
+      await(result) shouldBe 1
+
+    }
+  }
+
   "Calls to deleteCreationDate" should {
     "should delete the reporting period for a given docRefId" in {
 
@@ -235,6 +267,9 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
 
       val result: Future[WriteResult] = reportingEntityDataRepository.delete(docRefId)
       await(result.map(r => r.ok)) shouldBe true
+
+      val result1: Future[WriteResult] = reportingEntityDataRepository.delete(docRefIdForDelete)
+      await(result1.map(r => r.ok)) shouldBe true
 
     }
   }
