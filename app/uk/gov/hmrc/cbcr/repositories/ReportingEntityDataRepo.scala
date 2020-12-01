@@ -339,7 +339,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("reportingEntityDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
+      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("entityReportingPeriod" -> 1)))
     } yield update.nModified
   }
 

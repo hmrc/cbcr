@@ -51,6 +51,10 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
   val updateForcreationDate = (LocalDate.now).plusDays(5)
   val reportingPeriod = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
+  val entityReportingperiod = EntityReportingPeriod(
+    LocalDate.parse("2016-01-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+    LocalDate.parse("2016-03-31", DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+
   val reportingEntityData = ReportingEntityData(
     NonEmptyList(docRefId, Nil),
     List(docRefId),
@@ -74,7 +78,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
     Some(creationDate),
     Some(reportingPeriod),
     None,
-    None
+    Some(entityReportingperiod)
   )
 
   def red(dri: DocRefId, reportingPeriod: LocalDate, erp: Option[EntityReportingPeriod]) =
