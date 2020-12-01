@@ -364,22 +364,19 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val secondCheck: Boolean =
       secondCheckList.forall(d => !checkBothDates(entityReportingPeriod, d.entityReportingPeriod.get))
 
-    if (firstCheck && secondCheck) false else true
+    !(firstCheck && secondCheck)
   }
 
   def filterOutDeletion(record: ReportingEntityData): Boolean = {
     val entDocRefId = record.reportingEntityDRI.id
-    if (entDocRefId.contains("OECD3"))
-      false
-    else
-      true
+    !(entDocRefId.contains("OECD3"))
   }
 
   def checkBySingleDate(entityReportingPeriod: EntityReportingPeriod, reportingPeriod: LocalDate) = {
     val check1 = reportingPeriod.isAfter(entityReportingPeriod.startDate) && reportingPeriod.isBefore(
       entityReportingPeriod.endDate)
     val check2 = reportingPeriod.isEqual(entityReportingPeriod.startDate)
-    if (check1 || check2) true else false
+    check1 || check2
   }
 
   def checkBothDates(erp1: EntityReportingPeriod, erp2: EntityReportingPeriod) = {
@@ -390,7 +387,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val check5 = erp1.startDate.isEqual(erp2.startDate) || erp1.startDate.isEqual(erp2.endDate)
     val check6 = erp2.startDate.isEqual(erp1.endDate)
     val results = List(check1, check2, check3, check4, check5, check6)
-    if (results.contains(true)) true else false
+    results.contains(true)
 
   }
 
