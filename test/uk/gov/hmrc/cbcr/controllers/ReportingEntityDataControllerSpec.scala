@@ -47,6 +47,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
+    None,
     None
   )
 
@@ -59,7 +60,8 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
-    Some("USD")
+    Some("USD"),
+    Some(EntityReportingPeriod(LocalDate.now(), LocalDate.now()))
   )
 
   val redm = ReportingEntityDataModel(
@@ -72,6 +74,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     Some(LocalDate.now()),
     Some(LocalDate.now()),
     oldModel = false,
+    None,
     None
   )
 
@@ -216,6 +219,21 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
       "recover from a future failed and return an internalServerError" in {
         when(repo.queryTIN(any(), any())) thenReturn Future.failed(new Exception("mugged it"))
         val result = controller.queryTin(tin, reportingPeriod)(fakeGetRequest)
+        verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
+      }
+
+      "isOverlapping return an OK response, with a json body containing DatesOverlap" in {
+        when(repo.queryTINDatesOverlapping(any(), any())) thenReturn Future.successful(true)
+
+        val result = controller.isOverlapping(tin, "2018-01-01", "2018-12-01")(fakeGetRequest)
+        verifyStatusCode(result, Status.OK)
+        verifyResult(result, DatesOverlap(true))
+      }
+
+      "isOverlapping recover from a future failed and return an internalServerError" in {
+        when(repo.queryTINDatesOverlapping(any(), any())) thenReturn Future.failed(
+          new Exception("something went wrong"))
+        val result = controller.isOverlapping(tin, "2018-01-01", "2018-12-01")(fakeGetRequest)
         verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
       }
     }

@@ -133,6 +133,20 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
   }
 
+  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { implicit request =>
+    repo
+      .queryTINDatesOverlapping(tin, EntityReportingPeriod(LocalDate.parse(startDate), LocalDate.parse(endDate)))
+      .map { result =>
+        if (result) Ok(Json.toJson(DatesOverlap(true))) else Ok(Json.toJson(DatesOverlap(false)))
+      }
+      .recover {
+        case NonFatal(t) =>
+          Logger
+            .error(s"Exception thrown trying to query for ReportingEntityData for overlapping rule: ${t.getMessage}", t)
+          InternalServerError
+      }
+  }
+
   def queryModel(d: DocRefId) = auth.authCBCR { implicit request =>
     repo
       .queryModel(d)
