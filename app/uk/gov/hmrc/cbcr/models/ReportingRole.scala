@@ -23,12 +23,14 @@ sealed trait ReportingRole
 case object CBC701 extends ReportingRole
 case object CBC702 extends ReportingRole
 case object CBC703 extends ReportingRole
+case object CBC704 extends ReportingRole
 
 object ReportingRole {
   def parseFromString(s: String): Option[ReportingRole] = s.toLowerCase.trim match {
     case "cbc701" => Some(CBC701)
     case "cbc702" => Some(CBC702)
     case "cbc703" => Some(CBC703)
+    case "cbc704" => Some(CBC704)
     case _        => None
   }
 
