@@ -32,27 +32,27 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-actor"     % akkaVersion
 dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 val compile = Seq(
-  "org.reactivemongo" %% "play2-reactivemongo" % "0.18.8-play26",
-  "org.reactivemongo" %% "reactivemongo-bson" % "0.18.8",
+  "org.reactivemongo" %% "play2-reactivemongo"        % "1.0.3-play26",
+  "org.reactivemongo" %% "reactivemongo-bson"         % "0.20.13",
   ws,
-  "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "2.24.0",
-  "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
-  "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
-  "com.github.kxbmap" %% "configs" % "0.4.4",
-  "uk.gov.hmrc" %% "emailaddress" % "3.5.0",
-  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26"
+  "uk.gov.hmrc"       %% "auth-client"                % "5.2.0-play-26",
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "4.2.0",
+  "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
+  "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
+  "com.github.kxbmap" %% "configs"                    % "0.6.0",
+  "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26"
 
 )
 
 def test(scope: String = "test,it") = Seq(
-  "com.typesafe.akka" %% "akka-testkit" % "2.5.23" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
-  "org.pegdown" % "pegdown" % "1.6.0" % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
-  "org.mockito" % "mockito-core" % "3.2.4" % scope,
-  "org.scalacheck" %% "scalacheck" % "1.14.3" % scope,
-  "org.eu.acolyte" %% "play-reactive-mongo" % "1.0.45" % scope
+  "com.typesafe.akka"       %% "akka-testkit"         % "2.6.14" % scope,
+  "org.scalatest"           %% "scalatest"            % "3.2.7"  % scope,
+  "org.pegdown"             % "pegdown"               % "1.6.0"  % scope,
+  "org.scalatestplus.play"  %% "scalatestplus-play"   % "5.1.0"  % scope,
+  "org.mockito"             %  "mockito-core"         % "3.9.0"  % scope,
+  "org.scalacheck"          %% "scalacheck"           % "1.15.3" % scope,
+  "org.eu.acolyte"          %% "play-reactive-mongo"  % "1.0.57" % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty

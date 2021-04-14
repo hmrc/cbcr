@@ -22,7 +22,6 @@ import cats.data.NonEmptyList
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.emailaddress.EmailAddress // Combinator syntax
 
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
 object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }

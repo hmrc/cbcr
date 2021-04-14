@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
-import uk.gov.hmrc.domain.{SimpleObjectReads, SimpleObjectWrites}
+import play.api.libs.json.{JsValue, Reads, Writes}
+import uk.gov.hmrc.domain.SimpleObjectWrites
 
 case class TIN(value: String, issuedBy: String)
 object TIN {

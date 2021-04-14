@@ -83,10 +83,10 @@ class SubscriptionDataRepository @Inject()(protected val mongo: ReactiveMongoApi
   }
 
   def save(s: SubscriptionDetails): Future[WriteResult] =
-    repository.flatMap(_.insert(s))
+    repository.flatMap(_.insert(ordered = false).one(s))
 
   def backup(s: List[SubscriptionDetails]): List[Future[WriteResult]] =
-    s.map(sd => backupRepo.flatMap(_.insert[SubscriptionDetails](sd)))
+    s.map(sd => backupRepo.flatMap(_.insert(ordered = false).one[SubscriptionDetails](sd)))
 
   def get(safeId: String): OptionT[Future, SubscriptionDetails] =
     getGeneric(Json.obj("businessPartnerRecord.safeId" -> safeId))

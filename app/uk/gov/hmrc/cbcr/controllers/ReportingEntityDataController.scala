@@ -158,7 +158,6 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
         case NonFatal(t) =>
           Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
-
       }
 
   }

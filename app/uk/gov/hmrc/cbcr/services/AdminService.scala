@@ -51,9 +51,8 @@ class AdminService @Inject()(
   cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def showAllDocRef = Action.async { implicit request =>
+  def showAllDocRef = Action.async {
     docRefIdRepo.findAll().map(response => Ok(Json.toJson(displayAllDocRefId(response))))
-
   }
 
   def countDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord =
@@ -62,7 +61,7 @@ class AdminService @Inject()(
   def displayAllDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord =
     ListDocRefIdRecord(docs)
 
-  def adminDocRefIdquery(d: DocRefId) = Action.async { implicit request =>
+  def adminDocRefIdquery(d: DocRefId) = Action.async {
     repo
       .query(d)
       .map {
@@ -77,7 +76,7 @@ class AdminService @Inject()(
 
   }
 
-  def adminQueryTin(tin: String, reportingPeriod: String) = Action.async { implicit request =>
+  def adminQueryTin(tin: String, reportingPeriod: String) = Action.async {
     repo
       .queryTIN(tin, reportingPeriod)
       .map { reportEntityData =>
@@ -90,7 +89,7 @@ class AdminService @Inject()(
       }
   }
 
-  def adminQueryCbcId(cbcId: CBCId, reportingPeriod: String) = Action.async { implicit request =>
+  def adminQueryCbcId(cbcId: CBCId, reportingPeriod: String) = Action.async {
     repo
       .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
       .map {
@@ -105,14 +104,14 @@ class AdminService @Inject()(
 
   }
 
-  def editDocRefId(id: DocRefId) = Action.async { implicit request =>
+  def editDocRefId(id: DocRefId) = Action.async {
     docRepo.edit(id) map {
       case n if n > 0 => Ok
       case _          => NotModified
     }
   }
 
-  def saveDocRefId(id: DocRefId) = Action.async { implicit request =>
+  def saveDocRefId(id: DocRefId) = Action.async {
     docRepo.save(id).map {
       case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict

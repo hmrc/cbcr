@@ -20,25 +20,21 @@ import java.time.LocalDate
 import java.time._
 import java.time.format.DateTimeFormatter
 
-import cats.data.NonEmptyList
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{Json, _}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{Cursor, ReadConcern}
+import reactivemongo.api.Cursor
 import reactivemongo.api.commands.WriteResult
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
 
-import scala.math.Ordering.Implicits._
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
-
-import scala.util.Success
 
 @Singleton
 class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext)
@@ -64,7 +60,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def save(f: ReportingEntityData): Future[WriteResult] =
-    repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDate.now()))))
+    repository.flatMap(_.insert(ordered = false).one(f.copy(creationDate = Some(LocalDate.now()))))
 
   def update(p: ReportingEntityData): Future[Boolean] = {
 
@@ -72,7 +68,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     for {
       collection <- repository
-      update     <- collection.update(criteria, p)
+      update     <- collection.update(ordered = false).one(criteria, p)
     } yield update.ok
 
   }
@@ -85,7 +81,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     for {
       collection <- repository
-      update     <- collection.update(selector, update)
+      update     <- collection.update(ordered = false).one(selector, update)
     } yield update.ok
 
   }
@@ -291,7 +287,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("creationDate" -> c)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$set" -> Json.obj("creationDate" -> c)))
     } yield update.nModified
   }
 
@@ -299,15 +295,17 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("reportingEntityDRI" -> d.id)
     for {
       collection <- repository
-      update <- collection.update(
-                 criteria,
-                 Json.obj(
-                   "$set" -> Json.obj(
-                     "entityReportingPeriod" ->
-                       Json.obj(
-                         "startDate" -> JsString(erp.startDate.toString),
-                         "endDate"   -> JsString(erp.endDate.toString))))
-               )
+      update <- collection
+                 .update(ordered = false)
+                 .one(
+                   criteria,
+                   Json.obj(
+                     "$set" -> Json.obj(
+                       "entityReportingPeriod" ->
+                         Json.obj(
+                           "startDate" -> JsString(erp.startDate.toString),
+                           "endDate"   -> JsString(erp.endDate.toString))))
+                 )
     } yield update.ok
   }
 
@@ -315,7 +313,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
     } yield update.nModified
   }
 
@@ -331,7 +329,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
     } yield update.nModified
   }
 
@@ -339,7 +337,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("reportingEntityDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("entityReportingPeriod" -> 1)))
+      update <- collection
+                 .update(ordered = false)
+                 .one(criteria, Json.obj("$unset" -> Json.obj("entityReportingPeriod" -> 1)))
     } yield update.nModified
   }
 
@@ -347,7 +347,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("additionalInfoDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("additionalInfoDRI" -> d.id)))
+      update <- collection
+                 .update(ordered = false)
+                 .one(criteria, Json.obj("$set" -> Json.obj("additionalInfoDRI" -> d.id)))
     } yield update.nModified
   }
 

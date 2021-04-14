@@ -36,7 +36,7 @@ class MessageRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec:
     mongo.database.map(_.collection[JSONCollection]("MessageRefId"))
 
   def save(f: MessageRefId): Future[WriteResult] =
-    repository.flatMap(_.insert(f))
+    repository.flatMap(_.insert(ordered = false).one(f))
 
   def exists(messageRefId: String): Future[Boolean] = {
     val criteria = Json.obj("messageRefId" -> messageRefId)
