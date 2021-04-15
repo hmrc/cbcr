@@ -55,7 +55,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     response.status match {
       case 429 =>
         Logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
-        throw Upstream5xxResponse("429 received from DES - converted to 503", 429, 503)
+        throw UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
       case _ => handleResponse(http, url)(response)
     }
 

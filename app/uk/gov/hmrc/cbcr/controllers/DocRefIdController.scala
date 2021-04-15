@@ -37,7 +37,7 @@ class DocRefIdController @Inject()(
   cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def query(docRefId: DocRefId) = auth.authCBCR { implicit request =>
+  def query(docRefId: DocRefId) = auth.authCBCR { _ =>
     repo.query(docRefId).map {
       case DocRefIdResponses.Valid        => Ok
       case DocRefIdResponses.Invalid      => Conflict
@@ -45,7 +45,7 @@ class DocRefIdController @Inject()(
     }
   }
 
-  def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { implicit request =>
+  def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { _ =>
     repo.save(docRefId).map {
       case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
@@ -67,7 +67,7 @@ class DocRefIdController @Inject()(
     }
   }
 
-  def deleteDocRefId(docRefId: DocRefId) = Action.async { implicit request =>
+  def deleteDocRefId(docRefId: DocRefId) = Action.async { _ =>
     if (config.underlying.getBoolean(s"${runMode.env}.CBCId.enableTestApis")) {
       repo.delete(docRefId).map {
         case w if w.ok && w.n >= 1 => Ok

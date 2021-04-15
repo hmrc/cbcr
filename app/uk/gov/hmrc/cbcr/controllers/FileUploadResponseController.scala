@@ -44,7 +44,7 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
       )
   }
 
-  def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { implicit request =>
+  def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { _ =>
     repo.get(envelopeId).map {
       case Some(obj) => Ok(Json.toJson(obj))
       case None      => NoContent

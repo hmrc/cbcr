@@ -30,14 +30,14 @@ class MessageRefIdController @Inject()(repo: MessageRefIdRepository, auth: CBCRA
   implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def save(messageRefId: String) = auth.authCBCR { implicit request =>
+  def save(messageRefId: String) = auth.authCBCR { _ =>
     repo.save(MessageRefId(messageRefId)).map { wr =>
       if (wr.ok) Ok
       else InternalServerError
     }
   }
 
-  def exists(messageRefId: String) = auth.authCBCR { implicit request =>
+  def exists(messageRefId: String) = auth.authCBCR { _ =>
     repo.exists(messageRefId).map(result => if (result) Ok else NotFound)
   }
 

@@ -79,9 +79,11 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
         for {
           repo <- repository
           doc: FindAndModifyCommand.FindAndModifyResult <- repo.findAndModify(
-                                                            criteria,
-                                                            repo.updateModifier(
-                                                              BSONDocument("$set" -> BSONDocument("valid" -> false))))
+                                                             criteria,
+                                                             repo.updateModifier(
+                                                             BSONDocument("$set" -> BSONDocument("valid" -> false)))
+                                                           )
+
           validFlag = DocRefIdRecord.docRefIdValidity(d.id)
           x <- if (doc.result[DocRefIdRecord].isDefined) {
                 repo

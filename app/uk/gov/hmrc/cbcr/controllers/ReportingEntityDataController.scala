@@ -75,7 +75,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       parse.json
     )
 
-  def queryDocRefId(d: DocRefId) = auth.authCBCR { implicit request =>
+  def queryDocRefId(d: DocRefId) = auth.authCBCR { _ =>
     repo
       .queryReportingEntity(d)
       .map {
@@ -90,7 +90,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def query(d: DocRefId) = auth.authCBCR { implicit request =>
+  def query(d: DocRefId) = auth.authCBCR { _ =>
     repo
       .query(d)
       .map {
@@ -105,7 +105,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { implicit request =>
+  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { _ =>
     repo
       .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
       .map {
@@ -120,7 +120,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { implicit request =>
+  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { _ =>
     repo
       .queryTIN(tin, reportingPeriod)
       .map { reportEntityData =>
@@ -133,7 +133,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
   }
 
-  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { implicit request =>
+  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { _ =>
     repo
       .queryTINDatesOverlapping(tin, EntityReportingPeriod(LocalDate.parse(startDate), LocalDate.parse(endDate)))
       .map { result =>
@@ -147,7 +147,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
   }
 
-  def queryModel(d: DocRefId) = auth.authCBCR { implicit request =>
+  def queryModel(d: DocRefId) = auth.authCBCR { _ =>
     repo
       .queryModel(d)
       .map {
