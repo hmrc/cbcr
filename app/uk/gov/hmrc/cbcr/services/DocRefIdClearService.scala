@@ -39,6 +39,8 @@ class DocRefIdClearService @Inject()(
   runMode: RunMode,
   audit: AuditConnector)(implicit ec: ExecutionContext) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
 
   val docRefIds: List[DocRefId] = configuration.underlying
@@ -49,7 +51,7 @@ class DocRefIdClearService @Inject()(
     .map(DocRefId.apply)
 
   if (docRefIds.nonEmpty) {
-    Logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")
+    logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")
     docRefIds
       .map { d =>
         (for {
@@ -59,10 +61,10 @@ class DocRefIdClearService @Inject()(
         } yield ()).value
       }
       .sequence[Future, Either[String, Unit]]
-      .map(_.separate._1.foreach(Logger.error(_)))
+      .map(_.separate._1.foreach(logger.error(_)))
       .onComplete {
-        case Success(_) => Logger.info(s"Successfully deleted and audited ${docRefIds.size} DocRefIds")
-        case Failure(t) => Logger.error(s"Error in deleting and auditing the docRefIds: ${t.getMessage}", t)
+        case Success(_) => logger.info(s"Successfully deleted and audited ${docRefIds.size} DocRefIds")
+        case Failure(t) => logger.error(s"Error in deleting and auditing the docRefIds: ${t.getMessage}", t)
       }
   }
 

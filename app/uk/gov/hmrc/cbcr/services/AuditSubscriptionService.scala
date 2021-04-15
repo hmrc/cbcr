@@ -32,9 +32,11 @@ class AuditSubscriptionService @Inject()(
   runMode: RunMode,
   audit: AuditConnector)(implicit ex: ExecutionContext) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   val auditSubscriptions: Boolean =
     configuration.getOptional[Boolean](s"${runMode.env}.audit.subscriptions").getOrElse(false)
-  Logger.info(s"auditSubscriptions set to: $auditSubscriptions")
+  logger.info(s"auditSubscriptions set to: $auditSubscriptions")
 
   if (auditSubscriptions) {
     val cbcIds: List[CBCId] =
@@ -52,12 +54,12 @@ class AuditSubscriptionService @Inject()(
         sd.foreach(s =>
           auditSubscriptionDetails(s).onComplete {
             case Success(AuditResult.Success) =>
-              Logger.info(s"Successfully audited SubscriptionDetails of CBCId ${s.cbcId.toString}")
+              logger.info(s"Successfully audited SubscriptionDetails of CBCId ${s.cbcId.toString}")
             case Success(AuditResult.Failure(msg, _)) =>
-              Logger.warn(s"Unable to audit SubscriptionDetails of CBCId ${s.cbcId.toString} $msg")
+              logger.warn(s"Unable to audit SubscriptionDetails of CBCId ${s.cbcId.toString} $msg")
             case Success(AuditResult.Disabled) =>
-              Logger.warn(s"Auditing is disabled for SubscriptionDetails of CBCId ${s.cbcId.toString}")
-            case Failure(e) => Logger.warn(s"Audit failed to complete for CBCId ${s.cbcId.toString}, ${e.getMessage}")
+              logger.warn(s"Auditing is disabled for SubscriptionDetails of CBCId ${s.cbcId.toString}")
+            case Failure(e) => logger.warn(s"Audit failed to complete for CBCId ${s.cbcId.toString}, ${e.getMessage}")
         }))
 
   }

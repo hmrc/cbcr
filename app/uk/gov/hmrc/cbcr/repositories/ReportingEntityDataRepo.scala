@@ -40,6 +40,8 @@ import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext)
     extends IndexBuilder {
 
+  lazy val logging: Logger = Logger(this.getClass)
+
   override protected val collectionName: String = "ReportingEntityData"
   override protected val cbcIndexes: List[CbcIndex] = List(CbcIndex("Reporting Entity DocRefId", "reportingEntityDRI"))
 
@@ -134,7 +136,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + d + ".*"))),
         Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + d + ".*")))
       ))
-    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
+    logging.info(s"ReportingEntityData retrieval query criteria: $criteria")
     repository.flatMap(
       _.find(criteria, None)
         .cursor[ReportingEntityData]()
@@ -147,7 +149,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       "reportingPeriod"    -> reportingPeriod.toString
     )
 
-    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
+    logging.info(s"ReportingEntityData retrieval query criteria: $criteria")
     repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
@@ -213,7 +215,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def queryModel(d: DocRefId): Future[Option[ReportingEntityDataModel]] = {
-    Logger.info(s"query reportingEntityDataModel with docRefId: ${d.id}")
+    logging.info(s"query reportingEntityDataModel with docRefId: ${d.id}")
     val criteria = Json.obj(
       "$or" -> Json.arr(
         Json.obj("cbcReportsDRI"      -> d.id),

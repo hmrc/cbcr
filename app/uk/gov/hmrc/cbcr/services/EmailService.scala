@@ -35,6 +35,8 @@ class EmailService @Inject()(
   configuration: Configuration,
   runMode: RunMode)(implicit val ec: ExecutionContext) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
     configuration.getOptional[String](s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
 
@@ -44,13 +46,13 @@ class EmailService @Inject()(
       .map(res =>
         res.status match {
           case 202 =>
-            Logger.info("CBCR Successfully sent email")
+            logger.info("CBCR Successfully sent email")
             audit(email, CBCREmailSuccess)
             Accepted
       })
       .recover {
         case _ =>
-          Logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
+          logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
           audit(email, CBCREmailFailure)
           BadRequest
       }
@@ -66,9 +68,9 @@ class EmailService @Inject()(
             "path"  -> JsString(emailConnector.serviceUrl)
           )))
       .map {
-        case AuditResult.Success         => Logger.info(s"Successfully audited ${auditType.toString}")
-        case AuditResult.Failure(msg, _) => Logger.warn(s"Unable to audit ${auditType.toString} $msg")
-        case AuditResult.Disabled        => Logger.warn(s"Auditing is disabled for ${auditType.toString}")
+        case AuditResult.Success         => logger.info(s"Successfully audited ${auditType.toString}")
+        case AuditResult.Failure(msg, _) => logger.warn(s"Unable to audit ${auditType.toString} $msg")
+        case AuditResult.Disabled        => logger.warn(s"Auditing is disabled for ${auditType.toString}")
       }
 
 }

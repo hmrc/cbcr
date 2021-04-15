@@ -31,6 +31,8 @@ import scala.util.control.NonFatal
 
 abstract class IndexBuilder(implicit ec: ExecutionContext) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   protected val mongo: ReactiveMongoApi
   protected val collectionName: String
 
@@ -52,14 +54,14 @@ abstract class IndexBuilder(implicit ec: ExecutionContext) {
           })
           .onComplete {
             case Success(result) =>
-              Logger.warn(s"Indexes exist or created. Result: $result")
+              logger.warn(s"Indexes exist or created. Result: $result")
             case Failure(t) =>
-              Logger.error("Failed to create Indexes", t)
+              logger.error("Failed to create Indexes", t)
               throw t
           }
     })
     .recover {
-      case NonFatal(e) => Logger.error(s"Unable to create Index: ${e.getMessage}", e)
+      case NonFatal(e) => logger.error(s"Unable to create Index: ${e.getMessage}", e)
     }
 
   private def createUniqueIndex(manager: CollectionIndexesManager, fieldName: String, indexName: String): Future[Unit] =

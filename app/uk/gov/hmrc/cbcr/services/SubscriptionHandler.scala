@@ -42,8 +42,10 @@ class SubscriptionHandlerImpl @Inject()(
   runMode: RunMode)
     extends SubscriptionHandler {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   val useDESApi: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.useDESApi").valueOr(_ => false)
-  Logger.info(s"useDESApi set to: $useDESApi")
+  logger.info(s"useDESApi set to: $useDESApi")
 
   val handler: SubscriptionHandler = if (useDESApi) remoteCBCIdGenerator else localCBCIdGenerator
 

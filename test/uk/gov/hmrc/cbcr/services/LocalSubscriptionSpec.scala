@@ -19,9 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
-import cats.data.{OptionT, Validated}
-import cats.data.Validated.{Invalid, Valid}
-import cats.syntax.option._
+import cats.data.OptionT
 import cats.instances.future._
 import com.typesafe.config.ConfigFactory
 import org.mockito.Mockito._

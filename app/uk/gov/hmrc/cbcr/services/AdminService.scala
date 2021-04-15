@@ -51,6 +51,8 @@ class AdminService @Inject()(
   cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   def showAllDocRef = Action.async {
     docRefIdRepo.findAll().map(response => Ok(Json.toJson(displayAllDocRefId(response))))
   }
@@ -70,7 +72,7 @@ class AdminService @Inject()(
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
@@ -84,7 +86,7 @@ class AdminService @Inject()(
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
   }
@@ -98,7 +100,7 @@ class AdminService @Inject()(
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 

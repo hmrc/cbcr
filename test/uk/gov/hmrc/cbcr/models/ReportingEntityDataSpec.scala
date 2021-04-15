@@ -16,17 +16,9 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import org.scalatest.Matchers.defined
-
-import scala.concurrent.duration._
-import org.scalatest.Assertions._
 import org.scalatest.Suite
-import org.scalatest.FunSuite
-
-import scala.concurrent.Await
 
 class ReportingEntityDataSpec extends UnitSpec with Suite {
 

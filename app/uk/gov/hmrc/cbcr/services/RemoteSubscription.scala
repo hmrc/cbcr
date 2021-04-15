@@ -32,8 +32,10 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionContext: ExecutionContext)
     extends SubscriptionHandler {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   def checkResponse[T: Reads](response: HttpResponse)(f: T => Result): Result = {
-    Logger.info(s"Response body: ${response.body}")
+    logger.info(s"Response body: ${response.body}")
     response.status match {
       case OK =>
         if (response.json != null) {
@@ -41,7 +43,7 @@ class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionCont
             .validate[T]
             .fold[Result](
               errors => {
-                Logger.error(s"Unable to de-serialise response: ${response.body}\nErrors: $errors")
+                logger.error(s"Unable to de-serialise response: ${response.body}\nErrors: $errors")
                 InternalServerError
               },
               (t: T) => f(t)

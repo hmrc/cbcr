@@ -38,7 +38,7 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
   val cBCRAuth = new CBCRAuth(mockMicroServiceAuthConnector, cc)
   private type AuthAction = Request[AnyContent] => Future[Result]
 
-  val authAction: AuthAction = { implicit request =>
+  val authAction: AuthAction = { _ =>
     Future successful Ok
   }
 

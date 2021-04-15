@@ -35,6 +35,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
 
@@ -79,10 +81,10 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
         for {
           repo <- repository
           doc: FindAndModifyCommand.FindAndModifyResult <- repo.findAndModify(
-                                                             criteria,
-                                                             repo.updateModifier(
-                                                             BSONDocument("$set" -> BSONDocument("valid" -> false)))
-                                                           )
+                                                            criteria,
+                                                            repo.updateModifier(
+                                                              BSONDocument("$set" -> BSONDocument("valid" -> false)))
+                                                          )
 
           validFlag = DocRefIdRecord.docRefIdValidity(d.id)
           x <- if (doc.result[DocRefIdRecord].isDefined) {
@@ -91,7 +93,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
                   .one(DocRefIdRecord(d, valid = validFlag))
                   .map(w => if (w.ok) { Ok } else { Failed })
               } else {
-                Logger.error(doc.toString)
+                logger.error(doc.toString)
                 Future.successful(Failed)
               }
         } yield (Valid, Some(x))

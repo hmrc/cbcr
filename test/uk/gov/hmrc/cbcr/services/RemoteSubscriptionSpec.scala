@@ -30,7 +30,7 @@ import org.mockito.ArgumentMatchers.any
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.http.Status._
-import play.api.libs.json.{JsError, JsResult, JsValue, Json}
+import play.api.libs.json.{JsError, Json}
 
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}

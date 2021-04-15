@@ -23,8 +23,11 @@ import configs.syntax._
 
 @Singleton
 class RunMode @Inject()(configuration: Configuration) {
+
+  lazy val logger: Logger = Logger(this.getClass)
+
   private val APP_RUNNING_LOCALY: String = "Dev"
 
   val env: String = configuration.underlying.get[String]("run.mode").valueOr(_ => APP_RUNNING_LOCALY)
-  Logger.info(s"Current environment run.mode: $env")
+  logger.info(s"Current environment run.mode: $env")
 }

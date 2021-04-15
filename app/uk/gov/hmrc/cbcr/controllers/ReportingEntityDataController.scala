@@ -35,6 +35,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
   implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   def save() =
     auth.authCBCRWithJson(
       { implicit request =>
@@ -42,7 +44,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
           .validate[ReportingEntityData]
           .fold(
             error => {
-              Logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
+              logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
               Future.successful(BadRequest)
             },
             (data: ReportingEntityData) =>
@@ -62,7 +64,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
           .validate[PartialReportingEntityData]
           .fold(
             error => {
-              Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
+              logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
               Future.successful(BadRequest)
             },
             (data: PartialReportingEntityData) =>
@@ -84,7 +86,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
@@ -99,7 +101,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
@@ -114,7 +116,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
@@ -128,7 +130,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
   }
@@ -141,7 +143,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger
+          logger
             .error(s"Exception thrown trying to query for ReportingEntityData for overlapping rule: ${t.getMessage}", t)
           InternalServerError
       }
@@ -156,7 +158,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 

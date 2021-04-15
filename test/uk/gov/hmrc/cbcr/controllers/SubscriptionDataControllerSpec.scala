@@ -22,7 +22,6 @@ import cats.data.OptionT
 import cats.instances.future._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
