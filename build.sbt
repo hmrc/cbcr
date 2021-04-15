@@ -35,7 +35,6 @@ val compile = Seq(
   "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play26",
   "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
   ws,
-  "uk.gov.hmrc"       %% "auth-client"                % "5.2.0-play-26",
   "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "4.2.0",
   "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
