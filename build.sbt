@@ -40,8 +40,9 @@ val compile = Seq(
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
   "com.github.kxbmap" %% "configs"                    % "0.6.0",
   "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
-  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26"
-
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26",
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
 
 def test(scope: String = "test,it") = Seq(
@@ -126,6 +127,7 @@ lazy val microservice = Project(appName, file("."))
     "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/",
     Resolver.jcenterRepo
   ))
+  .settings(scalacOptions += "-P:silencer:pathFilters=routes")
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
   tests.map { test =>

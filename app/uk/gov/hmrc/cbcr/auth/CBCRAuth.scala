@@ -49,7 +49,7 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: Contr
     }
 
   def authCommon[A](action: AuthAction[A])(implicit request: Request[A]): Future[Result] = {
-    implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
+    implicit val hc = HeaderCarrierConverter.fromRequest(request)
     authorised(AuthProvider)
       .retrieve(affinityGroup) {
         case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)

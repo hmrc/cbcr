@@ -82,19 +82,23 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
       extraHeaders = Seq("Environment" -> urlHeaderEnvironment),
       authorization = Some(Authorization(urlHeaderAuthorization)))
 
+  private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
+
   def lookup(utr: String): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     logger.info(s"Lookup Request sent to DES")
-    http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData)).recover {
-      case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
-    }
+    http
+      .POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData), desHeaders)
+      .recover {
+        case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
+      }
   }
 
   def createSubscription(sub: SubscriptionRequest): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     implicit val writes = SubscriptionRequest.subscriptionWriter
     logger.info(s"Create Request sent to DES")
-    http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub).recover {
+    http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders).recover {
       case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }
@@ -111,7 +115,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
         logger.info("calling ETMP for migration")
         Thread.sleep(delayMigration)
         http
-          .POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig)
+          .POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig, desHeaders)
           .recover {
             case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
           }
@@ -133,7 +137,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     implicit val format = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
-    http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor).recover {
+    http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders).recover {
       case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }
@@ -141,7 +145,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def getSubscription(safeId: String): Future[HttpResponse] = {
     implicit val hc: HeaderCarrier = createHeaderCarrier
     logger.info(s"Get Request sent to DES for safeID: $safeId")
-    http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId").recover {
+    http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", headers = desHeaders).recover {
       case e: HttpException => HttpResponse.apply(status = e.responseCode, body = e.message)
     }
   }

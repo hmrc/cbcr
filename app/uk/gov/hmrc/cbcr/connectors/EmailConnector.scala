@@ -23,6 +23,7 @@ import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpPost, HttpResponse}
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 @ImplementedBy(classOf[EmailConnectorImpl])
 trait EmailConnector {

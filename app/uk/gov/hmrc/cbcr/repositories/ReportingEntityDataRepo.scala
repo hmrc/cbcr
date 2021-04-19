@@ -24,8 +24,8 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{Json, _}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.Cursor
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.{Cursor, WriteConcern}
+import reactivemongo.api.commands.{Collation, WriteResult}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
@@ -35,6 +35,8 @@ import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
+
+import scala.concurrent.duration.FiniteDuration
 
 @Singleton
 class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext)
@@ -108,7 +110,17 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         om = record.oldModel
         modifier = buildModifier(p, om, record)
         collection <- repository
-        update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+        update <- collection.findAndModify(
+                   criteria,
+                   JSONFindAndModifyCommand.Update(modifier),
+                   None,
+                   None,
+                   false,
+                   WriteConcern.Default,
+                   Option.empty[FiniteDuration],
+                   Option.empty[Collation],
+                   Seq.empty
+                 )
       } yield update.lastError.exists(_.updatedExisting)
     }
 

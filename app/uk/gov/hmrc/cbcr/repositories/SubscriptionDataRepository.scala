@@ -21,12 +21,14 @@ import cats.data.OptionT
 import cats.instances.future._
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.Cursor
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.{Cursor, WriteConcern}
+import reactivemongo.api.commands.{Collation, WriteResult}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
+
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -70,7 +72,17 @@ class SubscriptionDataRepository @Inject()(protected val mongo: ReactiveMongoApi
     val modifier = Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
     for {
       collection <- repository
-      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+      update <- collection.findAndModify(
+                 criteria,
+                 JSONFindAndModifyCommand.Update(modifier),
+                 None,
+                 None,
+                 false,
+                 WriteConcern.Default,
+                 Option.empty[FiniteDuration],
+                 Option.empty[Collation],
+                 Seq.empty
+               )
     } yield update.value.isDefined
   }
 
@@ -78,7 +90,17 @@ class SubscriptionDataRepository @Inject()(protected val mongo: ReactiveMongoApi
     val modifier = Json.obj("$set" -> Json.obj("businessPartnerRecord.address.countryCode" -> cc))
     for {
       collection <- repository
-      update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+      update <- collection.findAndModify(
+                 criteria,
+                 JSONFindAndModifyCommand.Update(modifier),
+                 None,
+                 None,
+                 false,
+                 WriteConcern.Default,
+                 Option.empty[FiniteDuration],
+                 Option.empty[Collation],
+                 Seq.empty
+               )
     } yield update.value.isDefined
   }
 
