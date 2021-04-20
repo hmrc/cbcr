@@ -20,12 +20,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import cats.data.NonEmptyList
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
+import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -33,13 +32,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerSuite {
+class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  val writeResult = DefaultWriteResult(true, 1, Seq.empty, None, None, None)
-  val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
   lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
   val docRefIdForDelete = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP10")
@@ -508,10 +505,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with OneAppPerS
       val finalRes2 = await(res2)
       finalRes2 shouldBe true
 
-      val res3 = reportingEntityDataRepository
-        .queryTINDatesOverlapping(
-          "3590617086",
-          EntityReportingPeriod(LocalDate.parse("2019-10-30"), LocalDate.parse("2020-01-29")))
       val finalRes3 = await(res2)
       finalRes3 shouldBe true
     }

@@ -23,7 +23,7 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import reactivemongo.api.commands.{UpdateWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -32,9 +32,9 @@ import scala.concurrent.Future
 
 class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
-  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  val okResult = UpdateWriteResult(true, 0, 1, Seq.empty, Seq.empty, None, None, None)
 
-  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+  val failResult = UpdateWriteResult(false, 1, 1, Seq.empty, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
 
   val fakePutRequest = FakeRequest(Helpers.PUT, "/messageRefId/myRefIDxx")
 

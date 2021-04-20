@@ -123,10 +123,6 @@ lazy val microservice = Project(appName, file("."))
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     parallelExecution in IntegrationTest := false,
     scalafmtOnCompile in IntegrationTest := true)
-  .settings(resolvers ++= Seq(
-    "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/",
-    Resolver.jcenterRepo
-  ))
   .settings(scalacOptions += "-P:silencer:pathFilters=routes")
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {

@@ -24,7 +24,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{Json, _}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{Cursor, WriteConcern}
+import reactivemongo.api.{Cursor, ReadConcern, WriteConcern}
 import reactivemongo.api.commands.{Collation, WriteResult}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
@@ -335,8 +335,13 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id, "creationDate" -> c)
     for {
       collection <- repository
-      found      <- collection.count(Some(criteria))
-    } yield found
+      found <- collection.count(
+                selector = Some(criteria),
+                limit = None,
+                hint = None,
+                skip = 0,
+                readConcern = ReadConcern.Available)
+    } yield found.toInt
   }
 
   def deleteReportingPeriod(d: DocRefId): Future[Int] = {

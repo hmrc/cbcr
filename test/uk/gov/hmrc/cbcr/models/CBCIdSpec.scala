@@ -19,9 +19,9 @@ package uk.gov.hmrc.cbcr.models
 import org.scalacheck.Gen
 import org.scalatest.WordSpec
 import org.scalatest.Matchers._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class CBCIdSpec extends WordSpec with GeneratorDrivenPropertyChecks {
+class CBCIdSpec extends WordSpec with ScalaCheckDrivenPropertyChecks {
 
   val arbBigNum = Gen.posNum[Int].map(_ + 999999)
 

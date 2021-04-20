@@ -34,6 +34,7 @@ import scala.concurrent.Future
 class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
   val dc = mock[DESConnector]
+  val headers = Map("example" -> Seq("headers"))
   passAuthMock()
   val controller = new BusinessPartnerRecordController(dc, cBCRAuth, cc)
 
@@ -62,28 +63,28 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
       )
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse(Status.OK, Some(response)))
+      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse.apply(Status.OK, response, headers))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.OK
     }
 
     "respond with a 404 if the UTR is not found" in {
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse(Status.NOT_FOUND))
+      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse.apply(Status.NOT_FOUND, "404"))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.NOT_FOUND
 
     }
     "respond with a 500 if the DES service is unavailable" in {
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse(Status.INTERNAL_SERVER_ERROR))
+      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse.apply(Status.INTERNAL_SERVER_ERROR, "500"))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.INTERNAL_SERVER_ERROR
 
     }
     "respond with a 400 if the DES service returns BAD_REQUEST" in {
       val utr = "700000002"
       val fakeRequestSubscribe = FakeRequest("GET", "/getBusinessPartnerRecord")
-      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse(Status.BAD_REQUEST))
+      when(dc.lookup(EQ(utr))) thenReturn Future.successful(HttpResponse.apply(Status.BAD_REQUEST, "400"))
       status(controller.getBusinessPartnerRecord(utr)(fakeRequestSubscribe)) shouldBe Status.BAD_REQUEST
 
     }

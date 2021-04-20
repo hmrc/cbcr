@@ -17,21 +17,20 @@
 package uk.gov.hmrc.cbcr.services
 
 import org.scalatest.concurrent.Eventually
-import org.scalatestplus.play.OneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
-import org.scalatest.BeforeAndAfterEach
-import reactivemongo.api.commands.DefaultWriteResult
+import reactivemongo.api.commands.UpdateWriteResult
 import org.mockito.Mockito._
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with OneAppPerSuite with Eventually {
+class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with Eventually {
 
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
@@ -42,8 +41,8 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with OneAppPerSuit
   val mockAudit = mock[AuditConnector]
 
   val testConfig = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
-  val writeResult = DefaultWriteResult(true, 1, Seq.empty, None, None, None)
-  val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  val writeResult = UpdateWriteResult(true, 1, 1, Seq.empty, Seq.empty, None, None, None)
+  val notFoundWriteResult = UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)
 
   when(runMode.env) thenReturn "Dev"
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)

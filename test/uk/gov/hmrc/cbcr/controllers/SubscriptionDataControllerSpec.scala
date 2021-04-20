@@ -22,32 +22,31 @@ import cats.data.OptionT
 import cats.instances.future._
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{DefaultWriteResult, WriteError, WriteResult}
+import reactivemongo.api.commands.{UpdateWriteResult, WriteError, WriteResult}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.cbcr.services.DataMigrationCriteria
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with OneAppPerSuite {
+class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
   val store = mock[SubscriptionDataRepository]
 
-  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  val okResult = UpdateWriteResult(true, 0, 1, Seq.empty, Seq.empty, None, None, None)
 
-  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+  val failResult = UpdateWriteResult(false, 1, 1, Seq.empty, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
   val config = app.injector.instanceOf[Configuration]
 
   val bpr = BusinessPartnerRecord(

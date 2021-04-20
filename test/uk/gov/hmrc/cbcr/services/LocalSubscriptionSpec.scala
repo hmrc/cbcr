@@ -25,8 +25,7 @@ import com.typesafe.config.ConfigFactory
 import org.mockito.Mockito._
 import org.scalatest.Matchers
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
@@ -34,6 +33,7 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.cbcr.util.UnitSpec
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -57,7 +57,7 @@ class LocalSubscriptionSpec
                                     |  }
                                     |}
 """.stripMargin)
-      )) with UnitSpec with Matchers with ScalaFutures with OneAppPerSuite with MockitoSugar {
+      )) with UnitSpec with Matchers with ScalaFutures with GuiceOneAppPerSuite with MockitoSugar {
 
   implicit val mat = ActorMaterializer()
 

@@ -17,11 +17,11 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import cats.data.OptionT
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.commands.{DefaultWriteResult, WriteResult}
+import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -30,13 +30,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with OneAppPerSuite {
+class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  val writeResult = DefaultWriteResult(true, 1, Seq.empty, None, None, None)
-  val notFoundWriteResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
   lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val subscriptionDataRepository = new SubscriptionDataRepository(reactiveMongoApi)
   val subscriberContact =
