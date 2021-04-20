@@ -49,8 +49,8 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
   "customDesRead" should {
     "successfully convert 429 from DES to 503" in new Setup {
       val httpResponse = HttpResponse.apply(429, "429")
-      val ex = intercept[Upstream4xxResponse](connector.customDESRead("test", "testUrl", httpResponse))
-      ex shouldBe Upstream4xxResponse("429 received from DES - converted to 503", 429, 503)
+      val ex = intercept[UpstreamErrorResponse](connector.customDESRead("test", "testUrl", httpResponse))
+      ex shouldBe UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
     }
   }
 

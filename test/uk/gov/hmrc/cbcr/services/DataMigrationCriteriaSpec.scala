@@ -27,7 +27,7 @@ class DataMigrationCriteriaSpec extends UnitSpec with GuiceOneAppPerSuite {
     import DataMigrationCriteria._
 
     "produce an jsObject when result cannot get the correct values from the configuration" in {
-      val failCaseJson = Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*"))
+      val failCaseJson = Json.obj("cbcId" -> Json.obj(f"$$regex" -> "X[A-Z]CBC00.*"))
       val configuration = Configuration()
 
       PRIVATE_BETA_CRITERIA(configuration) shouldBe failCaseJson
