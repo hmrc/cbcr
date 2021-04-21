@@ -25,9 +25,7 @@ import reactivemongo.api.{Cursor, WriteConcern}
 import reactivemongo.api.commands.{Collation, WriteResult}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
-
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -74,7 +72,7 @@ class SubscriptionDataRepository @Inject()(protected val mongo: ReactiveMongoApi
       collection <- repository
       update <- collection.findAndModify(
                  criteria,
-                 JSONFindAndModifyCommand.Update(modifier),
+                 collection.updateModifier(modifier),
                  None,
                  None,
                  false,
@@ -92,7 +90,7 @@ class SubscriptionDataRepository @Inject()(protected val mongo: ReactiveMongoApi
       collection <- repository
       update <- collection.findAndModify(
                  criteria,
-                 JSONFindAndModifyCommand.Update(modifier),
+                 collection.updateModifier(modifier),
                  None,
                  None,
                  false,
