@@ -222,7 +222,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "should return ReportingEntityData if it exists by criteria" in {
 
       val result: Future[List[ReportingEntityData]] = reportingEntityDataRepository.queryTIN("3590617086", "2019-10-01")
-      await(result.map(x => x.apply(0).ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+      await(result.map(x => x(0).ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
 
     }
   }

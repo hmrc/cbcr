@@ -91,7 +91,7 @@ object ReportingEntityData {
         .read[List[DocRefId]]
         .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
       (JsPath \ "reportingEntityDRI").read[DocRefId] and
-      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
+      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN(_, "")) and
       (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
       (JsPath \ "reportingRole").read[ReportingRole] and
       (JsPath \ "creationDate").readNullable[LocalDate] and
@@ -156,7 +156,7 @@ object ReportingEntityDataModel {
         .read[List[DocRefId]]
         .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
       (JsPath \ "reportingEntityDRI").read[DocRefId] and
-      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN.apply(_, "")) and
+      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN(_, "")) and
       (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
       (JsPath \ "reportingRole").read[ReportingRole] and
       (JsPath \ "creationDate").readNullable[LocalDate] and
