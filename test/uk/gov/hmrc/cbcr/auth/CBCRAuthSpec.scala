@@ -61,7 +61,7 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
     "return OK for an Agent" in {
       agentAuthStub(agentAffinity)
 
-      val response: Result = await(cBCRAuth.authCBCR(authAction).apply(FakeRequest()))
+      val response: Result = await(cBCRAuth.authCBCR(authAction)(FakeRequest()))
 
       response shouldBe Ok
     }

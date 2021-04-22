@@ -36,7 +36,7 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with G
 
       // given
       when(httpMock.POST[Email, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse.apply(202, "202")))
+        .thenReturn(Future.successful(HttpResponse(202, "202")))
 
       // when
       val result: Future[HttpResponse] = connector.sendEmail(correctEmail)

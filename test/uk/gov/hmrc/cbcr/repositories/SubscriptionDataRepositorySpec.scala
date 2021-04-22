@@ -112,7 +112,7 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
     "successfully fetch that getSubscriptions details " in {
       val modifier = Json.obj("subscriberContact" -> Json.toJson(subscriberContact))
       val result: Future[List[SubscriptionDetails]] = subscriptionDataRepository.getSubscriptions(modifier)
-      await(result.map(x => x.apply(0).subscriberContact.email.value)) shouldBe "dave@dave.com"
+      await(result.map(x => x(0).subscriberContact.email.value)) shouldBe "dave@dave.com"
     }
   }
 

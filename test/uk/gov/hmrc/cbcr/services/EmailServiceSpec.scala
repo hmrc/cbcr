@@ -49,7 +49,7 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
   "the email service" should {
     "return 202 when everything is ok" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse.apply(202, "202"))
+      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(202, "202"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
       when(runMode.env) thenReturn "Dev"
       val result: Future[Result] = emailService.sendEmail(correctEmail)
@@ -58,7 +58,7 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
     "return 400 when everything is ok" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse.apply(400, "400"))
+      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
       when(runMode.env) thenReturn "Dev"
 
@@ -68,7 +68,7 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
     "return 400 when everything is ok but audit fails" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse.apply(400, "400"))
+      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         Failure("test to designed to provoke an emotional response", None))
       when(runMode.env) thenReturn "Dev"
@@ -79,7 +79,7 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
     "return 400 when everything is ok but audit disabled" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse.apply(400, "400"))
+      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Disabled)
       when(runMode.env) thenReturn "Dev"
 
