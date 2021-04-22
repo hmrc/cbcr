@@ -35,6 +35,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
   implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   def save() =
     auth.authCBCRWithJson(
       { implicit request =>
@@ -42,7 +44,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
           .validate[ReportingEntityData]
           .fold(
             error => {
-              Logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
+              logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
               Future.successful(BadRequest)
             },
             (data: ReportingEntityData) =>
@@ -62,7 +64,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
           .validate[PartialReportingEntityData]
           .fold(
             error => {
-              Logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
+              logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
               Future.successful(BadRequest)
             },
             (data: PartialReportingEntityData) =>
@@ -75,7 +77,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       parse.json
     )
 
-  def queryDocRefId(d: DocRefId) = auth.authCBCR { implicit request =>
+  def queryDocRefId(d: DocRefId) = auth.authCBCR { _ =>
     repo
       .queryReportingEntity(d)
       .map {
@@ -84,13 +86,13 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
   }
 
-  def query(d: DocRefId) = auth.authCBCR { implicit request =>
+  def query(d: DocRefId) = auth.authCBCR { _ =>
     repo
       .query(d)
       .map {
@@ -99,13 +101,13 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
   }
 
-  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { implicit request =>
+  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { _ =>
     repo
       .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
       .map {
@@ -114,13 +116,13 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
 
   }
 
-  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { implicit request =>
+  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { _ =>
     repo
       .queryTIN(tin, reportingPeriod)
       .map { reportEntityData =>
@@ -128,12 +130,12 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
       }
   }
 
-  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { implicit request =>
+  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { _ =>
     repo
       .queryTINDatesOverlapping(tin, EntityReportingPeriod(LocalDate.parse(startDate), LocalDate.parse(endDate)))
       .map { result =>
@@ -141,13 +143,13 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger
+          logger
             .error(s"Exception thrown trying to query for ReportingEntityData for overlapping rule: ${t.getMessage}", t)
           InternalServerError
       }
   }
 
-  def queryModel(d: DocRefId) = auth.authCBCR { implicit request =>
+  def queryModel(d: DocRefId) = auth.authCBCR { _ =>
     repo
       .queryModel(d)
       .map {
@@ -156,9 +158,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
       .recover {
         case NonFatal(t) =>
-          Logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
           InternalServerError
-
       }
 
   }

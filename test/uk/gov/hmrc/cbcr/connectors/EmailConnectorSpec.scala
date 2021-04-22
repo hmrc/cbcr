@@ -19,16 +19,14 @@ package uk.gov.hmrc.cbcr.connectors
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{when, _}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.play.OneAppPerSuite
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with GuiceOneAppPerSuite {
 
@@ -37,9 +35,8 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with G
     "submit request to email micro service to send email and get successful response status" in new Setup {
 
       // given
-      val endpointUrl = "emailHost://emailHost:1337/hmrc/email"
       when(httpMock.POST[Email, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
-        .thenReturn(Future.successful(HttpResponse(202)))
+        .thenReturn(Future.successful(HttpResponse(202, "202")))
 
       // when
       val result: Future[HttpResponse] = connector.sendEmail(correctEmail)

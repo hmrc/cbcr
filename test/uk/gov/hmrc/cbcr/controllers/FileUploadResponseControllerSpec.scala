@@ -21,16 +21,16 @@ import akka.stream.ActorMaterializer
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import reactivemongo.api.commands.{UpdateWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -41,9 +41,9 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   val fir = UploadFileResponse("id1", "fid1", "status", None)
 
-  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
+  val okResult = UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)
 
-  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+  val failResult = UpdateWriteResult(false, 1, 1, Seq.empty, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fir))
 

@@ -22,6 +22,8 @@ import uk.gov.hmrc.cbcr.models.CBCId
 
 class CBCIdGenerator {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   private var CBCIdCount: Int = 0
 
   def incCBCIdCount(): Unit = CBCIdCount = CBCIdCount + 1
@@ -29,7 +31,7 @@ class CBCIdGenerator {
   def generateCbcId(): Validated[Throwable, CBCId] = {
     val newCBCId = CBCId.create(CBCIdCount + 1)
     newCBCId.fold(
-      error => Logger.error(s"Failed to generate CBCId: ${error.getMessage}"),
+      error => logger.error(s"Failed to generate CBCId: ${error.getMessage}"),
       _ => incCBCIdCount()
     )
     newCBCId

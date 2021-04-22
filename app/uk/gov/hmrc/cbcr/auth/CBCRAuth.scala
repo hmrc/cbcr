@@ -22,7 +22,7 @@ import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.affinityGroup
-import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,7 +49,7 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: Contr
     }
 
   def authCommon[A](action: AuthAction[A])(implicit request: Request[A]): Future[Result] = {
-    implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers)
+    implicit val hc = HeaderCarrierConverter.fromRequest(request)
     authorised(AuthProvider)
       .retrieve(affinityGroup) {
         case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)

@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.auth
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.mvc.Results.{Ok, Unauthorized}
 import play.api.mvc.{AnyContent, Request, Result}
@@ -28,6 +28,7 @@ import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, MissingBearerToken}
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import play.api.test.Helpers.stubControllerComponents
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -38,7 +39,7 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
   val cBCRAuth = new CBCRAuth(mockMicroServiceAuthConnector, cc)
   private type AuthAction = Request[AnyContent] => Future[Result]
 
-  val authAction: AuthAction = { implicit request =>
+  val authAction: AuthAction = { _ =>
     Future successful Ok
   }
 
@@ -60,7 +61,7 @@ class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
     "return OK for an Agent" in {
       agentAuthStub(agentAffinity)
 
-      val response: Result = await(cBCRAuth.authCBCR(authAction).apply(FakeRequest()))
+      val response: Result = await(cBCRAuth.authCBCR(authAction)(FakeRequest()))
 
       response shouldBe Ok
     }

@@ -21,13 +21,12 @@ import akka.stream.ActorMaterializer
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.JsString
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{DefaultWriteResult, WriteError}
+import reactivemongo.api.commands.UpdateWriteResult
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.cbcr.services.RunMode
@@ -35,11 +34,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.Future
 
-class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutures with MockAuth {
-
-  val okResult = DefaultWriteResult(true, 0, Seq.empty, None, None, None)
-
-  val failResult = DefaultWriteResult(false, 1, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with ScalaFutures with MockAuth {
 
   val fakePutRequest = FakeRequest(Helpers.PUT, "/DocRefId/myRefIDxx")
 
@@ -144,18 +139,20 @@ class DocRefIdControllerSpec extends UnitSpec with OneAppPerSuite with ScalaFutu
       val controller =
         new DocRefIdController(repo, config ++ Configuration("Dev.CBCId.enableTestApis" -> true), cBCRAuth, runMode, cc)
       "it exists and return a 200" in {
-        when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 1, Seq.empty, None, None, None)))
+        when(repo.delete(any()))
+          .thenReturn(Future.successful(UpdateWriteResult(true, 1, 1, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.OK
       }
       "it doesn't exist and return a 404" in {
-        when(repo.delete(any())).thenReturn(Future.successful(DefaultWriteResult(true, 0, Seq.empty, None, None, None)))
+        when(repo.delete(any()))
+          .thenReturn(Future.successful(UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
       "something goes wrong return a 500" in {
         when(repo.delete(any()))
-          .thenReturn(Future.successful(DefaultWriteResult(false, 0, Seq.empty, None, None, None)))
+          .thenReturn(Future.successful(UpdateWriteResult(false, 0, 0, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }

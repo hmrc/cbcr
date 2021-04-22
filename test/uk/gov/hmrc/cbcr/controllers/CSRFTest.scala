@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.controllers
 import play.api.Application
 import play.api.test.FakeRequest
 import play.filters.csrf.{CSRFConfigProvider, CSRFFilter}
-import scala.language.postfixOps
 
 trait CSRFTest {
   def addToken[T](fakeRequest: FakeRequest[T])(implicit app: Application) = {
@@ -27,6 +26,6 @@ trait CSRFTest {
     val csrfFilter = app.injector.instanceOf[CSRFFilter]
     val token = csrfFilter.tokenProvider.generateToken
 
-    fakeRequest.copyFakeRequest(tags = fakeRequest.tags).withHeaders((csrfConfig.headerName, token))
+    fakeRequest.withHeaders((csrfConfig.headerName, token))
   }
 }

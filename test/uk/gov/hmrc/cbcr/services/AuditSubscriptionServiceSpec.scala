@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when, _}
 import org.scalatest.concurrent.Eventually
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
@@ -30,7 +30,7 @@ import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with OneAppPerSuite with Eventually {
+class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with Eventually {
 
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]

@@ -30,6 +30,8 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   val graphiteConfig: Configuration = configuration
     .getOptional[Configuration]("microservice.metrics.graphite")
     .getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
@@ -43,7 +45,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   val registryName: String = configuration.getOptional[String]("metrics.name").getOrElse("default")
 
   private def startGraphite(): Unit = {
-    Logger.info("Graphite metrics enabled, starting the reporter")
+    logger.info("Graphite metrics enabled, starting the reporter")
 
     val graphite = new Graphite(
       new InetSocketAddress(
@@ -64,7 +66,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   }
 
   def configure(): Unit = {
-    Logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
+    logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
     lazy val appName = configuration.getOptional[String]("appName").get
     lazy val loggerDateFormat: Option[String] = configuration.getOptional[String]("logger.json.dateformat")
 

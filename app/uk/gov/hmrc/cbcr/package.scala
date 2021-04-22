@@ -35,7 +35,7 @@ package object cbcr {
   def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](fa.map(Right(_)))
 
-  def fromOptA[A](oa: UnexpectedOr[A])(implicit ec: ExecutionContext): ServiceResponse[A] =
+  def fromOptA[A](oa: UnexpectedOr[A]): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](Future.successful(oa))
 
   def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => InvalidState)(

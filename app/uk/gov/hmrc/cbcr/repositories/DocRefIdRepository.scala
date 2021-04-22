@@ -22,19 +22,21 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.WriteConcern
+import reactivemongo.api.commands.{Collation, WriteResult}
 import reactivemongo.bson.BSONDocument
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import reactivemongo.play.json.collection.JSONBatchCommands.FindAndModifyCommand
 import reactivemongo.play.json.collection.JSONCollection
-import uk.gov.hmrc.cbcr.models
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
 
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
+
+  lazy val logger: Logger = Logger(this.getClass)
 
   val repository: Future[JSONCollection] =
     mongo.database.map(_.collection[JSONCollection]("DocRefId"))
@@ -52,7 +54,7 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
     val criteria = Json.obj("id" -> doc.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("valid" -> true)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$set" -> Json.obj("valid" -> true)))
     } yield update.nModified
   }
 
@@ -62,7 +64,9 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
       repo <- repository
       x    <- repo.find(criteria, None).one[DocRefIdRecord]
       r <- if (x.isDefined) Future.successful(AlreadyExists)
-          else { repo.insert(DocRefIdRecord(f, valid = true)).map(w => if (w.ok) { Ok } else { Failed }) }
+          else {
+            repo.insert(ordered = false).one(DocRefIdRecord(f, valid = true)).map(w => if (w.ok) { Ok } else { Failed })
+          }
     } yield r
   }
 
@@ -77,15 +81,25 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
       case (Valid, DoesNotExist) =>
         for {
           repo <- repository
-          doc: FindAndModifyCommand.FindAndModifyResult <- repo.findAndModify(
-                                                            criteria,
-                                                            repo.updateModifier(
-                                                              BSONDocument("$set" -> BSONDocument("valid" -> false))))
+          doc <- repo.findAndModify(
+                  criteria,
+                  repo.updateModifier(BSONDocument("$set" -> BSONDocument("valid" -> false))),
+                  None,
+                  None,
+                  false,
+                  WriteConcern.Default,
+                  Option.empty[FiniteDuration],
+                  Option.empty[Collation],
+                  Seq.empty
+                )
           validFlag = DocRefIdRecord.docRefIdValidity(d.id)
           x <- if (doc.result[DocRefIdRecord].isDefined) {
-                repo.insert(DocRefIdRecord(d, valid = validFlag)).map(w => if (w.ok) { Ok } else { Failed })
+                repo
+                  .insert(ordered = false)
+                  .one(DocRefIdRecord(d, valid = validFlag))
+                  .map(w => if (w.ok) { Ok } else { Failed })
               } else {
-                Logger.error(doc.toString)
+                logger.error(doc.toString)
                 Future.successful(Failed)
               }
         } yield (Valid, Some(x))

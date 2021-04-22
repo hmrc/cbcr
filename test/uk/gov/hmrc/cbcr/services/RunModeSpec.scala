@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import org.scalatest.mockito.MockitoSugar
-import org.scalatestplus.play.OneAppPerSuite
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.util.UnitSpec

@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.repositories
 import com.google.inject.Inject
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.cbcr.models.{DocRefId, DocRefIdRecord}
+import uk.gov.hmrc.cbcr.models.DocRefIdRecord
 import uk.gov.hmrc.mongo.ReactiveRepository
 import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 

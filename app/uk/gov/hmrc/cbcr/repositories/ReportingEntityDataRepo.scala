@@ -20,29 +20,27 @@ import java.time.LocalDate
 import java.time._
 import java.time.format.DateTimeFormatter
 
-import cats.data.NonEmptyList
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{Json, _}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.{Cursor, ReadConcern}
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.{Cursor, ReadConcern, WriteConcern}
+import reactivemongo.api.commands.{Collation, WriteResult}
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
 import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.cbcr.models._
-
-import scala.math.Ordering.Implicits._
 import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.Logger
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 
-import scala.util.Success
+import scala.concurrent.duration.FiniteDuration
 
 @Singleton
 class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext)
     extends IndexBuilder {
+
+  lazy val logging: Logger = Logger(this.getClass)
 
   override protected val collectionName: String = "ReportingEntityData"
   override protected val cbcIndexes: List[CbcIndex] = List(CbcIndex("Reporting Entity DocRefId", "reportingEntityDRI"))
@@ -64,7 +62,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def save(f: ReportingEntityData): Future[WriteResult] =
-    repository.flatMap(_.insert(f.copy(creationDate = Some(LocalDate.now()))))
+    repository.flatMap(_.insert(ordered = false).one(f.copy(creationDate = Some(LocalDate.now()))))
 
   def update(p: ReportingEntityData): Future[Boolean] = {
 
@@ -72,7 +70,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     for {
       collection <- repository
-      update     <- collection.update(criteria, p)
+      update     <- collection.update(ordered = false).one(criteria, p)
     } yield update.ok
 
   }
@@ -85,7 +83,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
     for {
       collection <- repository
-      update     <- collection.update(selector, update)
+      update     <- collection.update(ordered = false).one(selector, update)
     } yield update.ok
 
   }
@@ -110,7 +108,17 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         om = record.oldModel
         modifier = buildModifier(p, om, record)
         collection <- repository
-        update     <- collection.findAndModify(criteria, JSONFindAndModifyCommand.Update(modifier))
+        update <- collection.findAndModify(
+                   criteria,
+                   collection.updateModifier(modifier),
+                   None,
+                   None,
+                   false,
+                   WriteConcern.Default,
+                   Option.empty[FiniteDuration],
+                   Option.empty[Collation],
+                   Seq.empty
+                 )
       } yield update.lastError.exists(_.updatedExisting)
     }
 
@@ -138,7 +146,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + d + ".*"))),
         Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + d + ".*")))
       ))
-    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
+    logging.info(s"ReportingEntityData retrieval query criteria: $criteria")
     repository.flatMap(
       _.find(criteria, None)
         .cursor[ReportingEntityData]()
@@ -151,7 +159,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
       "reportingPeriod"    -> reportingPeriod.toString
     )
 
-    Logger.info(s"ReportingEntityData retrieval query criteria: $criteria")
+    logging.info(s"ReportingEntityData retrieval query criteria: $criteria")
     repository.flatMap(_.find(criteria, None).one[ReportingEntityData])
   }
 
@@ -217,7 +225,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
   }
 
   def queryModel(d: DocRefId): Future[Option[ReportingEntityDataModel]] = {
-    Logger.info(s"query reportingEntityDataModel with docRefId: ${d.id}")
+    logging.info(s"query reportingEntityDataModel with docRefId: ${d.id}")
     val criteria = Json.obj(
       "$or" -> Json.arr(
         Json.obj("cbcReportsDRI"      -> d.id),
@@ -291,7 +299,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("creationDate" -> c)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$set" -> Json.obj("creationDate" -> c)))
     } yield update.nModified
   }
 
@@ -299,15 +307,17 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("reportingEntityDRI" -> d.id)
     for {
       collection <- repository
-      update <- collection.update(
-                 criteria,
-                 Json.obj(
-                   "$set" -> Json.obj(
-                     "entityReportingPeriod" ->
-                       Json.obj(
-                         "startDate" -> JsString(erp.startDate.toString),
-                         "endDate"   -> JsString(erp.endDate.toString))))
-               )
+      update <- collection
+                 .update(ordered = false)
+                 .one(
+                   criteria,
+                   Json.obj(
+                     "$set" -> Json.obj(
+                       "entityReportingPeriod" ->
+                         Json.obj(
+                           "startDate" -> JsString(erp.startDate.toString),
+                           "endDate"   -> JsString(erp.endDate.toString))))
+                 )
     } yield update.ok
   }
 
@@ -315,7 +325,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$unset" -> Json.obj("creationDate" -> 1)))
     } yield update.nModified
   }
 
@@ -323,15 +333,20 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("cbcReportsDRI" -> d.id, "creationDate" -> c)
     for {
       collection <- repository
-      found      <- collection.count(Some(criteria))
-    } yield found
+      found <- collection.count(
+                selector = Some(criteria),
+                limit = None,
+                hint = None,
+                skip = 0,
+                readConcern = ReadConcern.Available)
+    } yield found.toInt
   }
 
   def deleteReportingPeriod(d: DocRefId): Future[Int] = {
     val criteria = Json.obj("cbcReportsDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
+      update     <- collection.update(ordered = false).one(criteria, Json.obj("$unset" -> Json.obj("reportingPeriod" -> 1)))
     } yield update.nModified
   }
 
@@ -339,7 +354,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("reportingEntityDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$unset" -> Json.obj("entityReportingPeriod" -> 1)))
+      update <- collection
+                 .update(ordered = false)
+                 .one(criteria, Json.obj("$unset" -> Json.obj("entityReportingPeriod" -> 1)))
     } yield update.nModified
   }
 
@@ -347,7 +364,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     val criteria = Json.obj("additionalInfoDRI" -> d.id)
     for {
       collection <- repository
-      update     <- collection.update(criteria, Json.obj("$set" -> Json.obj("additionalInfoDRI" -> d.id)))
+      update <- collection
+                 .update(ordered = false)
+                 .one(criteria, Json.obj("$set" -> Json.obj("additionalInfoDRI" -> d.id)))
     } yield update.nModified
   }
 

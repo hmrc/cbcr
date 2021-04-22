@@ -48,7 +48,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteSubscription(utrs: String): Action[AnyContent] = Action.async { implicit request =>
+  def deleteSubscription(utrs: String): Action[AnyContent] = Action.async {
     {
       val utr = Utr(utrs)
       subRepo.clear(utr).map {
@@ -58,7 +58,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteSingleDocRefId(docRefIds: String): Action[AnyContent] = Action.async { implicit request =>
+  def deleteSingleDocRefId(docRefIds: String): Action[AnyContent] = Action.async {
     {
       val docRefId = DocRefId(docRefIds)
       docRefRepo.delete(docRefId).map {
@@ -68,7 +68,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteSingleMessageRefId(messageRefIds: String): Action[AnyContent] = Action.async { implicit request =>
+  def deleteSingleMessageRefId(messageRefIds: String): Action[AnyContent] = Action.async {
     {
       val messageRefId = MessageRefId(messageRefIds)
       messageRefIdRepository.delete(messageRefId).map {
@@ -82,18 +82,18 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteReportingEntityData(docRefId: String) = Action.async { implicit request =>
+  def deleteReportingEntityData(docRefId: String) = Action.async {
     reportingEntityDataRepo.delete(DocRefId(docRefId)).map(wr => if (wr.n == 0) NotFound else Ok)
   }
 
-  def dropReportingEntityDataCollection(): Action[AnyContent] = Action.async { implicit request =>
+  def dropReportingEntityDataCollection(): Action[AnyContent] = Action.async {
     reportingEntityDataRepo.removeAllDocs().map {
       case w if w.ok => Ok("Successfully drop reporting entity data collection")
       case _         => InternalServerError("Failed drop reporting entity data collection")
     }
   }
 
-  def updateReportingEntityCreationDate(creationDate: String, docRefId: String) = Action.async { implicit request =>
+  def updateReportingEntityCreationDate(creationDate: String, docRefId: String) = Action.async {
     {
       val dri = DocRefId(docRefId)
       val cd = LocalDate.parse(creationDate)
@@ -105,7 +105,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteReportingEntityCreationDate(docRefId: String) = Action.async { implicit request =>
+  def deleteReportingEntityCreationDate(docRefId: String) = Action.async {
     {
       val dri = DocRefId(docRefId)
 
@@ -116,7 +116,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def confirmReportingEntityCreationDate(creationDate: String, docRefId: String) = Action.async { implicit request =>
+  def confirmReportingEntityCreationDate(creationDate: String, docRefId: String) = Action.async {
     {
       val dri = DocRefId(docRefId)
       val cd = LocalDate.parse(creationDate)
@@ -128,7 +128,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteReportingEntityReportingPeriod(docRefId: String) = Action.async { implicit request =>
+  def deleteReportingEntityReportingPeriod(docRefId: String) = Action.async {
     {
       val dri = DocRefId(docRefId)
 
@@ -139,7 +139,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def deleteReportingPeriodByRepEntDocRefId(docRefId: String) = Action.async { implicit request =>
+  def deleteReportingPeriodByRepEntDocRefId(docRefId: String) = Action.async {
     {
       val dri = DocRefId(docRefId)
 
@@ -150,7 +150,7 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def validateNumberOfCbcIdForUtr(utr: String): Action[AnyContent] = Action.async { implicit request =>
+  def validateNumberOfCbcIdForUtr(utr: String): Action[AnyContent] = Action.async {
     {
 
       subRepo.checkNumberOfCbcIdForUtr(utr).map {
@@ -159,7 +159,8 @@ class TestSubscriptionDataController @Inject()(
       }
     }
   }
-  def updateReportingEntityAdditionalInfoDRI(docRefId: String) = Action.async { implicit request =>
+
+  def updateReportingEntityAdditionalInfoDRI(docRefId: String) = Action.async {
     {
       val dri = DocRefId(docRefId)
 
@@ -170,10 +171,11 @@ class TestSubscriptionDataController @Inject()(
     }
   }
 
-  def dropSubscriptionDataCollection() = Action.async { implicit request =>
+  def dropSubscriptionDataCollection() = Action.async {
     subRepo.removeAll().map {
       case w if w.ok => Ok("Successfully drop subscription data collection")
       case _         => InternalServerError("Failed drop subscription data collection")
     }
   }
+
 }

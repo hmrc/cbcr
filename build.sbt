@@ -32,17 +32,17 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-actor"     % akkaVersion
 dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 val compile = Seq(
-  "org.reactivemongo" %% "play2-reactivemongo" % "0.18.8-play26",
-  "org.reactivemongo" %% "reactivemongo-bson" % "0.18.8",
+  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play26",
+  "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
   ws,
-  "uk.gov.hmrc" %% "auth-client" % "3.0.0-play-26",
-  "uk.gov.hmrc" %% "bootstrap-backend-play-26" % "2.24.0",
-  "uk.gov.hmrc" %% "domain" % "5.9.0-play-26",
-  "org.typelevel" %% "cats" % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
-  "com.github.kxbmap" %% "configs" % "0.4.4",
-  "uk.gov.hmrc" %% "emailaddress" % "3.5.0",
-  "uk.gov.hmrc" %% "simple-reactivemongo" % "7.30.0-play-26"
-
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "4.2.0",
+  "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
+  "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
+  "com.github.kxbmap" %% "configs"                    % "0.6.0",
+  "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26",
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
 
 def test(scope: String = "test,it") = Seq(
@@ -123,10 +123,7 @@ lazy val microservice = Project(appName, file("."))
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     parallelExecution in IntegrationTest := false,
     scalafmtOnCompile in IntegrationTest := true)
-  .settings(resolvers ++= Seq(
-    "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/",
-    Resolver.jcenterRepo
-  ))
+  .settings(scalacOptions += "-P:silencer:pathFilters=routes")
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
   tests.map { test =>

@@ -72,7 +72,7 @@ class SubscriptionDataController @Inject()(
       parse.json
     )
 
-  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { implicit request =>
+  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .clearCBCId(cbcId)
       .cata[Result](
@@ -81,7 +81,7 @@ class SubscriptionDataController @Inject()(
       )
   }
 
-  def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { implicit request =>
+  def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .get(utr)
       .cata(
@@ -90,7 +90,7 @@ class SubscriptionDataController @Inject()(
       )
   }
 
-  def retrieveSubscriptionDataCBCId(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { implicit request =>
+  def retrieveSubscriptionDataCBCId(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .get(cbcId)
       .cata(

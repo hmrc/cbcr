@@ -29,21 +29,23 @@ class RetrieveReportingEntityService @Inject()(
   runMode: RunMode,
   audit: AuditConnector)(implicit ex: ExecutionContext) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   val retrieveReportingEntity: Boolean =
     configuration.getOptional[Boolean](s"${runMode.env}.retrieve.ReportingEntity").getOrElse(false)
 
-  Logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
+  logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
 
   if (retrieveReportingEntity) {
     val docRefId: String = configuration.getOptional[String](s"${runMode.env}.retrieve.docRefId").getOrElse("")
-    Logger.info(s"docRefId to retireve = $docRefId")
+    logger.info(s"docRefId to retireve = $docRefId")
 
     repo
       .query(docRefId)
       .map(
         red =>
           if (red.nonEmpty)
-            red.foreach(r => Logger.info(s"reportingEntityData for doc RefId $docRefId = ${Json.toJson(r)}"))
-          else Logger.info(s"no reportingEntityData found for docRefIds matching $docRefId"))
+            red.foreach(r => logger.info(s"reportingEntityData for doc RefId $docRefId = ${Json.toJson(r)}"))
+          else logger.info(s"no reportingEntityData found for docRefIds matching $docRefId"))
   }
 }

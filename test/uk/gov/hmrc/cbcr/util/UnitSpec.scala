@@ -24,7 +24,7 @@ import org.scalatest.{Matchers, OptionValues, WordSpecLike}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.models.{DatesOverlap, ReportingEntityData, ReportingEntityDataModel}
-
+import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
 

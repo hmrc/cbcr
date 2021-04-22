@@ -16,16 +16,11 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import java.time.LocalDate
-
-import cats.data.NonEmptyList
-import ch.qos.logback.classic.Level
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.{Configuration, Logger}
-import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.util.{LogCapturing, UnitSpec}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -46,23 +41,6 @@ class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with
     new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, runMode, audit)
   private val retrieveReportingEntityServiceWithMockRunMode =
     new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
-
-  private val tin = TIN("value", "issuedBy")
-  private val emptyDocRefId = DocRefId("")
-  private val ultimateParentEntity = UltimateParentEntity("")
-  private val reportingEntityData =
-    ReportingEntityData(
-      NonEmptyList(emptyDocRefId, List.empty),
-      List.empty,
-      DocRefId(""),
-      tin,
-      ultimateParentEntity,
-      reportingRole = CBC701,
-      None,
-      None,
-      None,
-      Some(EntityReportingPeriod(LocalDate.of(2015, 4, 1), LocalDate.of(2016, 3, 31)))
-    )
 
   private def isRetrieveReportingEntityTrue(rrEntityService: RetrieveReportingEntityService) =
     rrEntityService.retrieveReportingEntity

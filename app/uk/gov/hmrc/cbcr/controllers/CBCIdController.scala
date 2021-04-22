@@ -24,11 +24,10 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 @Singleton
-class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
+class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth, cc: ControllerComponents)
     extends BackendController(cc) {
 
   def subscribe =
