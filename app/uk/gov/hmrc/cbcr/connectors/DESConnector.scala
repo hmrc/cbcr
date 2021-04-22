@@ -77,10 +77,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     .get[Int](s"${runMode.env}.CBCId.delayMigration")
     .valueOr(_ => 60)
 
-  private def createHeaderCarrier: HeaderCarrier =
-    HeaderCarrier(
-      extraHeaders = Seq("Environment" -> urlHeaderEnvironment),
-      authorization = Some(Authorization(urlHeaderAuthorization)))
+  private def createHeaderCarrier: HeaderCarrier = HeaderCarrier()
 
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
 
