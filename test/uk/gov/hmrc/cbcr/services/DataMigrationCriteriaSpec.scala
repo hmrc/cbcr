@@ -27,6 +27,7 @@ class DataMigrationCriteriaSpec extends UnitSpec with GuiceOneAppPerSuite {
     import DataMigrationCriteria._
 
     "produce an jsObject when result cannot get the correct values from the configuration" in {
+      //https://stackoverflow.com/questions/39401213/disable-false-warning-possible-missing-interpolator/39401810
       val failCaseJson = Json.obj("cbcId" -> Json.obj(f"$$regex" -> "X[A-Z]CBC00.*"))
       val configuration = Configuration()
 
