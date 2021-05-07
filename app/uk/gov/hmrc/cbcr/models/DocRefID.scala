@@ -17,15 +17,18 @@
 package uk.gov.hmrc.cbcr.models
 
 import java.time.format.DateTimeFormatter
-
 import play.api.libs.json._
 import play.api.mvc.PathBindable
+import play.shaded.oauth.org.apache.commons.codec.net.URLCodec
 
 case class DocRefId(id: String)
 object DocRefId {
 
   implicit val pathFormat = new PathBindable[DocRefId] {
-    override def bind(key: String, value: String): Either[String, DocRefId] = Right(DocRefId(value))
+    override def bind(key: String, value: String): Either[String, DocRefId] = {
+      val decodedValue = new URLCodec().decode(value)
+      Right(DocRefId(decodedValue))
+    }
     override def unbind(key: String, value: DocRefId): String = value.id
   }
 
@@ -45,7 +48,10 @@ case class CorrDocRefId(cid: DocRefId)
 object CorrDocRefId {
 
   implicit val pathFormat = new PathBindable[CorrDocRefId] {
-    override def bind(key: String, value: String): Either[String, CorrDocRefId] = Right(CorrDocRefId(DocRefId(value)))
+    override def bind(key: String, value: String): Either[String, CorrDocRefId] = {
+      val decodedValue = new URLCodec().decode(value)
+      Right(CorrDocRefId(DocRefId(decodedValue)))
+    }
     override def unbind(key: String, value: CorrDocRefId): String = value.cid.id
   }
 
