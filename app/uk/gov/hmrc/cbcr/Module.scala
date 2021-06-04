@@ -65,7 +65,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     reporter.start(graphiteConfig.getOptional[Long]("interval").getOrElse(10L), SECONDS)
   }
 
-  def configure(): Unit = {
+  override def configure(): Unit = {
     logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
     lazy val appName = configuration.getOptional[String]("appName").get
     lazy val loggerDateFormat: Option[String] = configuration.getOptional[String]("logger.json.dateformat")
