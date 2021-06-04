@@ -14,26 +14,42 @@ val appName = "cbcr"
 
 lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
+val akkaVersion     = "2.5.23"
+
+val akkaHttpVersion = "10.0.15"
+
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-stream"    % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-protobuf"  % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-actor"     % akkaVersion
+
+dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
+
 val compile = Seq(
-  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play27",
+  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play26",
   "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
   ws,
-  "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % "5.3.0",
-  "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-27",
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "5.3.0",
+  "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
   "com.github.kxbmap" %% "configs"                    % "0.6.0",
   "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
-  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-28",
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
 )
 
 def test(scope: String = "test,it") = Seq(
-  "com.typesafe.akka" %% "akka-testkit" % "2.6.14" % scope,
+  "com.typesafe.akka" %% "akka-testkit" % "2.5.23" % scope,
+  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % scope,
-  "org.mockito" % "mockito-core" % "3.11.0" % scope,
-  "org.scalacheck" %% "scalacheck" % "1.15.4" % scope,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
+  "org.mockito" % "mockito-core" % "3.2.4" % scope,
+  "org.scalacheck" %% "scalacheck" % "1.14.3" % scope,
   "org.eu.acolyte" %% "play-reactive-mongo" % "1.0.45" % scope
 )
 
@@ -72,7 +88,7 @@ lazy val scoverageSettings = {
   import scoverage._
   Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 80,
+    ScoverageKeys.coverageMinimum := 80,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true
   )
@@ -92,20 +108,19 @@ lazy val microservice = Project(appName, file("."))
     scalaVersion := "2.12.13",
     libraryDependencies ++= appDependencies,
     retrieveManaged := true,
-    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    Compile / scalafmtOnCompile := true,
-    Test / scalafmtOnCompile := true
+    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    scalafmtOnCompile in Compile := true,
+    scalafmtOnCompile in Test := true
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(
-    IntegrationTest / Keys.fork := false,
-    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
+    Keys.fork in IntegrationTest := false,
+    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
-    IntegrationTest / parallelExecution := false,
-    IntegrationTest / scalafmtOnCompile := true)
-  .settings(Global / lintUnusedKeysOnLoad := false)
+    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
+    parallelExecution in IntegrationTest := false,
+    scalafmtOnCompile in IntegrationTest := true)
   .settings(scalacOptions += "-P:silencer:pathFilters=routes")
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.cbcr.services
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import akka.testkit.TestKit
 import cats.data.OptionT
 import cats.instances.future._
@@ -57,6 +58,8 @@ class LocalSubscriptionSpec
                                     |}
 """.stripMargin)
       )) with UnitSpec with Matchers with ScalaFutures with GuiceOneAppPerSuite with MockitoSugar {
+
+  implicit val mat = ActorMaterializer()
 
   val config = system.settings.config
   implicit val as = app.injector.instanceOf[ActorSystem]

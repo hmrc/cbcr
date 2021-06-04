@@ -17,6 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -52,6 +53,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveFileUploadResponse")
 
   implicit val as = ActorSystem()
+  implicit val mat = ActorMaterializer()
 
   val repo = mock[FileUploadRepository]
 

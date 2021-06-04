@@ -17,6 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import cats.data.OptionT
 import cats.instances.future._
 import org.mockito.ArgumentMatchers.any
@@ -81,6 +82,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
   val fakeDeleteRequest = FakeRequest(Helpers.DELETE, "subscription-data")
 
   implicit val as = ActorSystem()
+  implicit val mat = ActorMaterializer()
 
   val cbcId = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
   val utr = Utr("7000000002")

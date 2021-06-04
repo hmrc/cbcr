@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import java.time.LocalDateTime
 
 import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.emailaddress.EmailAddress
@@ -40,6 +41,7 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with GuiceOneApp
 
   implicit val as = app.injector.instanceOf[ActorSystem]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
+  implicit val mat = ActorMaterializer()
   val headers = Map("example" -> Seq("header"))
   val generator = new RemoteSubscription(desConnector)
 

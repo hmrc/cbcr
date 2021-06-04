@@ -63,11 +63,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     List(subscriptionDetails, subscriptionDetails2))
   when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
 
-  new AuditSubscriptionService(
-    subscriptionDataRepo,
-    config.withFallback(testConfig).withFallback(cbcIdConfig),
-    runMode,
-    mockAudit)
+  new AuditSubscriptionService(subscriptionDataRepo, config ++ testConfig ++ cbcIdConfig, runMode, mockAudit)
   "Calls to getSubscriptios" should {
     "complete and call audit for each subcription returned " in {
 
@@ -81,11 +77,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         AuditResult.Failure("failed audit", None))
 
-      new AuditSubscriptionService(
-        subscriptionDataRepo,
-        config.withFallback(testConfig).withFallback(cbcIdConfig),
-        runMode,
-        mockAudit)
+      new AuditSubscriptionService(subscriptionDataRepo, config ++ testConfig ++ cbcIdConfig, runMode, mockAudit)
       eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
     }
     "complete and audit disabled" in {
@@ -95,11 +87,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         List(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
 
-      new AuditSubscriptionService(
-        subscriptionDataRepo,
-        config.withFallback(testConfig).withFallback(cbcIdConfig),
-        runMode,
-        mockAudit)
+      new AuditSubscriptionService(subscriptionDataRepo, config ++ testConfig ++ cbcIdConfig, runMode, mockAudit)
       eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
     }
     "complete and audit throws error" in {
@@ -109,11 +97,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         List(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.failed(new Throwable("audit error"))
 
-      new AuditSubscriptionService(
-        subscriptionDataRepo,
-        config.withFallback(testConfig).withFallback(cbcIdConfig),
-        runMode,
-        mockAudit)
+      new AuditSubscriptionService(subscriptionDataRepo, config ++ testConfig ++ cbcIdConfig, runMode, mockAudit)
       eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
     }
 
