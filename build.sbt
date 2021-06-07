@@ -1,8 +1,6 @@
 import uk.gov.hmrc._
 import DefaultBuildSettings._
-import uk.gov.hmrc.{SbtAutoBuildPlugin, SbtArtifactory}
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
@@ -35,14 +33,14 @@ val compile = Seq(
   "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play26",
   "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
   ws,
-  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "4.2.0",
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "5.3.0",
   "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
   "com.github.kxbmap" %% "configs"                    % "0.6.0",
   "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
   "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
 )
 
 def test(scope: String = "test,it") = Seq(
@@ -50,7 +48,7 @@ def test(scope: String = "test,it") = Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % scope,
   "org.pegdown" % "pegdown" % "1.6.0" % scope,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
-  "org.mockito" % "mockito-core" % "3.2.4" % scope,
+  "org.mockito" % "mockito-core" % "3.11.0" % scope,
   "org.scalacheck" %% "scalacheck" % "1.14.3" % scope,
   "org.eu.acolyte" %% "play-reactive-mongo" % "1.0.45" % scope
 )
@@ -90,7 +88,7 @@ lazy val scoverageSettings = {
   import scoverage._
   Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimum := 80,
+    ScoverageKeys.coverageMinimumStmtTotal := 80,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true
   )
@@ -98,7 +96,7 @@ lazy val scoverageSettings = {
 
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala,SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory) ++ plugins : _*)
+  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
   .settings(playSettings ++ scoverageSettings : _*)
   .settings(scalaSettings: _*)
   .settings(playDefaultPort := 9797)
@@ -107,23 +105,24 @@ lazy val microservice = Project(appName, file("."))
   .settings(defaultSettings(): _*)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
-    scalaVersion := "2.12.11",
+    scalaVersion := "2.12.13",
     libraryDependencies ++= appDependencies,
     retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    scalafmtOnCompile in Compile := true,
-    scalafmtOnCompile in Test := true
+    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    Compile / scalafmtOnCompile := true,
+    Test / scalafmtOnCompile := true
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
   .settings(
-    Keys.fork in IntegrationTest := false,
-    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
+    IntegrationTest / Keys.fork := false,
+    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
     addTestReportOption(IntegrationTest, "int-test-reports"),
-    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
-    parallelExecution in IntegrationTest := false,
-    scalafmtOnCompile in IntegrationTest := true)
+    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
+    IntegrationTest / parallelExecution := false,
+    IntegrationTest / scalafmtOnCompile := true)
   .settings(scalacOptions += "-P:silencer:pathFilters=routes")
+  .settings(Global / lintUnusedKeysOnLoad := false)
 
 def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
   tests.map { test =>
