@@ -15,9 +15,7 @@ val appName = "cbcr"
 lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
 val akkaVersion     = "2.5.23"
-
 val akkaHttpVersion = "10.0.15"
-
 
 dependencyOverrides += "com.typesafe.akka" %% "akka-stream"    % akkaVersion
 
@@ -30,27 +28,27 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-actor"     % akkaVersion
 dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 val compile = Seq(
-  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play26",
-  "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
+  "org.reactivemongo" %% "play2-reactivemongo"        % "0.20.13-play28",
+  "org.reactivemongo" %% "reactivemongo-bson"         % "0.20.13",
   ws,
-  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "5.3.0",
-  "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % "5.7.0",
+  "uk.gov.hmrc"       %% "domain"                     % "6.1.0-play-28",
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
   "com.github.kxbmap" %% "configs"                    % "0.6.0",
   "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
-  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26",
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-28",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
 )
 
 def test(scope: String = "test,it") = Seq(
-  "com.typesafe.akka" %% "akka-testkit" % "2.5.23" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
-  "org.pegdown" % "pegdown" % "1.6.0" % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
-  "org.mockito" % "mockito-core" % "3.11.0" % scope,
-  "org.scalacheck" %% "scalacheck" % "1.14.3" % scope,
-  "org.eu.acolyte" %% "play-reactive-mongo" % "1.0.45" % scope
+  "com.typesafe.akka"       %% "akka-testkit"         % "2.5.23" % scope,
+  "org.scalatest"           %% "scalatest"            % "3.0.8" % scope,
+  "org.pegdown"             %  "pegdown"              % "1.6.0" % scope,
+  "org.scalatestplus.play"  %% "scalatestplus-play"   % "3.1.2" % scope,
+  "org.mockito"             %  "mockito-core"         % "3.11.0" % scope,
+  "org.scalacheck"          %% "scalacheck"           % "1.14.3" % scope,
+  "org.eu.acolyte"          %% "play-reactive-mongo"  % "1.0.45" % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -93,7 +91,6 @@ lazy val scoverageSettings = {
     ScoverageKeys.coverageHighlighting := true
   )
 }
-
 
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
