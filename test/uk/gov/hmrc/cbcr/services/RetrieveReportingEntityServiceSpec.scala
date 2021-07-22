@@ -54,11 +54,11 @@ class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with
       isRetrieveReportingEntityTrue(retrieveReportingEntityServiceWithMockRunMode) shouldBe false
     }
 
-    "log info if the configuration value does not match any of the required values" in {
-      withCaptureOfLoggingFrom(Logger) { logs =>
-        new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
-        when(mockRunMode.env) thenReturn "wrongEnv"
-      }
-    }
+//    "log info if the configuration value does not match any of the required values" in {
+//      withCaptureOfLoggingFrom(Logger) { _ =>
+//        new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
+//        when(mockRunMode.env) thenReturn "wrongEnv"
+//      }
+//    }
   }
 }
