@@ -38,14 +38,14 @@ val compile = Seq(
 )
 
 def test(scope: String = "test,it") = Seq(
-  "com.typesafe.akka"       %% "akka-testkit"         % "2.6.14" % scope,
-  "org.scalatest"           %% "scalatest"            % "3.0.9" % scope,
-  "com.vladsch.flexmark" % "flexmark-all" % "0.35.10" % scope,
-  "org.pegdown"             %  "pegdown"              % "1.6.0" % scope,
-  "org.scalatestplus.play"  %% "scalatestplus-play"   % "5.0.0" % scope,
-  "org.mockito"             %  "mockito-core"         % "3.11.2" % scope,
-  "org.scalacheck"          %% "scalacheck"           % "1.15.0" % scope,
-  "org.eu.acolyte"          %% "play-reactive-mongo"  % "1.0.50" % scope
+  "com.typesafe.akka"       %% "akka-testkit"         % "2.6.14"    % scope,
+  "org.scalatest"           %% "scalatest"            % "3.0.9"     % scope,
+  "com.vladsch.flexmark"    %  "flexmark-all"         % "0.35.10"   % scope,
+  "org.pegdown"             %  "pegdown"              % "1.6.0"     % scope,
+  "org.scalatestplus.play"  %% "scalatestplus-play"   % "5.0.0"     % scope,
+  "org.mockito"             %  "mockito-core"         % "3.11.2"    % scope,
+  "org.scalacheck"          %% "scalacheck"           % "1.15.0"    % scope,
+  "org.eu.acolyte"          %% "play-reactive-mongo"  % "1.0.50"    % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty
