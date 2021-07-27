@@ -25,8 +25,8 @@ dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 val compile = Seq(
   ws,
-  "org.reactivemongo" %% "play2-reactivemongo"        % "0.20.1-play28",
-  "org.reactivemongo" %% "reactivemongo-bson"         % "0.20.1",
+  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play27",
+  "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
   "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % "5.6.0",
   "uk.gov.hmrc"       %% "domain"                     % "6.1.0-play-28",
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),

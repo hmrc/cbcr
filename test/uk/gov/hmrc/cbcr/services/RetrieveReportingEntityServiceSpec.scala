@@ -60,5 +60,6 @@ class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with
 //        when(mockRunMode.env) thenReturn "wrongEnv"
 //      }
 //    }
+
   }
 }
