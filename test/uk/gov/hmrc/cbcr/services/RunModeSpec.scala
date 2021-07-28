@@ -26,7 +26,7 @@ class RunModeSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite {
 
   "attempt to retrieve the runMode env" when {
     "env explicitly set in app config" in {
-      val runMode = new RunMode(config ++ Configuration("run.mode" -> "Prod"))
+      val runMode = new RunMode(config.withFallback(Configuration("run.mode" -> "Prod")))
       runMode.env shouldBe ("Prod")
     }
 

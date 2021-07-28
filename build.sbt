@@ -14,43 +14,38 @@ val appName = "cbcr"
 
 lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
-val akkaVersion     = "2.5.23"
-
-val akkaHttpVersion = "10.0.15"
-
+val akkaVersion     = "2.6.14"
+val akkaHttpVersion = "10.2.4"
 
 dependencyOverrides += "com.typesafe.akka" %% "akka-stream"    % akkaVersion
-
 dependencyOverrides += "com.typesafe.akka" %% "akka-protobuf"  % akkaVersion
-
 dependencyOverrides += "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion
-
 dependencyOverrides += "com.typesafe.akka" %% "akka-actor"     % akkaVersion
-
 dependencyOverrides += "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 
 val compile = Seq(
-  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play26",
-  "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
   ws,
-  "uk.gov.hmrc"       %% "bootstrap-backend-play-26"  % "5.3.0",
-  "uk.gov.hmrc"       %% "domain"                     % "5.11.0-play-26",
+  "org.reactivemongo" %% "play2-reactivemongo"        % "0.19.7-play28",
+  "org.reactivemongo" %% "reactivemongo-bson"         % "0.19.7",
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % "5.6.0",
+  "uk.gov.hmrc"       %% "domain"                     % "6.1.0-play-28",
   "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
   "com.github.kxbmap" %% "configs"                    % "0.6.0",
   "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
-  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-26",
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-28",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
 )
 
 def test(scope: String = "test,it") = Seq(
-  "com.typesafe.akka" %% "akka-testkit" % "2.5.23" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
-  "org.pegdown" % "pegdown" % "1.6.0" % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % scope,
-  "org.mockito" % "mockito-core" % "3.11.0" % scope,
-  "org.scalacheck" %% "scalacheck" % "1.14.3" % scope,
-  "org.eu.acolyte" %% "play-reactive-mongo" % "1.0.45" % scope
+  "com.typesafe.akka"       %% "akka-testkit"         % "2.6.14"    % scope,
+  "org.scalatest"           %% "scalatest"            % "3.0.9"     % scope,
+  "com.vladsch.flexmark"    %  "flexmark-all"         % "0.35.10"   % scope,
+  "org.pegdown"             %  "pegdown"              % "1.6.0"     % scope,
+  "org.scalatestplus.play"  %% "scalatestplus-play"   % "5.0.0"     % scope,
+  "org.mockito"             %  "mockito-core"         % "3.11.2"    % scope,
+  "org.scalacheck"          %% "scalacheck"           % "1.15.0"    % scope,
+  "org.eu.acolyte"          %% "play-reactive-mongo"  % "1.0.50"    % scope
 )
 
 lazy val plugins : Seq[Plugins] = Seq.empty
@@ -94,7 +89,6 @@ lazy val scoverageSettings = {
   )
 }
 
-
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
   .settings(playSettings ++ scoverageSettings : _*)
@@ -120,7 +114,10 @@ lazy val microservice = Project(appName, file("."))
     addTestReportOption(IntegrationTest, "int-test-reports"),
     IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     IntegrationTest / parallelExecution := false,
-    IntegrationTest / scalafmtOnCompile := true)
+    IntegrationTest / scalafmtOnCompile := true,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+  )
   .settings(scalacOptions += "-P:silencer:pathFilters=routes")
   .settings(Global / lintUnusedKeysOnLoad := false)
 

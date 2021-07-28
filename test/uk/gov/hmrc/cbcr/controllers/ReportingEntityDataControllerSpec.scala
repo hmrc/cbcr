@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.controllers
 import java.time.LocalDate
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import cats.data.NonEmptyList
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -103,7 +102,6 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
   val cbcId = CBCId.create(56).toOption
 
   implicit val as = ActorSystem()
-  implicit val mat = ActorMaterializer()
 
   val repo = mock[ReportingEntityDataRepo]
 

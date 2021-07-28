@@ -20,7 +20,7 @@ import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.{Configuration, Logger}
+import play.api.Configuration
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.util.{LogCapturing, UnitSpec}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -54,11 +54,13 @@ class RetrieveReportingEntityServiceSpec extends LogCapturing with UnitSpec with
       isRetrieveReportingEntityTrue(retrieveReportingEntityServiceWithMockRunMode) shouldBe false
     }
 
-    "log info if the configuration value does not match any of the required values" in {
-      withCaptureOfLoggingFrom(Logger) { logs =>
-        new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
-        when(mockRunMode.env) thenReturn "wrongEnv"
-      }
-    }
+//    "log info if the configuration value does not match any of the required values" in {
+//      import play.api.Logger
+//      withCaptureOfLoggingFrom(Logger) { _ =>
+//        new RetrieveReportingEntityService(reportingEntityDataRepo, configuration, mockRunMode, audit)
+//        when(mockRunMode.env) thenReturn "wrongEnv"
+//      }
+//    }
+
   }
 }
