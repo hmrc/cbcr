@@ -114,6 +114,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
+  .settings(inConfig(Test)(testSettings))
   .settings(
     IntegrationTest / Keys.fork := false,
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
@@ -129,3 +130,13 @@ def oneForkedJvmPerTest(tests: Seq[TestDefinition]) = {
     new Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
   }
 }
+
+lazy val testSettings = Def.settings(
+  // Must fork so that config system properties are set
+  fork := true,
+  unmanagedResourceDirectories += (baseDirectory.value / "test" / "resources"),
+  javaOptions ++= Seq(
+    "-Dconfig.resource=test.application.conf",
+    "-Dlogger.resource=logback-test.xml"
+  )
+)
