@@ -28,6 +28,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class UploadSessionRepositorySpec
     extends UnitSpec with MockAuth with GuiceOneAppPerSuite with ScalaFutures with IntegrationPatience
@@ -52,13 +53,11 @@ class UploadSessionRepositorySpec
     }
     "must read UploadStatus" in {
       uploadRep.insert(uploadDetails)
-      val res = uploadRep.findByUploadId(uploadId)
-      whenReady(res) {
-        case Some(result) =>
-          result.uploadId shouldBe uploadDetails.uploadId
-          result.reference shouldBe uploadDetails.reference
-          result.status shouldBe uploadDetails.status
-      }
+      val res: Future[Option[UploadSessionDetails]] = uploadRep.findByUploadId(uploadId)
+      val result = res.futureValue.value
+      result.uploadId shouldBe uploadDetails.uploadId
+      result.reference shouldBe uploadDetails.reference
+      result.status shouldBe uploadDetails.status
     }
   }
 }

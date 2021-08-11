@@ -23,6 +23,7 @@ import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
+import services.{MongoBackedUploadProgressTracker, UploadProgressTracker}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
@@ -73,6 +74,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     if (graphiteEnabled) startGraphite
 
     bind(classOf[HttpClient]).to(classOf[DefaultHttpClient])
+    bind(classOf[UploadProgressTracker]).to(classOf[MongoBackedUploadProgressTracker])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
     MDC.put("appName", appName)
     loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
