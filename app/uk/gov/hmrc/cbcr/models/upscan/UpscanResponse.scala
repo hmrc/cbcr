@@ -88,13 +88,12 @@ object UploadDetails {
 
 case class ReadyCallbackBody(
   reference: Reference,
-  downloadUrl: URL,
+  downloadUrl: String,
   uploadDetails: UploadDetails
 ) extends CallbackBody
 
 object ReadyCallbackBody {
   // must be in scope to create Reads for ReadyCallbackBody
-  private implicit val urlFormat: Format[URL] = HttpUrlFormat.format
 
   implicit val writes: OWrites[ReadyCallbackBody] = OWrites { readyCallbackBody =>
     Json.obj(
@@ -106,7 +105,7 @@ object ReadyCallbackBody {
 
   implicit val reads: Reads[ReadyCallbackBody] = (
     (__ \ "reference").read[Reference] and
-      (__ \ "downloadUrl").read[URL] and
+      (__ \ "downloadUrl").read[String] and
       (__ \ "uploadDetails").read[UploadDetails]
   )(
     (ref, url, ud) => ReadyCallbackBody(ref, url, ud)
