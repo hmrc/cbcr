@@ -158,7 +158,8 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |"status": {
           |     "_type": "UploadedSuccessfully",
           |     "name": "name",
-          |     "downloadUrl": "downloadUrl"
+          |     "downloadUrl": "downloadUrl",
+          |     "mimeType":"xml"
           |   }
           |}""".stripMargin
 
@@ -166,7 +167,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
         BSONObjectID.parse("111111111111111111111111").get,
         UploadId("121"),
         Reference("ref"),
-        UploadedSuccessfully("name", "downloadUrl")
+        UploadedSuccessfully("name", "xml", "downloadUrl", None)
       )
 
       Json.toJson(uploadSessionDetails) mustBe Json.parse(expectedUploadSessionDetails)
@@ -181,7 +182,8 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |"status": {
           |     "_type": "UploadedSuccessfully",
           |     "name": "name",
-          |     "downloadUrl": "downloadUrl"
+          |     "downloadUrl": "downloadUrl",
+          |     "mimeType": "xml"
           |   }
           |}""".stripMargin
 
@@ -189,7 +191,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
         BSONObjectID.parse("111111111111111111111111").get,
         UploadId("121"),
         Reference("ref"),
-        UploadedSuccessfully("name", "downloadUrl")
+        UploadedSuccessfully("name", "xml", "downloadUrl", None)
       )
 
       Json.parse(json).as[UploadSessionDetails] mustBe expectedUploadSessionDetails

@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.cbcr.controllers.upscan
 
+import org.slf4j.LoggerFactory
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, BaseController, MessagesControllerComponents}
 import uk.gov.hmrc.cbcr.models.upscan.CallbackBody
 import uk.gov.hmrc.cbcr.services.UpscanCallbackDispatcher
@@ -33,7 +34,10 @@ class UploadCallbackController @Inject()(
   implicit override val messagesApi: MessagesApi)(implicit val ec: ExecutionContext)
     extends BaseController with WithJsonBody with I18nSupport {
 
+  private val logger = LoggerFactory.getLogger(getClass)
+
   val callback: Action[JsValue] = Action.async(parse.json) { implicit request =>
+    logger.info(s"Received callback notification [${Json.stringify(request.body)}]")
     withJsonBody[CallbackBody] { feedback: CallbackBody =>
       upscanCallbackDispatcher
         .handleCallback(feedback)

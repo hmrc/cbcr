@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.models.upscan
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
+import java.net.URL
 import java.time.Instant
 
 case class UpscanInitiateResponse(
@@ -79,7 +80,7 @@ object CallbackBody {
   }
 }
 
-case class UploadDetails(uploadTimestamp: Instant, checksum: String, fileMimeType: String, fileName: String)
+case class UploadDetails(uploadTimestamp: Instant, checksum: String, fileMimeType: String, fileName: String, size: Long)
 
 object UploadDetails {
   implicit val format = Json.format[UploadDetails]
@@ -87,11 +88,13 @@ object UploadDetails {
 
 case class ReadyCallbackBody(
   reference: Reference,
-  downloadUrl: String,
+  downloadUrl: URL,
   uploadDetails: UploadDetails
 ) extends CallbackBody
 
 object ReadyCallbackBody {
+  // must be in scope to create Reads for ReadyCallbackBody
+  private implicit val urlFormat: Format[URL] = HttpUrlFormat.format
 
   implicit val writes: OWrites[ReadyCallbackBody] = OWrites { readyCallbackBody =>
     Json.obj(
@@ -103,7 +106,7 @@ object ReadyCallbackBody {
 
   implicit val reads: Reads[ReadyCallbackBody] = (
     (__ \ "reference").read[Reference] and
-      (__ \ "downloadUrl").read[String] and
+      (__ \ "downloadUrl").read[URL] and
       (__ \ "uploadDetails").read[UploadDetails]
   )(
     (ref, url, ud) => ReadyCallbackBody(ref, url, ud)
