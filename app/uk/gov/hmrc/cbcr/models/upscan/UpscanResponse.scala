@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.models.upscan
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-import java.net.URL
 import java.time.Instant
 
 case class UpscanInitiateResponse(
