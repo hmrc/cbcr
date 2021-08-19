@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -44,7 +43,6 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
 
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
   implicit val as = ActorSystem()
-  implicit val mat = ActorMaterializer()
   val config = app.injector.instanceOf[Configuration]
 
   val repo = mock[DocRefIdRepository]
@@ -137,35 +135,45 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
       val runMode = mock[RunMode]
       when(runMode.env) thenReturn "Dev"
       val controller =
-        new DocRefIdController(repo, config ++ Configuration("Dev.CBCId.enableTestApis" -> true), cBCRAuth, runMode, cc)
+        new DocRefIdController(
+          repo,
+          Configuration("Dev.CBCId.enableTestApis" -> true).withFallback(config),
+          cBCRAuth,
+          runMode,
+          cc)
+
       "it exists and return a 200" in {
         when(repo.delete(any()))
           .thenReturn(Future.successful(UpdateWriteResult(true, 1, 1, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.OK
       }
+
       "it doesn't exist and return a 404" in {
         when(repo.delete(any()))
           .thenReturn(Future.successful(UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
+
       "something goes wrong return a 500" in {
         when(repo.delete(any()))
           .thenReturn(Future.successful(UpdateWriteResult(false, 0, 0, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
+
       "return NOT_IMPLEMENTED if enableTestApis = false" in {
         val controller = new DocRefIdController(
           repo,
-          config ++ Configuration("Dev.CBCId.enableTestApis" -> false),
+          config.withFallback(Configuration("Dev.CBCId.enableTestApis" -> false)),
           cBCRAuth,
           runMode,
           cc)
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.NOT_IMPLEMENTED
       }
+
     }
   }
 }

@@ -22,7 +22,6 @@ import reactivemongo.api.commands.DefaultWriteResult
 import reactivemongo.api.indexes.{CollectionIndexesManager, Index}
 import reactivemongo.play.json.collection.JSONCollection
 
-import scala.concurrent.Future
 import scala.util.{Failure, Success}
 import reactivemongo.api.indexes.IndexType.Ascending
 

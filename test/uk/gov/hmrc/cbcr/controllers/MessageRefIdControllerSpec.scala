@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -42,7 +41,6 @@ class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAut
   implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
 
   implicit val as = ActorSystem()
-  implicit val mat = ActorMaterializer()
 
   val repo = mock[MessageRefIdRepository]
 
