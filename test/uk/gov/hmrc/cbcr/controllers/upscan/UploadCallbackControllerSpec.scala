@@ -56,7 +56,7 @@ class UploadCallbackControllerSpec extends SpecBase {
           |                 "checksum": "",
           |                 "fileMimeType": "",
           |                 "fileName": "",
-          |                 "size": 45678L
+          |                 "size": 45678
           |               }
           |}""".stripMargin
 
