@@ -33,10 +33,10 @@ class SubmissionConnector @Inject()(
   http: HttpClient
 )(implicit ec: ExecutionContext) {
 
-  //TODO - DAC6-1015 - Change below submission URL when URL is provided
+  //TODO - Change below submission URL when URL is provided
   val submissionUrl = s"${config.submissionUrl}/dac6/dct06/v1"
 
-  def submitReport(submission: NodeSeq)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def submitDisclosure(submission: NodeSeq)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     val newHeaders: HeaderCarrier = hc
       .copy(authorization = Some(Authorization(s"Bearer ${config.bearerToken}")))
 
