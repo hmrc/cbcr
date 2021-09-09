@@ -53,7 +53,6 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
         result.status shouldBe OK
       }
     }
-    // TODO - add below tests
 
     "throw an exception when upscan returns a 4xx response" in {
 
