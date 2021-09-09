@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqua
 import play.api.Application
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.cbcr.base.SpecBase
+import uk.gov.hmrc.cbcr.util.SpecBase
 import uk.gov.hmrc.cbcr.helpers.WireMockHelper
 
 class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
