@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import uk.gov.hmrc.cbcr.models.NamespaceForNode
 
 import javax.inject.Inject
-import scala.xml.{Elem, Node, NodeSeq}
+import scala.xml.{Elem, NamespaceBinding, Node, NodeSeq, TopScope}
 
 class TransformService @Inject()() {
 
@@ -55,5 +55,17 @@ class TransformService @Inject()() {
 
     changeNS(file)
   }
+
+  def addNameSpaceDefinitions(submissionFile: NodeSeq): NodeSeq =
+    for (node <- submissionFile)
+      yield
+        node match {
+          case elem: Elem =>
+            elem.copy(
+              scope = NamespaceBinding(
+                "xsi",
+                "http://www.w3.org/2001/XMLSchema-instance",
+                NamespaceBinding("cbc", "urn:cbc:v0.1", TopScope)))
+        }
 
 }
