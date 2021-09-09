@@ -49,7 +49,7 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
 
       val xml = <test></test>
 
-      whenReady(connector.submitDisclosure(xml)) { result =>
+      whenReady(connector.submitReport(xml)) { result =>
         result.status shouldBe OK
       }
     }
@@ -66,7 +66,7 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
 
       val xml = <test></test>
 
-      val result = connector.submitDisclosure(xml)
+      val result = connector.submitReport(xml)
 
       result.futureValue.status shouldBe BAD_REQUEST
     }
@@ -82,7 +82,7 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
       )
 
       val xml = <test></test>
-      val result = connector.submitDisclosure(xml)
+      val result = connector.submitReport(xml)
       result.futureValue.status shouldBe SERVICE_UNAVAILABLE
     }
   }
