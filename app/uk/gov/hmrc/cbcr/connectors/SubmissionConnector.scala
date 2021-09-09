@@ -26,13 +26,14 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.NodeSeq
+import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 
 class SubmissionConnector @Inject()(
   val config: AppConfig,
   http: HttpClient
 )(implicit ec: ExecutionContext) {
 
-  //TODO - Change below submission URL when URL is provided
+  //TODO - DAC6-1015 - Change below submission URL when URL is provided
   val submissionUrl = s"${config.submissionUrl}/dac6/dct06/v1"
 
   def submitDisclosure(submission: NodeSeq)(implicit hc: HeaderCarrier): Future[HttpResponse] = {

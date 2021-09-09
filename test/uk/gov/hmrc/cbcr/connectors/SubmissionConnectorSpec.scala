@@ -17,18 +17,13 @@
 package uk.gov.hmrc.cbcr.connectors
 
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, post, urlEqualTo}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import uk.gov.hmrc.cbcr.base.SpecBase
 import uk.gov.hmrc.cbcr.helpers.WireMockHelper
-import uk.gov.hmrc.http.HttpClient
 
-class SubmissionConnectorSpec extends SpecBase with GuiceOneAppPerSuite with WireMockHelper with ScalaFutures {
-
-  val httpMock: HttpClient = mock[HttpClient]
+class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
 
   override def fakeApplication(): Application =
     new GuiceApplicationBuilder()
@@ -39,8 +34,11 @@ class SubmissionConnectorSpec extends SpecBase with GuiceOneAppPerSuite with Wir
 
   lazy val connector: SubmissionConnector = app.injector.instanceOf[SubmissionConnector]
 
+  //TODO - DAC6-1015 - Change below submission URLs when URL is provided
+
   "Submission Connector" should {
     "should return OK when the backend returns a valid successful response" in {
+
       server.stubFor(
         post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
           .willReturn(
@@ -56,37 +54,37 @@ class SubmissionConnectorSpec extends SpecBase with GuiceOneAppPerSuite with Wir
       }
     }
     // TODO - add below tests
-//
-//    "throw an exception when upscan returns a 4xx response" in {
-//
-//      server.stubFor(
-//        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
-//          .willReturn(
-//            aResponse()
-//              .withStatus(BAD_REQUEST)
-//          )
-//      )
-//
-//      val xml = <test></test>
-//
-//      val result = connector.submitDisclosure(xml)
-//
-//      result.futureValue.status shouldBe BAD_REQUEST
-//    }
-//
-//    "throw an exception when upscan returns 5xx response" in {
-//
-//      server.stubFor(
-//        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
-//          .willReturn(
-//            aResponse()
-//              .withStatus(SERVICE_UNAVAILABLE)
-//          )
-//      )
-//
-//      val xml = <test></test>
-//      val result = connector.submitDisclosure(xml)
-//      result.futureValue.body shouldBe SERVICE_UNAVAILABLE
-//    }
+
+    "throw an exception when upscan returns a 4xx response" in {
+
+      server.stubFor(
+        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
+          .willReturn(
+            aResponse()
+              .withStatus(BAD_REQUEST)
+          )
+      )
+
+      val xml = <test></test>
+
+      val result = connector.submitDisclosure(xml)
+
+      result.futureValue.status shouldBe BAD_REQUEST
+    }
+
+    "throw an exception when upscan returns 5xx response" in {
+
+      server.stubFor(
+        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
+          .willReturn(
+            aResponse()
+              .withStatus(SERVICE_UNAVAILABLE)
+          )
+      )
+
+      val xml = <test></test>
+      val result = connector.submitDisclosure(xml)
+      result.futureValue.status shouldBe SERVICE_UNAVAILABLE
+    }
   }
 }
