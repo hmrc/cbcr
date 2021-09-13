@@ -1,14 +1,13 @@
-import uk.gov.hmrc._
-import DefaultBuildSettings._
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
-import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
+import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-import play.sbt.PlayImport.PlayKeys.playDefaultPort
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
-import play.sbt.PlayImport._
 import sbt._
+import uk.gov.hmrc.DefaultBuildSettings._
+import uk.gov.hmrc._
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "cbcr"
 
