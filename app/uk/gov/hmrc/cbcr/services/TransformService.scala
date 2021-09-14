@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import uk.gov.hmrc.cbcr.models.NamespaceForNode
+import uk.gov.hmrc.cbcr.models.{NamespaceForNode, SubscriberContact}
 
 import javax.inject.Inject
-import scala.xml.{Elem, NamespaceBinding, Node, NodeSeq, TopScope}
+import scala.xml.{Elem, NamespaceBinding, Node, NodeSeq, PrettyPrinter, TopScope}
 
 class TransformService @Inject()() {
+  val WIDTH = 1000000
+  val STEP = 2
+  val prettyPrinter = new PrettyPrinter(WIDTH, STEP)
 
   def addNameSpaces(file: NodeSeq, namespaces: Seq[NamespaceForNode]): NodeSeq = {
 
@@ -67,5 +70,10 @@ class TransformService @Inject()() {
                 "http://www.w3.org/2001/XMLSchema-instance",
                 NamespaceBinding("cbc", "urn:cbc:v0.1", TopScope)))
         }
+
+  def transformContactInformation(
+    contactInformation: SubscriberContact
+  ): NodeSeq =
+    <contactDetails><phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber><emailAddress>{contactInformation.email}</emailAddress><individualDetails><firstName>{contactInformation.firstName}</firstName><lastName>{contactInformation.lastName}</lastName></individualDetails></contactDetails>
 
 }
