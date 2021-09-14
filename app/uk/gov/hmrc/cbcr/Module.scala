@@ -48,15 +48,8 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
   val registryName: String = configuration.getOptional[String]("metrics.name").getOrElse("default")
 
-  val runMode: RunMode = new RunMode(configuration)
-
   // TODO review property when actual DCT06_EIS_UK_SCHEMA.xsd is available
-  val path = s"${runMode.env}.oecd-schema-version"
-
-  val schemaVer: String = configuration.getOptional[String](path).getOrElse {
-    logger.error(s"Failed to find $path in config")
-    throw new Exception(s"Missing configuration $path")
-  }
+  val schemaVer: String = configuration.getOptional[String]("oecd-schema-version").getOrElse("2.0")
 
   private def startGraphite(): Unit = {
     logger.info("Graphite metrics enabled, starting the reporter")
