@@ -17,8 +17,9 @@
 package uk.gov.hmrc.cbcr.services
 
 import org.scalatest.StreamlinedXmlEquality
+import uk.gov.hmrc.cbcr.models.{NamespaceForNode, PhoneNumber, SubscriberContact}
 import uk.gov.hmrc.cbcr.util.SpecBase
-import uk.gov.hmrc.cbcr.models.NamespaceForNode
+import uk.gov.hmrc.emailaddress.EmailAddress
 
 import scala.xml.NodeSeq
 
@@ -117,6 +118,26 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
       val result = service.addNameSpaceDefinitions(file)
 
       result.toString shouldBe expected.toString
+    }
+
+    "must transform ContactInformation from SubscriberContact" in {
+      val service = app.injector.instanceOf[TransformService]
+
+      val contactInformation = SubscriberContact(
+        name = None,
+        firstName = "firstName",
+        lastName = "lastName",
+        phoneNumber = PhoneNumber("123456789").get,
+        email = EmailAddress("email@email.com")
+      )
+
+      val expected =
+        <contactDetails><phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber><emailAddress>{contactInformation.email}</emailAddress><individualDetails><firstName>{contactInformation.firstName}</firstName><lastName>{contactInformation.lastName}</lastName></individualDetails></contactDetails>
+
+      val result =
+        service.transformContactInformation(contactInformation)
+
+      result shouldBe expected
     }
   }
 }
