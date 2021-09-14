@@ -31,8 +31,10 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
 
       val service = app.injector.instanceOf[TransformService]
 
+      //TODO - DAC6-1021 update schema when available
+
       val file =
-        <CBCSubmissionInboundRequest xmlns:cbc="urn:eu:taxud:cbc:v1"
+        <CBCSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
                                         xmlns:eis="http://www.hmrc.gov.uk/cbc/eis"
                                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                         xsi:schemaLocation="http://www.hmrc.gov.uk/cbc/eis/CBC_EIS_UK_schema.xsd">
@@ -42,7 +44,7 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
         </CBCSubmissionInboundRequest>
 
       val expected =
-        <eis:CBCSubmissionInboundRequest xmlns:cbc="urn:eu:taxud:cbc:v1"
+        <eis:CBCSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
                                             xmlns:eis="http://www.hmrc.gov.uk/cbc/eis"
                                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                             xsi:schemaLocation="http://www.hmrc.gov.uk/cbc/eis/CBC_EIS_UK_schema.xsd">
@@ -60,14 +62,14 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
     "handle two Namespaces in a file" in {
       val service = app.injector.instanceOf[TransformService]
       val file =
-        <CBCSubmissionInboundRequest xmlns:cbc="urn:eu:taxud:cbc:v1"
+        <CBCSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
                                         xmlns:eis="http://www.hmrc.gov.uk/cbc/eis"
                                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                         xsi:schemaLocation="http://www.hmrc.gov.uk/cbc/eis/CBC_EIS_UK_schema.xsd">
           <file>
             <result>true</result>
             <requestDetail>
-              <CBC_Report xmlns:cbc="urn:cbc:v0.1"
+              <CBC_Report xmlns:cbc="urn:oecd:ties:cbc:v2"
                                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                 version="2020-04-16T09:30:47Z">
                 <submission>Submitted Data</submission>
@@ -77,14 +79,14 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
         </CBCSubmissionInboundRequest>
 
       val expected =
-        <eis:CBCSubmissionInboundRequest xmlns:cbc="urn:eu:taxud:cbc:v1"
+        <eis:CBCSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
                                             xmlns:eis="http://www.hmrc.gov.uk/cbc/eis"
                                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                             xsi:schemaLocation="http://www.hmrc.gov.uk/cbc/eis/CBC_EIS_UK_schema.xsd">
           <eis:file>
             <eis:result>true</eis:result>
             <eis:requestDetail>
-              <cbc:CBC_Report xmlns:cbc="urn:cbc:v0.1"
+              <cbc:CBC_Report xmlns:cbc="urn:oecd:ties:cbc:v2"
                                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                      version="2020-04-16T09:30:47Z">
                 <cbc:submission>Submitted Data</cbc:submission>
@@ -110,7 +112,7 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
       </CBC_Report>
 
       val expected = <CBC_Report version="2020-04-16T09:30:47Z"
-                                       xmlns:cbc="urn:cbc:v0.1"
+                                       xmlns:cbc="urn:oecd:ties:cbc:v2"
                                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <submission>Submitted Data</submission>
       </CBC_Report>
