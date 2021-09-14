@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import uk.gov.hmrc.cbcr.models.{NamespaceForNode, SubscriberContact}
+import uk.gov.hmrc.cbcr.models.{NamespaceForNode, ResponseDetails, SubmissionMetaData, SubscriberContact}
 
 import javax.inject.Inject
-import scala.xml.{Elem, NamespaceBinding, Node, NodeSeq, TopScope}
+import scala.xml._
 
 class TransformService @Inject()() {
 
@@ -75,4 +75,49 @@ class TransformService @Inject()() {
   ): NodeSeq =
     <contactDetails><phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber><emailAddress>{contactInformation.email}</emailAddress><individualDetails><firstName>{contactInformation.firstName}</firstName><lastName>{contactInformation.lastName}</lastName></individualDetails></contactDetails>
 
+  def transformSubscriptionDetails(
+    subscriptionDetails: ResponseDetails,
+    fileName: Option[String]
+  ): NodeSeq =
+    Seq(
+      fileName.map(
+        name => <fileName>{name}</fileName>
+      ),
+      Some(<cbcId>{subscriptionDetails.cbcId}</cbcId>),
+      subscriptionDetails.tradingName.map(
+        tradingName => <tradingName>{tradingName}</tradingName>
+      ),
+      Some(<isGBUser>{subscriptionDetails.isGBUser}</isGBUser>),
+      Some(<primaryContact>
+        {transformContactInformation(subscriptionDetails.primaryContact)}
+      </primaryContact>),
+      subscriptionDetails.secondaryContact.map(
+        sc => <secondaryContact>
+          {transformContactInformation(sc)}
+        </secondaryContact>
+      )
+    ).filter(_.isDefined).map(_.get)
+
+  def addSubscriptionDetailsToSubmission(
+    submissionFile: NodeSeq,
+    subscriptionDetails: ResponseDetails,
+    metaData: SubmissionMetaData
+  ): NodeSeq =
+    <DAC6UKSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
+                                    xmlns:eis="http://www.hmrc.gov.uk/cbc/eis"
+                                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                    xsi:schemaLocation="http://www.hmrc.gov.uk/cbc/eis/CBC_EIS_UK_schema.xsd">
+      <requestCommon>
+        <receiptDate>{metaData.submissionTime}</receiptDate>
+        <regime>CBC</regime>
+        <conversationID>{metaData.conversationID.replace("govuk-tax-", "")}</conversationID>
+        <schemaVersion>1.0.0</schemaVersion>
+      </requestCommon>
+      <requestDetail>
+        {addNameSpaceDefinitions(submissionFile)}
+      </requestDetail>
+      <requestAdditionalDetail>
+        {transformSubscriptionDetails(subscriptionDetails, metaData.fileName)}
+      </requestAdditionalDetail>
+    </DAC6UKSubmissionInboundRequest>
 }

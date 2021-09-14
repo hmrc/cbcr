@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.services
 
 import org.scalatest.StreamlinedXmlEquality
-import uk.gov.hmrc.cbcr.models.{NamespaceForNode, PhoneNumber, SubscriberContact}
+import uk.gov.hmrc.cbcr.models.{NamespaceForNode, PhoneNumber, ResponseDetails, SubscriberContact}
 import uk.gov.hmrc.cbcr.util.SpecBase
 import uk.gov.hmrc.emailaddress.EmailAddress
 
@@ -142,4 +142,60 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
       result shouldBe expected
     }
   }
+
+  "must transform Subscription Details" in {
+    val service = app.injector.instanceOf[TransformService]
+
+    val contactInformation =
+      ResponseDetails(
+        cbcId = "cbcId",
+        tradingName = Some("tradingName"),
+        isGBUser = true,
+        primaryContact = SubscriberContact(
+          name = None,
+          firstName = "firstName",
+          lastName = "lastName",
+          phoneNumber = PhoneNumber("123456789").get,
+          email = EmailAddress("email@email.com")
+        ),
+        secondaryContact = Some(
+          SubscriberContact(
+            name = None,
+            firstName = "firstName",
+            lastName = "lastName",
+            phoneNumber = PhoneNumber("123456789").get,
+            email = EmailAddress("email@email.com")
+          ))
+      )
+
+    val expected =
+      <subscriptionDetails>
+        <cbcId>cbcId</cbcId>
+        <tradingName>tradingName</tradingName>
+        <isGBUser>true</isGBUser>
+        <primaryContact>
+          <phoneNumber>123456789</phoneNumber>
+          <emailAddress>email@email.com</emailAddress>
+          <individualDetails>
+            <firstName>firstName</firstName>
+            <lastName>lastName</lastName>
+          </individualDetails>
+        </primaryContact>
+        <secondaryContact>
+          <phoneNumber>123456789</phoneNumber>
+          <emailAddress>email@email.com</emailAddress>
+          <individualDetails>
+            <firstName>firstName</firstName>
+            <lastName>lastName</lastName>
+          </individualDetails>
+        </secondaryContact>
+      </subscriptionDetails>
+
+    val result = <subscriptionDetails>
+      {service.transformSubscriptionDetails(contactInformation, None)}
+    </subscriptionDetails>
+
+    expected shouldBe result
+  }
+
 }
