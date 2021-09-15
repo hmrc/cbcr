@@ -73,7 +73,12 @@ class TransformService @Inject()() {
   def transformContactInformation(
     contactInformation: SubscriberContact
   ): NodeSeq =
-    <contactDetails><phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber><emailAddress>{contactInformation.email}</emailAddress><individualDetails><firstName>{contactInformation.firstName}</firstName><lastName>{contactInformation.lastName}</lastName></individualDetails></contactDetails>
+    <phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber>
+      <emailAddress>{contactInformation.email}</emailAddress>
+      <individualDetails>
+        <firstName>{contactInformation.firstName}</firstName>
+        <lastName>{contactInformation.lastName}</lastName>
+      </individualDetails>
 
   def transformSubscriptionDetails(
     subscriptionDetails: ResponseDetails,
@@ -103,7 +108,7 @@ class TransformService @Inject()() {
     subscriptionDetails: ResponseDetails,
     metaData: SubmissionMetaData
   ): NodeSeq =
-    <DAC6UKSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
+    <CBCSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"
                                     xmlns:eis="http://www.hmrc.gov.uk/cbc/eis"
                                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                                     xsi:schemaLocation="http://www.hmrc.gov.uk/cbc/eis/CBC_EIS_UK_schema.xsd">
@@ -119,5 +124,5 @@ class TransformService @Inject()() {
       <requestAdditionalDetail>
         {transformSubscriptionDetails(subscriptionDetails, metaData.fileName)}
       </requestAdditionalDetail>
-    </DAC6UKSubmissionInboundRequest>
+    </CBCSubmissionInboundRequest>
 }
