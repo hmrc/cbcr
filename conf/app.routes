@@ -46,5 +46,7 @@ GET           /upscan/details/:uploadId                                         
 GET           /upscan/status/:uploadId                                                          uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.getStatus(uploadId: String)
 POST          /upscan/upload                                                                    uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.requestUpload
 
+POST          /submit                                                                            uk.gov.hmrc.cbcr.controllers.SubmissionController.submitDocument
+
 POST          /subscription/cache-subscription                                                  uk.gov.hmrc.cbcr.controllers.SubscriptionCacheController.storeSubscriptionDetails
 POST          /subscription/retrieve-subscription                                               uk.gov.hmrc.cbcr.controllers.SubscriptionCacheController.retrieveSubscription
