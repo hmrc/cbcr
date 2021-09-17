@@ -17,11 +17,12 @@
 package uk.gov.hmrc.cbcr.services
 
 import org.scalatest.StreamlinedXmlEquality
+import uk.gov.hmrc.cbcr.models.subscription.{ContactInformationForOrganisation, OrganisationDetails, SubscriptionDetails}
 import uk.gov.hmrc.cbcr.models.{NamespaceForNode, PhoneNumber, ResponseDetails, SubscriberContact}
 import uk.gov.hmrc.cbcr.util.SpecBase
 import uk.gov.hmrc.emailaddress.EmailAddress
-import scala.xml.Utility.trim
 
+import scala.xml.Utility.trim
 import scala.xml.NodeSeq
 
 class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
@@ -126,23 +127,14 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
     "must transform ContactInformation from SubscriberContact" in {
       val service = app.injector.instanceOf[TransformService]
 
-      val contactInformation = SubscriberContact(
-        name = None,
-        firstName = "firstName",
-        lastName = "lastName",
-        phoneNumber = PhoneNumber("123456789").get,
-        email = EmailAddress("email@email.com")
+      val contactInformation: ContactInformationForOrganisation = ContactInformationForOrganisation(
+        organisation = OrganisationDetails("name"),
+        email = EmailAddress("email@email.com"),
+        Some("091111"),
+        None
       )
 
-      val expected =
-        <contactDetails>
-          <phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber>
-          <emailAddress>{contactInformation.email}</emailAddress>
-          <individualDetails>
-            <firstName>{contactInformation.firstName}</firstName>
-            <lastName>{contactInformation.lastName}</lastName>
-          </individualDetails>
-        </contactDetails>
+      val expected = <contactDetails></contactDetails>
 
       val result =
         <contactDetails>
@@ -156,27 +148,13 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
   "must transform Subscription Details" ignore {
     val service = app.injector.instanceOf[TransformService]
 
-    val contactInformation =
-      ResponseDetails(
-        cbcId = "cbcId",
-        tradingName = Some("tradingName"),
-        isGBUser = true,
-        primaryContact = SubscriberContact(
-          name = None,
-          firstName = "firstName",
-          lastName = "lastName",
-          phoneNumber = PhoneNumber("123456789").get,
-          email = EmailAddress("email@email.com")
-        ),
-        secondaryContact = Some(
-          SubscriberContact(
-            name = None,
-            firstName = "firstName",
-            lastName = "lastName",
-            phoneNumber = PhoneNumber("123456789").get,
-            email = EmailAddress("email@email.com")
-          ))
-      )
+    val subscriptionDetails = SubscriptionDetails(
+      "111111111",
+      Some(""),
+      true,
+      ContactInformationForOrganisation(OrganisationDetails(""), "", None, None),
+      Some(ContactInformationForOrganisation(OrganisationDetails(""), "", None, None))
+    )
 
     val expected =
       <subscriptionDetails>
@@ -203,7 +181,7 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
 
     val result =
       <subscriptionDetails>
-      {service.transformSubscriptionDetails(contactInformation, None)}
+      {service.transformSubscriptionDetails(subscriptionDetails, None)}
       </subscriptionDetails>
 
     trim(result) shouldBe trim(expected)

@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import uk.gov.hmrc.cbcr.models.subscription.{ContactInformation, ContactInformationForOrganisation, PrimaryContact, SubscriptionDetails}
 import uk.gov.hmrc.cbcr.models.{NamespaceForNode, ResponseDetails, SubmissionMetaData, SubscriberContact}
 
 import javax.inject.Inject
@@ -71,24 +72,36 @@ class TransformService @Inject()() {
         }
 
   def transformContactInformation(
-    contactInformation: SubscriberContact
-  ): NodeSeq =
-    <phoneNumber>{contactInformation.phoneNumber.number}</phoneNumber>
-      <emailAddress>{contactInformation.email}</emailAddress>
-      <individualDetails>
-        <firstName>{contactInformation.firstName}</firstName>
-        <lastName>{contactInformation.lastName}</lastName>
-      </individualDetails>
+    contactInformation: ContactInformation
+  ): NodeSeq = {
+    val nodes = contactInformation match {
+      case contactOrganisation: ContactInformationForOrganisation =>
+        Seq(
+          contactOrganisation.phone.map(
+            phone => <phoneNumber>{phone}</phoneNumber>
+          ),
+          contactOrganisation.mobile.map(
+            mobile => <mobileNumber>{mobile}</mobileNumber>
+          ),
+          Some(<emailAddress>{contactOrganisation.email}</emailAddress>),
+          Some(<organisationDetails>
+            <organisationName>{contactOrganisation.organisation.organisationName}</organisationName>
+          </organisationDetails>)
+        )
+    }
+
+    nodes.filter(_.isDefined).map(_.get)
+  }
 
   def transformSubscriptionDetails(
-    subscriptionDetails: ResponseDetails,
+    subscriptionDetails: SubscriptionDetails,
     fileName: Option[String]
   ): NodeSeq =
     Seq(
       fileName.map(
         name => <fileName>{name}</fileName>
       ),
-      Some(<cbcId>{subscriptionDetails.cbcId}</cbcId>),
+      Some(<cbcId>{subscriptionDetails.subscriptionID}</cbcId>),
       subscriptionDetails.tradingName.map(
         tradingName => <tradingName>{tradingName}</tradingName>
       ),
@@ -105,7 +118,7 @@ class TransformService @Inject()() {
 
   def addSubscriptionDetailsToSubmission(
     submissionFile: NodeSeq,
-    subscriptionDetails: ResponseDetails,
+    subscriptionDetails: SubscriptionDetails,
     metaData: SubmissionMetaData
   ): NodeSeq =
     <CBCSubmissionInboundRequest xmlns:cbc="urn:oecd:ties:cbc:v2"

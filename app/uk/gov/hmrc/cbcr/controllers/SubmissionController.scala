@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import org.slf4j.LoggerFactory
+import play.api.Logging
 import play.api.libs.json.{JsSuccess, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.SubmissionConnector
-import uk.gov.hmrc.cbcr.models.ErrorDetails
-import uk.gov.hmrc.cbcr.services.TransformService
+import uk.gov.hmrc.cbcr.models.{ErrorDetails, NamespaceForNode, SubmissionMetaData}
+import uk.gov.hmrc.cbcr.services.{ContactService, TransformService}
 import uk.gov.hmrc.http.HeaderNames.xSessionId
 import uk.gov.hmrc.http.{HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,19 +30,18 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
 class SubmissionController @Inject()(
   cc: ControllerComponents,
   auth: CBCRAuth,
+  contactService: ContactService,
   transformService: TransformService,
   submissionConnector: SubmissionConnector,
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) {
-
-  private val logger = LoggerFactory.getLogger(getClass)
+    extends BackendController(cc) with Logging {
 
   def submitDocument: Action[NodeSeq] =
     auth.authCBCRWithXml(
@@ -52,11 +51,28 @@ class SubmissionController @Inject()(
           val xml = transformService.addNameSpaceDefinitions(request.body)
           val fileName = (xml \ "fileName").text
           val submissionFile: NodeSeq = xml \ "file" \ "CBC_OECD"
+          val cbcId = (xml \ "cbcId").text
           val submissionTime = LocalDateTime.now()
           val messageRefId = (xml \\ "MessageRefId").text
 
-          submissionConnector.submitReport(xml) map convertToResult
+          val conversationID: String = hc
+            .headers(HeaderNames.explicitlyIncludedHeaders)
+            .find(_._1 == xSessionId)
+            .map(
+              n => n._2.replaceAll("session-", "")
+            )
+            .getOrElse(UUID.randomUUID().toString)
 
+          val submissionMetaData = SubmissionMetaData.build(submissionTime, conversationID, fileName)
+
+          for {
+            subscriptionData <- contactService.getLatestContacts(cbcId)
+
+            submissionXml: NodeSeq = transformService
+              .addSubscriptionDetailsToSubmission(xml, subscriptionData, submissionMetaData)
+
+            response <- submissionConnector.submitReport(submissionXml) map convertToResult
+          } yield response
         }
       },
       parse.xml
