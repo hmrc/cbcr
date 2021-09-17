@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import play.api.Logging
+import org.slf4j.LoggerFactory
 import play.api.libs.json.{JsSuccess, Json}
-import play.api.mvc.{Action, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.SubmissionConnector
-import uk.gov.hmrc.cbcr.models.{ErrorDetails, NamespaceForNode, SubmissionMetaData}
-import uk.gov.hmrc.cbcr.services.{ContactService, TransformService}
+import uk.gov.hmrc.cbcr.models.ErrorDetails
+import uk.gov.hmrc.cbcr.services.TransformService
 import uk.gov.hmrc.http.HeaderNames.xSessionId
 import uk.gov.hmrc.http.{HeaderNames, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,7 +30,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
