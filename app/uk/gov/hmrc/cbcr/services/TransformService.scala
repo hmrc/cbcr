@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import uk.gov.hmrc.cbcr.models.subscription.{ContactInformation, ContactInformationForOrganisation, PrimaryContact, SubscriptionDetails}
-import uk.gov.hmrc.cbcr.models.{NamespaceForNode, ResponseDetails, SubmissionMetaData, SubscriberContact}
+import uk.gov.hmrc.cbcr.models.subscription.{ContactInformation, ContactInformationForOrganisation, SubscriptionDetails}
+import uk.gov.hmrc.cbcr.models.{NamespaceForNode, SubmissionMetaData}
 
 import javax.inject.Inject
 import scala.xml._
