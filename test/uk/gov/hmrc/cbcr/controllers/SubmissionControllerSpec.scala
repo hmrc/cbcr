@@ -27,6 +27,8 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.SubmissionConnector
+import uk.gov.hmrc.cbcr.models.subscription.{ContactInformationForOrganisation, OrganisationDetails, SubscriptionDetails}
+import uk.gov.hmrc.cbcr.services.ContactService
 import uk.gov.hmrc.cbcr.util.SpecBase
 import uk.gov.hmrc.cbcr.util.SubmissionFixtures.minimalPassing
 import uk.gov.hmrc.http.HttpResponse
@@ -36,11 +38,13 @@ import scala.concurrent.Future
 class SubmissionControllerSpec extends SpecBase with BeforeAndAfterEach with MockAuth {
 
   val mockSubmissionConnector: SubmissionConnector = mock[SubmissionConnector]
+  val mockContactService: ContactService = mock[ContactService]
 
   val application: Application =
     applicationBuilder()
       .overrides(
         bind[SubmissionConnector].toInstance(mockSubmissionConnector),
+        bind[ContactService].toInstance(mockContactService),
         bind[CBCRAuth].toInstance(cBCRAuth)
       )
       .build()
@@ -50,11 +54,20 @@ class SubmissionControllerSpec extends SpecBase with BeforeAndAfterEach with Moc
 
   override def beforeEach(): Unit = reset(mockSubmissionConnector)
 
-  "getStatus" should {
+  "submitReport" should {
     "return ok with status" in {
+      val details = SubscriptionDetails(
+        "111111111",
+        Some("tradingName"),
+        true,
+        ContactInformationForOrganisation(OrganisationDetails("org1"), "test@email.com", None, None),
+        Some(ContactInformationForOrganisation(OrganisationDetails("org2"), "test1@email.com", None, None))
+      )
 
       when(mockSubmissionConnector.submitReport(any())(any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
+      when(mockContactService.getLatestContacts(any())(any(), any(), any()))
+        .thenReturn(Future.successful(details))
 
       val request = FakeRequest(POST, routes.SubmissionController.submitDocument.url).withXmlBody(minimalPassing)
       val result: Future[Result] = route(application, request).value
