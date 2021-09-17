@@ -17,13 +17,13 @@
 package uk.gov.hmrc.cbcr.services
 
 import org.scalatest.StreamlinedXmlEquality
+import uk.gov.hmrc.cbcr.models.NamespaceForNode
 import uk.gov.hmrc.cbcr.models.subscription.{ContactInformationForOrganisation, OrganisationDetails, SubscriptionDetails}
-import uk.gov.hmrc.cbcr.models.{NamespaceForNode, PhoneNumber, ResponseDetails, SubscriberContact}
 import uk.gov.hmrc.cbcr.util.SpecBase
 import uk.gov.hmrc.emailaddress.EmailAddress
 
-import scala.xml.Utility.trim
 import scala.xml.NodeSeq
+import scala.xml.Utility.trim
 
 class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
 
@@ -134,7 +134,13 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
         None
       )
 
-      val expected = <contactDetails></contactDetails>
+      val expected = <contactDetails>
+        <phoneNumber>091111</phoneNumber>
+        <emailAddress>email@email.com</emailAddress>
+        <organisationDetails>
+          <organisationName>name</organisationName>
+        </organisationDetails>
+      </contactDetails>
 
       val result =
         <contactDetails>
@@ -145,45 +151,38 @@ class TransformServiceSpec extends SpecBase with StreamlinedXmlEquality {
     }
   }
 
-  "must transform Subscription Details" ignore {
+  "must transform Subscription Details" in {
     val service = app.injector.instanceOf[TransformService]
 
     val subscriptionDetails = SubscriptionDetails(
       "111111111",
-      Some(""),
+      Some("tradingName"),
       true,
-      ContactInformationForOrganisation(OrganisationDetails(""), "", None, None),
-      Some(ContactInformationForOrganisation(OrganisationDetails(""), "", None, None))
+      ContactInformationForOrganisation(OrganisationDetails("org1"), "test@email.com", None, None),
+      Some(ContactInformationForOrganisation(OrganisationDetails("org2"), "test1@email.com", None, None))
     )
 
-    val expected =
+    val expected: NodeSeq =
       <subscriptionDetails>
-        <cbcId>cbcId</cbcId>
-        <tradingName>tradingName</tradingName>
+        <cbcId>111111111</cbcId> <tradingName>tradingName</tradingName>
         <isGBUser>true</isGBUser>
         <primaryContact>
-          <phoneNumber>123456789</phoneNumber>
-          <emailAddress>email@email.com</emailAddress>
-          <individualDetails>
-            <firstName>firstName</firstName>
-            <lastName>lastName</lastName>
-          </individualDetails>
-        </primaryContact>
-        <secondaryContact>
-          <phoneNumber>123456789</phoneNumber>
-          <emailAddress>email@email.com</emailAddress>
-          <individualDetails>
-            <firstName>firstName</firstName>
-            <lastName>lastName</lastName>
-          </individualDetails>
-        </secondaryContact>
+          <emailAddress>test@email.com</emailAddress>
+          <organisationDetails>
+            <organisationName>org1</organisationName>
+          </organisationDetails>
+        </primaryContact> <secondaryContact>
+        <emailAddress>test1@email.com</emailAddress> <organisationDetails>
+          <organisationName>org2</organisationName>
+        </organisationDetails>
+      </secondaryContact>
       </subscriptionDetails>
 
-    val result =
+    val result: NodeSeq =
       <subscriptionDetails>
       {service.transformSubscriptionDetails(subscriptionDetails, None)}
       </subscriptionDetails>
 
-    trim(result) shouldBe trim(expected)
+    result.map(trim).toString() shouldEqual expected.map(trim).toString()
   }
 }

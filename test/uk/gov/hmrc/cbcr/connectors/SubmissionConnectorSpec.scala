@@ -40,7 +40,7 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
     "should return OK when the backend returns a valid successful response" in {
 
       server.stubFor(
-        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
+        post(urlEqualTo("/cbcr-stubs/cbc/dct06/v1"))
           .willReturn(
             aResponse()
               .withStatus(OK)
@@ -57,7 +57,7 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
     "throw an exception when upscan returns a 4xx response" in {
 
       server.stubFor(
-        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
+        post(urlEqualTo("/cbcr-stubs/cbc/dct06/v1"))
           .willReturn(
             aResponse()
               .withStatus(BAD_REQUEST)
@@ -74,7 +74,7 @@ class SubmissionConnectorSpec extends SpecBase with WireMockHelper {
     "throw an exception when upscan returns 5xx response" in {
 
       server.stubFor(
-        post(urlEqualTo("/cbcr-stubs/dac6/dct06/v1"))
+        post(urlEqualTo("/cbcr-stubs/cbc/dct06/v1"))
           .willReturn(
             aResponse()
               .withStatus(SERVICE_UNAVAILABLE)
