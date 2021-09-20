@@ -14,12 +14,31 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.models.subscription.response
+package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.json._
+import play.api.libs.json.Json
 
-case class DisplaySubscriptionForCBCResponse(displaySubscriptionForCBCResponse: SubscriptionForCBCResponse)
+case class SourceFaultDetail(detail: Seq[String])
 
-object DisplaySubscriptionForCBCResponse {
-  implicit val format: OFormat[DisplaySubscriptionForCBCResponse] = Json.format[DisplaySubscriptionForCBCResponse]
+object SourceFaultDetail {
+  implicit val format = Json.format[SourceFaultDetail]
+}
+
+case class ErrorDetail(
+  timestamp: String,
+  correlationId: String,
+  errorCode: String,
+  errorMessage: String,
+  source: String,
+  sourceFaultDetail: Option[SourceFaultDetail]
+)
+
+object ErrorDetail {
+  implicit val format = Json.format[ErrorDetail]
+}
+
+case class ErrorDetails(errorDetail: ErrorDetail)
+
+object ErrorDetails {
+  implicit val format = Json.format[ErrorDetails]
 }

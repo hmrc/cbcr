@@ -53,7 +53,7 @@ class SubscriptionConnectorSpec
       "return status OK for a successful request to display subscription" in {
 
         forAll(arbitrary[DisplaySubscriptionForCBCRequest]) { displaySubscriptionForCBCRequest =>
-          stubResponse("/country-by-country-stubs/dac6/dct04/v1", OK)
+          stubResponse("/register-for-exchange-of-information-stubs/cbc/dct04/v1", OK)
 
           val result = connector.displaySubscriptionForCBC(displaySubscriptionForCBCRequest)
           result.futureValue.status mustBe OK
@@ -64,7 +64,7 @@ class SubscriptionConnectorSpec
 
         forAll(arbitrary[DisplaySubscriptionForCBCRequest], Gen.oneOf(errorStatusCodes)) {
           (displaySubscriptionForCBCRequest, statusCode) =>
-            stubResponse("/country-by-country-stubs/dac6/dct04/v1", statusCode)
+            stubResponse("/register-for-exchange-of-information-stubs/cbc/dct04/v1", statusCode)
 
             val result = connector.displaySubscriptionForCBC(displaySubscriptionForCBCRequest)
             result.futureValue.status mustBe statusCode
