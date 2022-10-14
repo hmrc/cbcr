@@ -37,7 +37,7 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
       .fold(
         error => Future.successful(BadRequest(JsError.toJson(error))),
         response =>
-          repo.save(response).map {
+          repo.save2(response).map {
             case result if result.ok => Ok
             case result              => InternalServerError(result.writeErrors.mkString)
         }

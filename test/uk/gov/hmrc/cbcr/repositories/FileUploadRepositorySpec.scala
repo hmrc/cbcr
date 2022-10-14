@@ -32,14 +32,13 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
-  val fileUploadRepository = new FileUploadRepository(reactiveMongoApi)
+  val fileUploadRepository = app.injector.instanceOf[FileUploadRepository]
   val fir = UploadFileResponse("id1", "fid1", "status", None)
 
   "Calls to Save  UploadFileResponse" should {
     "should successfully save that UploadFileResponse" in {
 
-      val result: Future[WriteResult] = fileUploadRepository.save(fir)
+      val result: Future[WriteResult] = fileUploadRepository.save2(fir)
       await(result.map(r => r.ok)) shouldBe true
 
     }

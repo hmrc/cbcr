@@ -59,32 +59,32 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   "The FileUploadResponseController" should {
     "respond with a 200 when asked to store an UploadFileResponse" in {
-      when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(okResult))
+      when(repo.save2(any(classOf[UploadFileResponse]))(any())).thenReturn(Future.successful(okResult))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure" in {
-      when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
+      when(repo.save2(any(classOf[UploadFileResponse]))(any())).thenReturn(Future.successful(failResult))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 400 if UploadFileResponse in request is invalid" in {
-      when(repo.save(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
+      when(repo.save2(any(classOf[UploadFileResponse]))(any())).thenReturn(Future.successful(failResult))
       val result = controller.saveFileUploadResponse(badFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
     "respond with a 200 and a FileUploadResponse when asked to retrieve an existing envelopeId" in {
-      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(Some(fir)))
+      when(repo.get(any(classOf[String]))(any())).thenReturn(Future.successful(Some(fir)))
       val result = controller.retrieveFileUploadResponse("envelopeIdOk")(fakeGetRequest)
       status(result) shouldBe Status.OK
       jsonBodyOf(result).validate[UploadFileResponse].isSuccess shouldBe true
     }
 
     "respond with a 204 when asked to retrieve a non-existent envelopeId" in {
-      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(None))
+      when(repo.get(any(classOf[String]))(any())).thenReturn(Future.successful(None))
       val result = controller.retrieveFileUploadResponse("envelopeIdFail")(fakeGetRequest)
       status(result) shouldBe Status.NO_CONTENT
     }

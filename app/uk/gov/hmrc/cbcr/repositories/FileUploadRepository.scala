@@ -17,30 +17,26 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
+import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.cbcr.models.UploadFileResponse
+import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
+class FileUploadRepository @Inject()(val rmc: ReactiveMongoComponent)
+    extends ReactiveRepository[UploadFileResponse, BSONObjectID](
+      "FileUpload",
+      rmc.mongoConnector.db,
+      UploadFileResponse.ufrFormat,
+      ReactiveMongoFormats.objectIdFormats) {
 
-  val repository: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection]("FileUpload"))
+  def save2(f: UploadFileResponse)(implicit ec: ExecutionContext): Future[WriteResult] = insert(f)
 
-  def save(f: UploadFileResponse): Future[WriteResult] = {
-    val criteria = Json.obj("envelopeId" -> f.envelopeId)
-    repository.flatMap(_.update(ordered = false).one(criteria, f, upsert = true))
-  }
-
-  def get(envelopeId: String): Future[Option[UploadFileResponse]] = {
-    val criteria = Json.obj("envelopeId" -> envelopeId)
-    repository.flatMap(_.find(criteria, None).one[UploadFileResponse])
-  }
+  def get(envelopeId: String)(implicit ec: ExecutionContext): Future[Option[UploadFileResponse]] =
+    find("envelopeId" -> envelopeId).map(_.headOption)
 
 }
