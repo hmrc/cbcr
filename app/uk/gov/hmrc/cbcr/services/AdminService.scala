@@ -114,7 +114,7 @@ class AdminService @Inject()(
   }
 
   def saveDocRefId(id: DocRefId) = Action.async {
-    docRepo.save(id).map {
+    docRepo.save2(id).map {
       case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
       case DocRefIdResponses.Failed        => InternalServerError

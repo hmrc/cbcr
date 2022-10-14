@@ -16,63 +16,49 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import cats.data.OptionT
-import cats.instances.future._
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.WriteConcern
-import reactivemongo.api.commands.{Collation, WriteResult}
-import reactivemongo.bson.BSONDocument
+import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.commands.WriteResult
+import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.ReactiveRepository
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext) {
+class DocRefIdRepository @Inject()(val rmc: ReactiveMongoComponent, val records: ReactiveDocRefIdRepository)
+    extends ReactiveRepository[DocRefId, BSONObjectID](
+      "DocRefId",
+      rmc.mongoConnector.db,
+      DocRefId.format,
+      ReactiveMongoFormats.objectIdFormats) {
 
-  lazy val logger: Logger = Logger(this.getClass)
+  def delete(d: DocRefId)(implicit ec: ExecutionContext): Future[WriteResult] =
+    remove("id" -> d.id)
 
-  val repository: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection]("DocRefId"))
+  def edit(doc: DocRefId)(implicit ec: ExecutionContext): Future[Int] =
+    findAndUpdate(query = Json.obj("id" -> doc.id), update = Json.obj("$set" -> Json.obj("valid" -> true)))
+      .map(_.value.size)
 
-  def delete(d: DocRefId): Future[WriteResult] = {
-    val criteria = Json.obj("id" -> d.id)
-    for {
-      repo <- repository
-      x    <- repo.delete().one(criteria)
-    } yield x
-  }
-
-  def edit(doc: DocRefId): Future[Int] = {
-
-    val criteria = Json.obj("id" -> doc.id)
-    for {
-      collection <- repository
-      update     <- collection.update(ordered = false).one(criteria, Json.obj("$set" -> Json.obj("valid" -> true)))
-    } yield update.nModified
-  }
-
-  def save(f: DocRefId): Future[DocRefIdSaveResponse] = {
-    val criteria = Json.obj("id" -> f.id)
-    for {
-      repo <- repository
-      x    <- repo.find(criteria, None).one[DocRefIdRecord]
-      r <- if (x.isDefined) Future.successful(AlreadyExists)
-          else {
-            repo.insert(ordered = false).one(DocRefIdRecord(f, valid = true)).map(w => if (w.ok) { Ok } else { Failed })
+  def save2(id: DocRefId)(implicit ec: ExecutionContext): Future[DocRefIdSaveResponse] =
+    records
+      .find("id" -> id.id)
+      .map(_.headOption.map(_.valid))
+      .flatMap {
+        case Some(true) => Future.successful(AlreadyExists)
+        case _ =>
+          records.insert(DocRefIdRecord(id, valid = true)).map {
+            case r if r.ok => Ok
+            case _         => Failed
           }
-    } yield r
-  }
+      }
 
-  def save(c: CorrDocRefId, d: DocRefId): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] = {
-    import reactivemongo.play.json.ImplicitBSONHandlers.BSONDocumentWrites
-
+  def save2(c: CorrDocRefId, d: DocRefId)(
+    implicit ec: ExecutionContext): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] = {
     val criteria = Json.obj("id" -> c.cid.id, "valid" -> true)
     query(c.cid).zip(query(d)).flatMap {
       case (Invalid, _)             => Future.successful((Invalid, None))
@@ -80,24 +66,15 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
       case (Valid, Valid | Invalid) => Future.successful((Valid, Some(AlreadyExists)))
       case (Valid, DoesNotExist) =>
         for {
-          repo <- repository
-          doc <- repo.findAndModify(
-                  criteria,
-                  repo.updateModifier(BSONDocument("$set" -> BSONDocument("valid" -> false))),
-                  None,
-                  None,
-                  false,
-                  WriteConcern.Default,
-                  Option.empty[FiniteDuration],
-                  Option.empty[Collation],
-                  Seq.empty
-                )
-          validFlag = DocRefIdRecord.docRefIdValidity(d.id)
+          doc <- records.findAndUpdate(query = criteria, update = Json.obj("$set" -> Json.obj("valid" -> false)))
           x <- if (doc.result[DocRefIdRecord].isDefined) {
-                repo
-                  .insert(ordered = false)
-                  .one(DocRefIdRecord(d, valid = validFlag))
-                  .map(w => if (w.ok) { Ok } else { Failed })
+                val valid = DocRefIdRecord.docRefIdValidity(d.id)
+                records
+                  .insert(DocRefIdRecord(d, valid))
+                  .map {
+                    case r if r.ok => Ok
+                    case _         => Failed
+                  }
               } else {
                 logger.error(doc.toString)
                 Future.successful(Failed)
@@ -106,13 +83,13 @@ class DocRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: Exe
     }
   }
 
-  def query(docRefId: DocRefId): Future[DocRefIdQueryResponse] = {
-    val criteria = Json.obj("id" -> docRefId.id)
-    OptionT(repository.flatMap(_.find(criteria, None).one[DocRefIdRecord]))
-      .map(r =>
-        if (r.valid) Valid
-        else Invalid)
-      .getOrElse(DoesNotExist)
-  }
+  def query(docRefId: DocRefId)(implicit ec: ExecutionContext): Future[DocRefIdQueryResponse] =
+    records
+      .find("id" -> docRefId.id)
+      .map(_.headOption match {
+        case Some(r) if r.valid => Valid
+        case Some(_)            => Invalid
+        case None               => DoesNotExist
+      })
 
 }

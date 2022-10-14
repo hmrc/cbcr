@@ -53,19 +53,19 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
       "respond with a 200 when all is good" in {
-        when(repo.save(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Ok))
+        when(repo.save2(any(classOf[DocRefId]))(any())).thenReturn(Future.successful(DocRefIdResponses.Ok))
         val result = controller.saveDocRefId(DocRefId("DocRefid"))(fakePutRequest)
         status(result) shouldBe Status.OK
       }
 
       "respond with a 500 if there is a DB failure" in {
-        when(repo.save(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Failed))
+        when(repo.save2(any(classOf[DocRefId]))(any())).thenReturn(Future.successful(DocRefIdResponses.Failed))
         val result = controller.saveDocRefId(DocRefId("DocRefid"))(fakePutRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
 
       "respond with a CONFLICT if that DocRefId already exists" in {
-        when(repo.save(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.AlreadyExists))
+        when(repo.save2(any(classOf[DocRefId]))(any())).thenReturn(Future.successful(DocRefIdResponses.AlreadyExists))
         val result = controller.saveDocRefId(DocRefId("DocRefid"))(fakePutRequest)
         status(result) shouldBe Status.CONFLICT
       }
@@ -73,59 +73,59 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
     "be able to query a DocRefId and" should {
 
       "respond with a 200 when asked to query an existing and valid DocRefId" in {
-        when(repo.query(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Valid))
+        when(repo.query(any(classOf[DocRefId]))(any())).thenReturn(Future.successful(DocRefIdResponses.Valid))
         val result = controller.query(DocRefId("DocRefId"))(fakeGetRequest)
         status(result) shouldBe Status.OK
       }
 
       "respond with a 404 when asked to query a non-existent DocRefId" in {
-        when(repo.query(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist))
+        when(repo.query(any(classOf[DocRefId]))(any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist))
         val result = controller.query(DocRefId("DocRefId"))(fakeGetRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
 
       "respond with a CONFLICT when asked to query an expired DocRefId" in {
-        when(repo.query(any(classOf[DocRefId]))).thenReturn(Future.successful(DocRefIdResponses.Invalid))
+        when(repo.query(any(classOf[DocRefId]))(any())).thenReturn(Future.successful(DocRefIdResponses.Invalid))
         val result = controller.query(DocRefId("DocRefId"))(fakeGetRequest)
         status(result) shouldBe Status.CONFLICT
       }
     }
     "be able to save a CorrRefId and DocRefId pair, and " should {
       "respond with a 200 when CorrRefId and DocRefId are both valid" in {
-        when(repo.save(any(), any()))
+        when(repo.save2(any(), any())(any()))
           .thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Ok)))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
           fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.OK
       }
       "respond with a 404 when CorrRefId referrs to a non-existant DocRefId" in {
-        when(repo.save(any(), any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist -> None))
+        when(repo.save2(any(), any())(any())).thenReturn(Future.successful(DocRefIdResponses.DoesNotExist -> None))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
           fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.NOT_FOUND
       }
       "respond with a BadRequest when the CorrRefId refers to an INVALID DocRefId" in {
-        when(repo.save(any(), any())).thenReturn(Future.successful(DocRefIdResponses.Invalid -> None))
+        when(repo.save2(any(), any())(any())).thenReturn(Future.successful(DocRefIdResponses.Invalid -> None))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
           fakePutRequest.withJsonBody(JsString("DocRefId")))
         status(result) shouldBe Status.BAD_REQUEST
       }
       "respond with a BadRequest when the DocRefId is not unique" in {
-        when(repo.save(any(), any()))
+        when(repo.save2(any(), any())(any()))
           .thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.AlreadyExists)))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
           fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.BAD_REQUEST
       }
       "respond with a 500 if mongo fails" in {
-        when(repo.save(any(), any()))
+        when(repo.save2(any(), any())(any()))
           .thenReturn(Future.successful(DocRefIdResponses.Valid -> Some(DocRefIdResponses.Failed)))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
           fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
       "respond with a 500 if returns none" in {
-        when(repo.save(any(), any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> None))
+        when(repo.save2(any(), any())(any())).thenReturn(Future.successful(DocRefIdResponses.Valid -> None))
         val result = controller.saveCorrDocRefId(CorrDocRefId(DocRefId("oldone")))(
           fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
@@ -143,21 +143,21 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
           cc)
 
       "it exists and return a 200" in {
-        when(repo.delete(any()))
+        when(repo.delete(any())(any()))
           .thenReturn(Future.successful(UpdateWriteResult(true, 1, 1, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.OK
       }
 
       "it doesn't exist and return a 404" in {
-        when(repo.delete(any()))
+        when(repo.delete(any())(any()))
           .thenReturn(Future.successful(UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.NOT_FOUND
       }
 
       "something goes wrong return a 500" in {
-        when(repo.delete(any()))
+        when(repo.delete(any())(any()))
           .thenReturn(Future.successful(UpdateWriteResult(false, 0, 0, Seq.empty, Seq.empty, None, None, None)))
         val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR

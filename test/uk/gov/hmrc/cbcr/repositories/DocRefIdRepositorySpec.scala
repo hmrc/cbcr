@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.repositories
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.{CorrDocRefId, DocRefId}
@@ -34,10 +33,9 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val docRefId = DocRefId("docRefId-SaveTest")
   val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val docRefIdRepository = new DocRefIdRepository(reactiveMongoApi)
+  val docRefIdRepository = app.injector.instanceOf[DocRefIdRepository]
 
   "Calls to edit a DocRefId" should {
     "should successfully edit that docRefId" in {
@@ -60,13 +58,13 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
   "Calls to save a DocRefId" should {
     "should successfully create a new doc if it does not exist" in {
 
-      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(docRefId)
+      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save2(docRefId)
       await(result) shouldBe Ok
 
     }
     "should return AlreadyExists because its created in the above step" in {
 
-      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(docRefId)
+      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save2(docRefId)
       await(result) shouldBe AlreadyExists
 
     }
@@ -108,21 +106,21 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
     "should return (DoesNotExist,None) because corrDocRefId exists" in {
 
       val result: (DocRefIdQueryResponse, Option[DocRefIdSaveResponse]) =
-        await(docRefIdRepository.save(corrRefId, docRefId))
+        await(docRefIdRepository.save2(corrRefId, docRefId))
       result._1 shouldBe DoesNotExist
       result._2 shouldBe None
 
     }
     "should now create a correDocRefId" in {
 
-      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save(DocRefId(corrRefId.cid.id))
+      val result: Future[DocRefIdSaveResponse] = docRefIdRepository.save2(DocRefId(corrRefId.cid.id))
       await(result) shouldBe Ok
 
     }
     "should return Valid and Some(AlreadyExists) because corrDocRefId exists" in {
 
       val result: (DocRefIdQueryResponse, Option[DocRefIdSaveResponse]) =
-        await(docRefIdRepository.save(corrRefId, docRefId))
+        await(docRefIdRepository.save2(corrRefId, docRefId))
       result._1 shouldBe Valid
       result._2 shouldBe Some(AlreadyExists)
 
@@ -130,7 +128,7 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
     "should return Valid and Some(Ok) because corrDocRefId does not exist yet" in {
 
       val result: (DocRefIdQueryResponse, Option[DocRefIdSaveResponse]) =
-        await(docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet")))
+        await(docRefIdRepository.save2(corrRefId, DocRefId("doesNotExistYet")))
       result._1 shouldBe Valid
       result._2 shouldBe Some(Ok)
 
@@ -138,7 +136,7 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
     "should now return Invalid and None because corrDocRefId exists now" in {
 
       val result: (DocRefIdQueryResponse, Option[DocRefIdSaveResponse]) =
-        await(docRefIdRepository.save(corrRefId, DocRefId("doesNotExistYet")))
+        await(docRefIdRepository.save2(corrRefId, DocRefId("doesNotExistYet")))
       result._1 shouldBe Invalid
       result._2 shouldBe None
 
