@@ -48,25 +48,25 @@ class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAut
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a MessageRefId" in {
-      when(repo.save(any(classOf[MessageRefId]))).thenReturn(Future.successful(okResult))
+      when(repo.save2(any(classOf[MessageRefId]))(any())).thenReturn(Future.successful(okResult))
       val result = controller.save("messagerefid")(fakePutRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure" in {
-      when(repo.save(any(classOf[MessageRefId]))).thenReturn(Future.successful(failResult))
+      when(repo.save2(any(classOf[MessageRefId]))(any())).thenReturn(Future.successful(failResult))
       val result = controller.save("messagerefid")(fakePutRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 200 when asked to retrieve an existing messageRefId" in {
-      when(repo.exists(any(classOf[String]))).thenReturn(Future.successful(true))
+      when(repo.exists(any(classOf[String]))(any())).thenReturn(Future.successful(true))
       val result = controller.exists("messageRefId")(fakeGetRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 404 when asked to retrieve a non-existent messageRefId" in {
-      when(repo.exists(any(classOf[String]))).thenReturn(Future.successful(false))
+      when(repo.exists(any(classOf[String]))(any())).thenReturn(Future.successful(false))
       val result = controller.exists("messageRefId")(fakeGetRequest)
       status(result) shouldBe Status.NOT_FOUND
     }

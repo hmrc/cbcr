@@ -15,39 +15,34 @@
  */
 
 package uk.gov.hmrc.cbcr.repositories
-import javax.inject.{Inject, Singleton}
-
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
+import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import reactivemongo.api.indexes.Index
+import reactivemongo.api.indexes.IndexType.Ascending
+import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.cbcr.models.MessageRefId
+import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository @Inject()(val mongo: ReactiveMongoApi)(implicit ec: ExecutionContext)
-    extends IndexBuilder {
-  override protected val collectionName: String = "MessageRefId"
-  override protected val cbcIndexes: List[CbcIndex] = List(CbcIndex("Message Ref MessageRefId", "messageRefId"))
+class MessageRefIdRepository @Inject()(val rmc: ReactiveMongoComponent)
+    extends ReactiveRepository[MessageRefId, BSONObjectID](
+      "MessageRefId",
+      rmc.mongoConnector.db,
+      MessageRefId.format,
+      ReactiveMongoFormats.objectIdFormats) {
+  override def indexes: List[Index] = List(
+    Index(Seq("messageRefId" -> Ascending), Some("Message Ref MessageRefId"), unique = true)
+  )
 
-  val repository: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection]("MessageRefId"))
+  def save2(f: MessageRefId)(implicit ec: ExecutionContext): Future[WriteResult] = insert(f)
 
-  def save(f: MessageRefId): Future[WriteResult] =
-    repository.flatMap(_.insert(ordered = false).one(f))
+  def exists(messageRefId: String)(implicit ec: ExecutionContext): Future[Boolean] =
+    find("messageRefId" -> messageRefId).map(_.nonEmpty)
 
-  def exists(messageRefId: String): Future[Boolean] = {
-    val criteria = Json.obj("messageRefId" -> messageRefId)
-    repository.flatMap(_.find(criteria, None).one[MessageRefId].map(_.isDefined))
-  }
-
-  def delete(m: MessageRefId): Future[WriteResult] = {
-    val criteria = Json.obj("messageRefId" -> m.id)
-    for {
-      repo <- repository
-      x    <- repo.delete().one(criteria)
-    } yield x
-  }
+  def delete(m: MessageRefId)(implicit ec: ExecutionContext): Future[WriteResult] =
+    remove("messageRefId" -> m.id)
 }
