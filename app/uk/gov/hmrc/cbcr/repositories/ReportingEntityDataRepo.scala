@@ -235,12 +235,6 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.find(criteria, None).one[ReportingEntityDataModel])
   }
 
-  def getAll: Future[List[ReportingEntityDataOld]] =
-    repository.flatMap(
-      _.find(JsObject(Seq.empty), None)
-        .cursor[ReportingEntityDataOld]()
-        .collect[List](-1, Cursor.FailOnError[List[ReportingEntityDataOld]]()))
-
   private def buildModifier(
     p: PartialReportingEntityData,
     aiOldModel: Boolean,

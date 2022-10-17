@@ -26,18 +26,6 @@ import play.api.libs.functional.syntax._
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
 object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }
 
-case class ReportingEntityDataOld(
-  cbcReportsDRI: DocRefId,
-  additionalInfoDRI: Option[DocRefId],
-  reportingEntityDRI: DocRefId,
-  tin: TIN,
-  ultimateParentEntity: UltimateParentEntity,
-  reportingRole: ReportingRole,
-  currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod])
-
-object ReportingEntityDataOld { implicit val format = Json.format[ReportingEntityDataOld] }
-
 case class ReportingEntityData(
   cbcReportsDRI: NonEmptyList[DocRefId],
   additionalInfoDRI: List[DocRefId],
