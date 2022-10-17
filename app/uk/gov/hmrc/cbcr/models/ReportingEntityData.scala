@@ -26,6 +26,22 @@ import play.api.libs.functional.syntax._
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
 object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }
 
+object FormatNotEmptyList {
+  implicit def formatNEL[A: Format]: Format[NonEmptyList[A]] = new Format[NonEmptyList[A]] {
+    override def writes(o: NonEmptyList[A]): JsArray = JsArray(o.map(Json.toJson(_)).toList)
+
+    override def reads(json: JsValue): JsResult[NonEmptyList[A]] =
+      json
+        .validate[List[A]]
+        .flatMap(l =>
+          NonEmptyList.fromList(l) match {
+            case None    => JsError(s"Unable to serialise $json as NonEmptyList")
+            case Some(a) => JsSuccess(a)
+          })
+        .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
+  }
+}
+
 case class ReportingEntityData(
   cbcReportsDRI: NonEmptyList[DocRefId],
   additionalInfoDRI: List[DocRefId],
@@ -54,25 +70,11 @@ case class PartialReportingEntityData(
   entityReportingPeriod: Option[EntityReportingPeriod])
 
 object PartialReportingEntityData {
-  implicit def formatNEL[A: Format] = new Format[NonEmptyList[A]] {
-    override def writes(o: NonEmptyList[A]) = JsArray(o.map(Json.toJson(_)).toList)
-
-    override def reads(json: JsValue) =
-      json
-        .validate[List[A]]
-        .flatMap(l =>
-          NonEmptyList.fromList(l) match {
-            case None    => JsError(s"Unable to serialise $json as NonEmptyList")
-            case Some(a) => JsSuccess(a)
-        })
-        .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
-  }
-
   implicit val format = Json.format[PartialReportingEntityData]
 }
 
 object ReportingEntityData {
-  import PartialReportingEntityData.formatNEL
+  import FormatNotEmptyList.formatNEL
   implicit val reads: Reads[ReportingEntityData] = (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
       (JsPath \ "additionalInfoDRI")
@@ -106,20 +108,6 @@ case class PartialReportingEntityDataModel(
   entityReportingPeriod: Option[EntityReportingPeriod])
 
 object PartialReportingEntityDataModel {
-  implicit def formatNEL[A: Format] = new Format[NonEmptyList[A]] {
-    override def writes(o: NonEmptyList[A]) = JsArray(o.map(Json.toJson(_)).toList)
-
-    override def reads(json: JsValue) =
-      json
-        .validate[List[A]]
-        .flatMap(l =>
-          NonEmptyList.fromList(l) match {
-            case None    => JsError(s"Unable to serialise $json as NonEmptyList")
-            case Some(a) => JsSuccess(a)
-        })
-        .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
-  }
-
   implicit val format = Json.format[PartialReportingEntityDataModel]
 }
 
@@ -137,7 +125,7 @@ case class ReportingEntityDataModel(
   entityReportingPeriod: Option[EntityReportingPeriod])
 
 object ReportingEntityDataModel {
-  import PartialReportingEntityDataModel.formatNEL
+  import FormatNotEmptyList.formatNEL
   implicit val reads: Reads[ReportingEntityDataModel] = (
     (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
       (JsPath \ "additionalInfoDRI")
