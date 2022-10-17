@@ -69,7 +69,7 @@ object ReportingEntityData {
       (JsPath \ "reportingPeriod").readNullable[LocalDate] and
       (JsPath \ "currencyCode").readNullable[String] and
       (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
-    )(ReportingEntityData.apply(_, _, _, _, _, _, _, _, _, _))
+    )(ReportingEntityData.apply _)
 
   implicit val writes = Json.writes[ReportingEntityData]
 
@@ -126,7 +126,7 @@ object ReportingEntityDataModel {
         .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_ => true)) and
       (JsPath \ "currencyCode").readNullable[String] and
       (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
-  )(ReportingEntityDataModel.apply(_, _, _, _, _, _, _, _, _, _, _))
+  )(ReportingEntityDataModel.apply _)
 
   implicit val writes = Json.writes[ReportingEntityDataModel]
 
