@@ -54,6 +54,27 @@ case class ReportingEntityData(
   currencyCode: Option[String],
   entityReportingPeriod: Option[EntityReportingPeriod])
 
+object ReportingEntityData {
+  import FormatNotEmptyList.formatNEL
+  implicit val reads: Reads[ReportingEntityData] = (
+    (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
+      (JsPath \ "additionalInfoDRI")
+        .read[List[DocRefId]]
+        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
+      (JsPath \ "reportingEntityDRI").read[DocRefId] and
+      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN(_, "")) and
+      (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
+      (JsPath \ "reportingRole").read[ReportingRole] and
+      (JsPath \ "creationDate").readNullable[LocalDate] and
+      (JsPath \ "reportingPeriod").readNullable[LocalDate] and
+      (JsPath \ "currencyCode").readNullable[String] and
+      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
+    )(ReportingEntityData.apply(_, _, _, _, _, _, _, _, _, _))
+
+  implicit val writes = Json.writes[ReportingEntityData]
+
+}
+
 case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
 object DocRefIdPair { implicit val format = Json.format[DocRefIdPair] }
 
@@ -71,27 +92,6 @@ case class PartialReportingEntityData(
 
 object PartialReportingEntityData {
   implicit val format = Json.format[PartialReportingEntityData]
-}
-
-object ReportingEntityData {
-  import FormatNotEmptyList.formatNEL
-  implicit val reads: Reads[ReportingEntityData] = (
-    (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
-      (JsPath \ "additionalInfoDRI")
-        .read[List[DocRefId]]
-        .orElse((JsPath \ "additionalInfoDRI").readNullable[DocRefId].map(_.toList)) and
-      (JsPath \ "reportingEntityDRI").read[DocRefId] and
-      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN(_, "")) and
-      (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
-      (JsPath \ "reportingRole").read[ReportingRole] and
-      (JsPath \ "creationDate").readNullable[LocalDate] and
-      (JsPath \ "reportingPeriod").readNullable[LocalDate] and
-      (JsPath \ "currencyCode").readNullable[String] and
-      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
-  )(ReportingEntityData.apply(_, _, _, _, _, _, _, _, _, _))
-
-  implicit val writes = Json.writes[ReportingEntityData]
-
 }
 
 case class ReportingEntityDataModel(
