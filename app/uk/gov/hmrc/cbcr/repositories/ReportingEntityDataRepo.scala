@@ -105,8 +105,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
                                                    "Original report not found in Mongo, while trying to update.")
                                                case Some(record) => record
                                              })
-        om = record.oldModel
-        modifier = buildModifier(p, om, record)
+        modifier = buildModifier(p, record)
         collection <- repository
         update <- collection.findAndModify(
                    criteria,
@@ -237,10 +236,9 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   private def buildModifier(
     p: PartialReportingEntityData,
-    aiOldModel: Boolean,
     r: ReportingEntityDataModel): JsObject = {
     val x: immutable.Seq[(String, JsValue)] = List(
-      if (aiOldModel) p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
+      if (r.oldModel) p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
       else
         p.additionalInfoDRI.headOption.map { _ =>
           "additionalInfoDRI" -> JsArray(mergeListsAddInfo(p, r).map(d => JsString(d)))
