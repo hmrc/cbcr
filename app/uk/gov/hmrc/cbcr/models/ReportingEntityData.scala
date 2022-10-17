@@ -37,7 +37,7 @@ object FormatNotEmptyList {
           NonEmptyList.fromList(l) match {
             case None    => JsError(s"Unable to serialise $json as NonEmptyList")
             case Some(a) => JsSuccess(a)
-          })
+        })
         .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
   }
 }
@@ -92,23 +92,6 @@ object ReportingEntityData {
 
   implicit val writes = Json.writes[ReportingEntityData]
 
-}
-
-case class PartialReportingEntityDataModel(
-  cbcReportsDRI: List[DocRefIdPair],
-  additionalInfoDRI: List[DocRefIdPair],
-  reportingEntityDRI: DocRefIdPair,
-  tin: TIN,
-  ultimateParentEntity: UltimateParentEntity,
-  reportingRole: ReportingRole,
-  creationDate: Option[LocalDate],
-  reportingPeriod: Option[LocalDate],
-  oldModel: Boolean,
-  currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod])
-
-object PartialReportingEntityDataModel {
-  implicit val format = Json.format[PartialReportingEntityDataModel]
 }
 
 case class ReportingEntityDataModel(
