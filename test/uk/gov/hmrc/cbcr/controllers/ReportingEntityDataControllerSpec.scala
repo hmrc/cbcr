@@ -65,14 +65,13 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   val redm = ReportingEntityDataModel(
     NonEmptyList(docRefId, Nil),
-    List(docRefId),
+    Right(List(docRefId)),
     docRefId,
     TIN("90000000001", "GB"),
     UltimateParentEntity("Foo Corp"),
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
-    oldModel = false,
     None,
     None
   )

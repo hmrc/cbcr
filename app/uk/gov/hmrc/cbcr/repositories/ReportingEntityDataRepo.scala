@@ -234,15 +234,14 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
     repository.flatMap(_.find(criteria, None).one[ReportingEntityDataModel])
   }
 
-  private def buildModifier(
-    p: PartialReportingEntityData,
-    r: ReportingEntityDataModel): JsObject = {
+  private def buildModifier(p: PartialReportingEntityData, r: ReportingEntityDataModel): JsObject = {
     val x: immutable.Seq[(String, JsValue)] = List(
-      if (r.oldModel) p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
-      else
-        p.additionalInfoDRI.headOption.map { _ =>
-          "additionalInfoDRI" -> JsArray(mergeListsAddInfo(p, r).map(d => JsString(d)))
-        },
+      r.additionalInfoDRI match {
+        case Left(_) => p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
+        case Right(rest) =>
+          p.additionalInfoDRI.headOption.map(_ =>
+            "additionalInfoDRI" -> JsArray(mergeListsAddInfo(p, rest).map(JsString)))
+      },
       p.cbcReportsDRI.headOption.map { _ =>
         "cbcReportsDRI" -> JsArray(mergeListsReports(p, r).map(d => JsString(d)))
       },
@@ -262,8 +261,8 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
 
   }
 
-  def mergeListsAddInfo(p: PartialReportingEntityData, r: ReportingEntityDataModel) = {
-    val databaseRefIds = r.additionalInfoDRI.map(_.id)
+  def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]) = {
+    val databaseRefIds = additionalInfoDRI.map(_.id)
     val corrDocRefIds = p.additionalInfoDRI.filter(_.corrDocRefId.isDefined).map(_.corrDocRefId.get.cid.id)
     val notModifiedDocRefIds = databaseRefIds.diff(corrDocRefIds)
     val updatedDocRefIds = p.additionalInfoDRI.map(_.docRefId.id)
