@@ -231,7 +231,7 @@ class ReportingEntityDataRepo @Inject()(protected val mongo: ReactiveMongoApi)(i
         Json.obj("additionalInfoDRI"  -> d.id),
         Json.obj("reportingEntityDRI" -> d.id)
       ))
-    repository.flatMap(_.find(criteria, None).one[ReportingEntityDataModel])
+    repository.flatMap(_.find(criteria, None).one[ReportingEntityDataModel]).map(_.map(_.upgraded))
   }
 
   private def buildModifier(p: PartialReportingEntityData, r: ReportingEntityDataModel): JsObject = {

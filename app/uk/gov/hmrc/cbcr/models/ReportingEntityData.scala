@@ -128,7 +128,15 @@ case class ReportingEntityDataModel(
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod])
+  entityReportingPeriod: Option[EntityReportingPeriod]) {
+
+  def upgraded(): ReportingEntityDataModel =
+    copy(additionalInfoDRI = additionalInfoDRI match {
+      case Left(Some(value)) => Right(List(value))
+      case Left(None) => Right(List())
+      case value => value
+    })
+}
 
 object ReportingEntityDataModel {
   import FormatNotEmptyList.formatNEL
