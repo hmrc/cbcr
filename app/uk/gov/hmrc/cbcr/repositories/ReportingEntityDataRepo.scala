@@ -138,22 +138,17 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
 
   def getLatestReportingEntityData(reportingEntityData: List[ReportingEntityData]): List[ReportingEntityData] = {
     val timestampRegex = """\d{8}T\d{6}""".r
-
-    val reportingEntityDri: Seq[String] = reportingEntityData.map(data => data.reportingEntityDRI.id)
-
-    val timestamps: Seq[LocalDateTime] = reportingEntityDri
-      .map(dri => timestampRegex.findFirstIn(dri))
-      .collect {
-        case Some(data) => LocalDateTime.parse(data, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
-      }
-
     val timestampSeparator = Set('-', ':')
-
-    reportingEntityData.filter(
-      x =>
-        x.reportingEntityDRI.id
-          .contains(timestamps.sorted(_.compareTo(_)).reverse.head.toString.filterNot(timestampSeparator.contains)))
-
+    val searchedFor =
+      reportingEntityData
+        .map(
+          _.reportingEntityDRI.id
+            .pipe(timestampRegex.findFirstIn(_).get)
+            .pipe(LocalDateTime.parse(_, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))))
+        .max((a: LocalDateTime, b: LocalDateTime) => a.compareTo(b))
+        .toString
+        .filterNot(timestampSeparator.contains)
+    reportingEntityData.filter(_.reportingEntityDRI.id.contains(searchedFor))
   }
 
   def query(c: String, r: String): Future[Option[ReportingEntityData]] =
