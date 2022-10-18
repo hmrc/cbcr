@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter
 import cats.data.NonEmptyList
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
@@ -37,12 +36,11 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
   val docRefIdForDelete = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP10")
   val cbcId = CBCId.apply("XVCBC0000000056")
   val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val reportingEntityDataRepository = new ReportingEntityDataRepo(reactiveMongoApi)
+  val reportingEntityDataRepository = app.injector.instanceOf[ReportingEntityDataRepo]
 
   val creationDate = LocalDate.now
   val updateForcreationDate = (LocalDate.now).plusDays(5)

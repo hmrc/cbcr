@@ -76,7 +76,20 @@ case class ReportingEntityData(
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod])
+  entityReportingPeriod: Option[EntityReportingPeriod]) {
+  def toDataModel: ReportingEntityDataModel = ReportingEntityDataModel(
+    cbcReportsDRI,
+    Right(additionalInfoDRI),
+    reportingEntityDRI,
+    tin,
+    ultimateParentEntity,
+    reportingRole,
+    creationDate,
+    reportingPeriod,
+    currencyCode,
+    entityReportingPeriod
+  )
+}
 
 object ReportingEntityData {
   import FormatNotEmptyList.formatNEL
@@ -130,12 +143,23 @@ case class ReportingEntityDataModel(
   currencyCode: Option[String],
   entityReportingPeriod: Option[EntityReportingPeriod]) {
 
-  def upgraded(): ReportingEntityDataModel =
-    copy(additionalInfoDRI = additionalInfoDRI match {
-      case Left(Some(value)) => Right(List(value))
-      case Left(None) => Right(List())
-      case value => value
-    })
+  def toPublicModel: ReportingEntityData =
+    ReportingEntityData(
+      cbcReportsDRI,
+      additionalInfoDRI match {
+        case Left(Some(value)) => List(value)
+        case Left(None)        => List()
+        case Right(list)       => list
+      },
+      reportingEntityDRI,
+      tin,
+      ultimateParentEntity,
+      reportingRole,
+      creationDate,
+      reportingPeriod,
+      currencyCode,
+      entityReportingPeriod
+    )
 }
 
 object ReportingEntityDataModel {
