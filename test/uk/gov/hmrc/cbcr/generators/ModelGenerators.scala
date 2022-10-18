@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.generators
 
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen.{alphaStr, choose, listOfN}
+import org.scalacheck.Gen.alphaStr
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.cbcr.models.subscription._
 import uk.gov.hmrc.cbcr.models.subscription.request._
