@@ -139,11 +139,6 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
   def getLatestReportingEntityData(reportingEntityData: List[ReportingEntityData]): List[ReportingEntityData] = {
     val timestampRegex = """\d{8}T\d{6}""".r
 
-    implicit val localDateTimeOrdering = new Ordering[LocalDateTime] {
-      def compare(x: LocalDateTime, y: LocalDateTime): Int =
-        x.compareTo(y)
-    }
-
     val reportingEntityDri: Seq[String] = reportingEntityData.map(data => data.reportingEntityDRI.id)
 
     val timestamps: Seq[LocalDateTime] = reportingEntityDri
@@ -157,7 +152,7 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
     reportingEntityData.filter(
       x =>
         x.reportingEntityDRI.id
-          .contains(timestamps.sorted.reverse.head.toString.filterNot(timestampSeparator.contains)))
+          .contains(timestamps.sorted(_.compareTo(_)).reverse.head.toString.filterNot(timestampSeparator.contains)))
 
   }
 
