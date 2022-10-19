@@ -73,12 +73,12 @@ class SubscriptionCacheControllerSpec
 
   "Cache Controller" should {
     "store a subscription when given a valid create subscription payload" in {
-      when(mockSubscriptionCacheService.storeSubscriptionDetails(any(), any()))
+      when(mockSubscriptionCacheService.storeSubscriptionDetails(any(), any())(any()))
         .thenReturn(Future.successful(true))
 
       forAll(arbitrary[CreateSubscriptionForCBCRequest]) { subscriptionRequest =>
         val payload = Json.toJson(subscriptionRequest)
-        val request = FakeRequest(POST, routes.SubscriptionCacheController.storeSubscriptionDetails.url)
+        val request = FakeRequest(POST, routes.SubscriptionCacheController.storeSubscriptionDetails().url)
           .withJsonBody(payload)
 
         val result: Future[Result] = route(application, request).value

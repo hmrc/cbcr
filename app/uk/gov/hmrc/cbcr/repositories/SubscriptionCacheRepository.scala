@@ -16,47 +16,38 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import play.api.Configuration
 import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.indexes.IndexType
-import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.indexes.Index
+import reactivemongo.api.indexes.IndexType.Ascending
+import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.cbcr.models.subscription.request.CreateSubscriptionForCBCRequest
+import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import java.time.LocalDateTime
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class SubscriptionCacheRepository @Inject()(protected val mongo: ReactiveMongoApi, config: Configuration)(
-  implicit ec: ExecutionContext)
-    extends IndexBuilder {
+class SubscriptionCacheRepository @Inject()(implicit rmc: ReactiveMongoComponent)
+    extends ReactiveRepository[CreateSubscriptionForCBCRequest, BSONObjectID](
+      "subscriptionCacheRepository",
+      rmc.mongoConnector.db,
+      CreateSubscriptionForCBCRequest.format,
+      ReactiveMongoFormats.objectIdFormats) {
 
-  override protected val collectionName: String = "subscriptionCacheRepository"
-  override protected val cbcIndexes: List[CbcIndex] = List(CbcIndex("subscription-last-updated-index", "lastUpdated"))
+  override def indexes: List[Index] = List(
+    Index(Seq("lastUpdated" -> Ascending), Some("subscription-last-updated-index"), unique = true)
+  )
 
-  private def collection: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection](collectionName))
+  def get(id: String)(implicit ec: ExecutionContext): Future[Option[CreateSubscriptionForCBCRequest]] =
+    find("_id" -> id).map(_.headOption)
 
-  def get(id: String): Future[Option[CreateSubscriptionForCBCRequest]] =
-    collection.flatMap(_.find(Json.obj("_id" -> id), None).one[CreateSubscriptionForCBCRequest])
+  def set(id: String, subscription: CreateSubscriptionForCBCRequest)(implicit ec: ExecutionContext): Future[Boolean] =
+    findAndUpdate(
+      Json.obj("_id"  -> id),
+      Json.obj("$set" -> (subscription copy (lastUpdated = LocalDateTime.now))),
+      upsert = true
+    ).map(_.value.isDefined)
 
-  def set(id: String, subscription: CreateSubscriptionForCBCRequest): Future[Boolean] = {
-
-    val selector = Json.obj(
-      "_id" -> id
-    )
-
-    val modifier = Json.obj(
-      "$set" -> (subscription copy (lastUpdated = LocalDateTime.now))
-    )
-
-    collection.flatMap {
-      _.update(ordered = false)
-        .one(selector, modifier, upsert = true)
-        .map { lastError =>
-          lastError.ok
-        }
-    }
-  }
 }
