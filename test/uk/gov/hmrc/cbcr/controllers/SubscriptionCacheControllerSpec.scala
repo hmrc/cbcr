@@ -78,7 +78,7 @@ class SubscriptionCacheControllerSpec
 
       forAll(arbitrary[CreateSubscriptionForCBCRequest]) { subscriptionRequest =>
         val payload = Json.toJson(subscriptionRequest)
-        val request = FakeRequest(POST, routes.SubscriptionCacheController.storeSubscriptionDetails().url)
+        val request = FakeRequest(POST, routes.SubscriptionCacheController.storeSubscriptionDetails.url)
           .withJsonBody(payload)
 
         val result: Future[Result] = route(application, request).value

@@ -58,5 +58,5 @@ case class SubscriptionDetails(
   cbcId: Option[CBCId],
   utr: Utr)
 object SubscriptionDetails {
-  implicit val subscriptionDetailsFormat = Json.format[SubscriptionDetails]
+  implicit val format = Json.format[SubscriptionDetails]
 }

@@ -45,7 +45,7 @@ class SubscriptionCacheServiceSpec
   "Subscription service spec" should {
     "retrieve a cached response from the repository and return a faked hod response" in {
       forAll(arbitrary[CreateSubscriptionForCBCRequest]) { create =>
-        when(mockCacheRepository.get(any())).thenReturn(Future.successful(Some(create)))
+        when(mockCacheRepository.get(any())(any())).thenReturn(Future.successful(Some(create)))
 
         val service = application.injector.instanceOf[SubscriptionCacheService]
         val result = service.retrieveSubscriptionDetails("myid")
@@ -55,7 +55,7 @@ class SubscriptionCacheServiceSpec
     }
 
     "must return None when cache does not return a hit" in {
-      when(mockCacheRepository.get(any())).thenReturn(Future.successful(None))
+      when(mockCacheRepository.get(any())(any())).thenReturn(Future.successful(None))
 
       val service = application.injector.instanceOf[SubscriptionCacheService]
       val result = service.retrieveSubscriptionDetails("myid")
@@ -64,7 +64,7 @@ class SubscriptionCacheServiceSpec
     }
 
     "must set a cached response in repository" in {
-      when(mockCacheRepository.set(any(), any())).thenReturn(Future.successful(true))
+      when(mockCacheRepository.set(any(), any())(any())).thenReturn(Future.successful(true))
       forAll(arbitrary[CreateSubscriptionForCBCRequest]) { create =>
         val service = application.injector.instanceOf[SubscriptionCacheService]
         val result = service.storeSubscriptionDetails("myid", create)

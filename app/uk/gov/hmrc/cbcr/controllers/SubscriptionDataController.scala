@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import cats.instances.all._
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json.{JsError, JsValue, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
@@ -46,7 +45,7 @@ class SubscriptionDataController @Inject()(
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
             response =>
-              repo.save(response).map {
+              repo.save2(response).map {
                 case result if !result.ok => InternalServerError(result.writeErrors.mkString)
                 case _                    => Ok
             }
@@ -75,27 +74,27 @@ class SubscriptionDataController @Inject()(
   def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .clearCBCId(cbcId)
-      .cata[Result](
-        NotFound,
-        result => if (!result.ok) InternalServerError(result.writeErrors.mkString) else Ok("ok")
-      )
+      .map {
+        case r if r.ok => if (r.n > 0) Ok("ok") else NotFound
+        case result    => InternalServerError(result.writeErrors.mkString)
+      }
   }
 
   def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .get(utr)
-      .cata(
-        NotFound,
-        details => Ok(Json.toJson(details))
-      )
+      .map {
+        case None          => NotFound
+        case Some(details) => Ok(Json.toJson(details))
+      }
   }
 
   def retrieveSubscriptionDataCBCId(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .get(cbcId)
-      .cata(
-        NotFound,
-        details => Ok(Json.toJson(details))
-      )
+      .map {
+        case None          => NotFound
+        case Some(details) => Ok(Json.toJson(details))
+      }
   }
 }

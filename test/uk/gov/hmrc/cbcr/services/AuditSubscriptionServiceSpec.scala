@@ -59,7 +59,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     utr)
 
   when(runMode.env) thenReturn "Dev"
-  when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful[List[SubscriptionDetails]](
+  when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
     List(subscriptionDetails, subscriptionDetails2))
   when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
 
@@ -76,7 +76,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     "complete and audit fails" in {
       reset(subscriptionDataRepo)
       reset(mockAudit)
-      when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful[List[SubscriptionDetails]](
+      when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
         List(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         AuditResult.Failure("failed audit", None))
@@ -91,7 +91,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     "complete and audit disabled" in {
       reset(subscriptionDataRepo)
       reset(mockAudit)
-      when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful[List[SubscriptionDetails]](
+      when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
         List(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
 
@@ -105,7 +105,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     "complete and audit throws error" in {
       reset(subscriptionDataRepo)
       reset(mockAudit)
-      when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful[List[SubscriptionDetails]](
+      when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
         List(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.failed(new Throwable("audit error"))
 
