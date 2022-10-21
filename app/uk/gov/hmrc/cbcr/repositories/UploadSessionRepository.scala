@@ -16,47 +16,41 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import play.api.Configuration
 import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoApi
+import play.modules.reactivemongo.ReactiveMongoComponent
+import reactivemongo.api.indexes.Index
+import reactivemongo.api.indexes.IndexType.Ascending
+import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import reactivemongo.play.json.collection.JSONCollection
 import uk.gov.hmrc.cbcr.models.upscan._
+import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import javax.inject.{Inject, Singleton}
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class UploadSessionRepository @Inject()(val mongo: ReactiveMongoApi, config: Configuration)(
-  implicit ec: ExecutionContext)
-    extends IndexBuilder {
-
-  override protected val collectionName = "uploadSessionRepository"
-  override protected val cbcIndexes: List[CbcIndex] = List(CbcIndex("Upload Id", "uploadId"))
-
-  private def collection: Future[JSONCollection] =
-    mongo.database.map(_.collection[JSONCollection](collectionName))
+@Singleton
+class UploadSessionRepository @Inject()(backupRepo: BackupSubscriptionDataRepository)(
+  implicit rmc: ReactiveMongoComponent,
+  ec: ExecutionContext)
+    extends ReactiveRepository[UploadSessionDetails, BSONObjectID](
+      "uploadSessionRepository",
+      rmc.mongoConnector.db,
+      UploadSessionDetails.format,
+      ReactiveMongoFormats.objectIdFormats) {
+  override def indexes: List[Index] = List(
+    Index(Seq("uploadId" -> Ascending), Some("Upload Id"), unique = true)
+  )
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadSessionDetails]] =
-    collection.flatMap(_.find(Json.obj("uploadId" -> Json.toJson(uploadId)), None).one[UploadSessionDetails])
+    find("uploadId" -> Json.toJson(uploadId)).map(_.headOption)
 
   def updateStatus(reference: Reference, newStatus: UploadStatus): Future[Boolean] = {
-
     implicit val referenceFormatter: OFormat[Reference] = Json.format[Reference]
-    val selector = Json.obj("reference" -> Json.toJson(reference))
-    val modifier = Json.obj("$set"      -> Json.obj("status" -> Json.toJson(newStatus)))
-
-    collection.flatMap {
-      _.update(ordered = false)
-        .one(selector, modifier, upsert = true)
-        .map { lastError =>
-          lastError.ok
-        }
-    }
+    findAndUpdate(
+      Json.obj("reference" -> Json.toJson(reference)),
+      Json.obj("$set"      -> Json.obj("status" -> Json.toJson(newStatus))),
+      upsert = true
+    ).map(_.value.isDefined)
   }
-
-  def insert(uploadDetails: UploadSessionDetails): Future[Boolean] =
-    collection.flatMap(_.insert.one(uploadDetails)).map { lastError =>
-      lastError.ok
-    }
-
 }

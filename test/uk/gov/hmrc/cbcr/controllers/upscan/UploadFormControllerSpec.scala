@@ -95,8 +95,7 @@ class UploadFormControllerSpec extends SpecBase with BeforeAndAfterEach with Moc
 
     "must return 404 when none is returned" in {
 
-      when(mockUploadProgressTracker.getUploadResult(UploadId("uploadID")))
-        .thenReturn(Future.successful(None))
+      when(mockUploadProgressTracker.getUploadResult(UploadId("uploadID"))).thenReturn(Future.successful(None))
 
       val request = FakeRequest(GET, routes.UploadFormController.getStatus("uploadID").url)
 

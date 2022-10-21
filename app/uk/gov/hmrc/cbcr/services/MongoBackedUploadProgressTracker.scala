@@ -39,7 +39,7 @@ class MongoBackedUploadProgressTracker @Inject()(repository: UploadSessionReposi
   private val logger = LoggerFactory.getLogger(getClass)
 
   override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Boolean] =
-    repository.insert(UploadSessionDetails(BSONObjectID.generate(), uploadId, fileReference, InProgress))
+    repository.insert(UploadSessionDetails(BSONObjectID.generate(), uploadId, fileReference, InProgress)).map(_.ok)
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Boolean] = {
     logger.debug("In the register " + fileReference.toString + "   " + uploadStatus.toString)
