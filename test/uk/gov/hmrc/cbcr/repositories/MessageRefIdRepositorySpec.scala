@@ -18,7 +18,6 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
@@ -32,13 +31,12 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneApp
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
-  val messageRefIdRepository = new MessageRefIdRepository(reactiveMongoApi)
+  val messageRefIdRepository = app.injector.instanceOf[MessageRefIdRepository]
 
   "Calls to Save  MessageRefId" should {
     "successfully save that MessageRefId" in {
 
-      val result: Future[WriteResult] = messageRefIdRepository.save(MessageRefId("mRId"))
+      val result: Future[WriteResult] = messageRefIdRepository.save2(MessageRefId("mRId"))
       await(result.map(r => r.ok)) shouldBe true
 
     }

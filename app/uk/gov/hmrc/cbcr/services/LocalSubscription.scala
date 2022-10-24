@@ -56,16 +56,15 @@ class LocalSubscription @Inject()(
   override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) =
     repo
       .get(safeId)
-      .map(sd =>
-        GetResponse(
-          safeId,
-          ContactName(sd.subscriberContact.firstName, sd.subscriberContact.lastName),
-          ContactDetails(sd.subscriberContact.email, sd.subscriberContact.phoneNumber),
-          sd.businessPartnerRecord.address
-      ))
-      .cata(
-        NotFound,
-        (response: GetResponse) => Ok(Json.toJson(response))
-      )
-
+      .map {
+        case None => NotFound
+        case Some(sd) =>
+          val response = GetResponse(
+            safeId,
+            ContactName(sd.subscriberContact.firstName, sd.subscriberContact.lastName),
+            ContactDetails(sd.subscriberContact.email, sd.subscriberContact.phoneNumber),
+            sd.businessPartnerRecord.address
+          )
+          Ok(Json.toJson(response))
+      }
 }

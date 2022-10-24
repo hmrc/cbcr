@@ -18,7 +18,6 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.UploadFileResponse
@@ -32,14 +31,13 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
-  val fileUploadRepository = new FileUploadRepository(reactiveMongoApi)
+  val fileUploadRepository = app.injector.instanceOf[FileUploadRepository]
   val fir = UploadFileResponse("id1", "fid1", "status", None)
 
   "Calls to Save  UploadFileResponse" should {
     "should successfully save that UploadFileResponse" in {
 
-      val result: Future[WriteResult] = fileUploadRepository.save(fir)
+      val result: Future[WriteResult] = fileUploadRepository.save2(fir)
       await(result.map(r => r.ok)) shouldBe true
 
     }

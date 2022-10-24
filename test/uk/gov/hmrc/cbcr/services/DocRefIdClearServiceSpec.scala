@@ -45,7 +45,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
   val notFoundWriteResult = UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)
 
   when(runMode.env) thenReturn "Dev"
-  when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
+  when(docRefIdRepo.delete(any())(any())) thenReturn Future.successful(writeResult)
   when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(writeResult)
 
   new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config.withFallback(testConfig), runMode, mockAudit)
@@ -53,7 +53,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
   "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
 
     "call delete to the DocRefIdRepo" in {
-      verify(docRefIdRepo, times(4)).delete(any())
+      verify(docRefIdRepo, times(4)).delete(any())(any())
     }
 
     "call delete to the ReportingEntityDataRepo" in {

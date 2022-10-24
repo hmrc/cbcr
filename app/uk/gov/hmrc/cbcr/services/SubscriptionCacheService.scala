@@ -26,7 +26,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionCacheService @Inject()(cacheRepository: SubscriptionCacheRepository) {
 
-  def storeSubscriptionDetails(id: String, subscription: CreateSubscriptionForCBCRequest): Future[Boolean] =
+  def storeSubscriptionDetails(id: String, subscription: CreateSubscriptionForCBCRequest)(
+    implicit ec: ExecutionContext): Future[Boolean] =
     cacheRepository.set(id, subscription)
 
   def retrieveSubscriptionDetails(id: String)(

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import cats.data.OptionT
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.Json
@@ -36,7 +35,7 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
   lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
-  val subscriptionDataRepository = new SubscriptionDataRepository(reactiveMongoApi)
+  val subscriptionDataRepository = app.injector.instanceOf[SubscriptionDataRepository]
   val subscriberContact =
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
   val subscriberContact1 = SubscriberContact(
@@ -61,8 +60,8 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
 
   "Calls to clear cbcId Details" should {
     "successfully clear  details using cbcId" in {
-      val result: OptionT[Future, WriteResult] = subscriptionDataRepository.clearCBCId(cbcId.value)
-      await(result.value.map(r => r.get.ok)) shouldBe true
+      val result = subscriptionDataRepository.clearCBCId(cbcId.value)
+      await(result).ok shouldBe true
     }
   }
 
@@ -75,29 +74,29 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
 
   "Calls to Save  SubscriptionData" should {
     "successfully save that SubscriptionData" in {
-      val result: Future[WriteResult] = subscriptionDataRepository.save(exampleSubscriptionData)
+      val result: Future[WriteResult] = subscriptionDataRepository.save2(exampleSubscriptionData)
       await(result.map(r => r.ok)) shouldBe true
     }
   }
 
   "Calls to get Subscription Details" should {
     "successfully fetch that Subscription details using safeId" in {
-      val result: OptionT[Future, SubscriptionDetails] = subscriptionDataRepository.get("MySafeID")
-      await(result.value.map(r => r.get.businessPartnerRecord.safeId)) shouldBe "MySafeID"
+      val result = subscriptionDataRepository.get("MySafeID")
+      await(result).get.businessPartnerRecord.safeId shouldBe "MySafeID"
     }
   }
 
   "Calls to get  Subscription Details" should {
     "successfully fetch that Subscription details using utr" in {
-      val result: OptionT[Future, SubscriptionDetails] = subscriptionDataRepository.get(utr)
-      await(result.value.map(r => r.get.utr)) shouldBe utr
+      val result = subscriptionDataRepository.get(utr)
+      await(result).get.utr shouldBe utr
     }
   }
 
   "Calls to get  Subscription Details" should {
     "successfully fetch that Subscription details using cbcId" in {
-      val result: OptionT[Future, SubscriptionDetails] = subscriptionDataRepository.get(cbcId.value)
-      await(result.value.map(r => r.get.cbcId.get.value)) shouldEqual cbcId.get.value
+      val result = subscriptionDataRepository.get(cbcId.value)
+      await(result).value.cbcId.get.value shouldEqual cbcId.get.value
     }
   }
 
@@ -110,16 +109,15 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
 
   "Calls to  getSubscriptions Details" should {
     "successfully fetch that getSubscriptions details " in {
-      val modifier = Json.obj("subscriberContact" -> Json.toJson(subscriberContact))
-      val result: Future[List[SubscriptionDetails]] = subscriptionDataRepository.getSubscriptions(modifier)
-      await(result.map(x => x(0).subscriberContact.email.value)) shouldBe "dave@dave.com"
+      val result = subscriptionDataRepository.getSubscriptions("subscriberContact" -> Json.toJson(subscriberContact))
+      await(result).head.subscriberContact.email.value shouldBe "dave@dave.com"
     }
   }
 
   "Calls to  backup data" should {
     "successfully backup details " in {
-      val result: List[Future[WriteResult]] = subscriptionDataRepository.backup(List(exampleSubscriptionData))
-      result.length >= (1)
+      val result = subscriptionDataRepository.backup(List(exampleSubscriptionData))
+      await(result) should not be empty
     }
   }
 

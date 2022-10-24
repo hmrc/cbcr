@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter
 import cats.data.NonEmptyList
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
@@ -37,12 +36,11 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
   val docRefIdForDelete = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP10")
   val cbcId = CBCId.apply("XVCBC0000000056")
   val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val reportingEntityDataRepository = new ReportingEntityDataRepo(reactiveMongoApi)
+  val reportingEntityDataRepository = app.injector.instanceOf[ReportingEntityDataRepo]
 
   val creationDate = LocalDate.now
   val updateForcreationDate = (LocalDate.now).plusDays(5)
@@ -297,14 +295,13 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
 
   def rData(reps: NonEmptyList[DocRefId], add: List[DocRefId]) = ReportingEntityDataModel(
     reps,
-    add,
+    Right(add),
     docRefId,
     TIN("3590617086", "CGI"),
     UltimateParentEntity("ABCCorp"),
     CBC701,
     Some(creationDate),
     Some(reportingPeriod),
-    false,
     None,
     None
   )
@@ -327,9 +324,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(corrPair1), List(corrPair3)),
         rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
-      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
-        partialData(List(corrPair1), List(corrPair3)),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      val res2 = reportingEntityDataRepository
+        .mergeListsAddInfo(partialData(List(corrPair1), List(corrPair3)), List(addDocRefId1, addDocRefId2))
 
       res1.equals(List(newDocRef1.id, docRefId2.id)) shouldBe true
       res2.equals(List(newAddInfo3.id, addDocRefId2.id)) shouldBe true
@@ -339,9 +335,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(), List()),
         rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
-      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
-        partialData(List(), List()),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      val res2 =
+        reportingEntityDataRepository.mergeListsAddInfo(partialData(List(), List()), List(addDocRefId1, addDocRefId2))
       res1.equals(List(docRefId1.id, docRefId2.id)) shouldBe true
       res2.equals(List(addDocRefId1.id, addDocRefId2.id)) shouldBe true
     }
@@ -350,9 +345,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(corrPair2), List()),
         rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
-      val res2 = reportingEntityDataRepository.mergeListsAddInfo(
-        partialData(List(), List(corrPair4)),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+      val res2 = reportingEntityDataRepository
+        .mergeListsAddInfo(partialData(List(), List(corrPair4)), List(addDocRefId1, addDocRefId2))
 
       res1.equals(List(newDocRef2.id, docRefId1.id)) shouldBe true
       res2.equals(List(newAddInfo4.id, addDocRefId1.id)) shouldBe true
@@ -365,7 +359,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       )
       val res2 = reportingEntityDataRepository.mergeListsAddInfo(
         partialData(List(corrPair1, corrPair2), List(corrPair3, corrPair4)),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2))
+        List(addDocRefId1, addDocRefId2)
       )
 
       res1.equals(List(newDocRef1.id, newDocRef2.id)) shouldBe true

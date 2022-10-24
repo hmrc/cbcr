@@ -101,8 +101,8 @@ class LocalSubscriptionSpec
     }
     "be able to display subscription information" which {
       "queries our own subscription store and converts to the correct format" in {
-        when(repo.get(exampleSubscriptionData.businessPartnerRecord.safeId)) thenReturn OptionT
-          .pure[Future, SubscriptionDetails](exampleSubscriptionData)
+        when(repo.get(exampleSubscriptionData.businessPartnerRecord.safeId)) thenReturn
+          Future(Some(exampleSubscriptionData))
         val response = localGen.getSubscription(exampleSubscriptionData.businessPartnerRecord.safeId)
         status(response) shouldBe Status.OK
 
@@ -122,8 +122,7 @@ class LocalSubscriptionSpec
       }
 
       "queries our own subscription store but finds nothing" in {
-        when(repo.get(exampleSubscriptionData.businessPartnerRecord.safeId)) thenReturn OptionT
-          .none[Future, SubscriptionDetails]
+        when(repo.get(exampleSubscriptionData.businessPartnerRecord.safeId)) thenReturn Future(None)
         val response = localGen.getSubscription(exampleSubscriptionData.businessPartnerRecord.safeId)
         status(response) shouldBe Status.NOT_FOUND
 

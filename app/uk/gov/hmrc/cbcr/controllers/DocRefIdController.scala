@@ -46,7 +46,7 @@ class DocRefIdController @Inject()(
   }
 
   def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { _ =>
-    repo.save(docRefId).map {
+    repo.save2(docRefId).map {
       case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
       case DocRefIdResponses.Failed        => InternalServerError
@@ -56,7 +56,7 @@ class DocRefIdController @Inject()(
   def saveCorrDocRefId(corrDocRefId: CorrDocRefId) = auth.authCBCR { implicit request =>
     val docRefId =
       request.body.asJson.getOrElse(throw new NotFoundException("No doc ref id found in the body")).as[DocRefId]
-    repo.save(corrDocRefId, docRefId).map {
+    repo.save2(corrDocRefId, docRefId).map {
       case (DocRefIdResponses.Invalid, _)                                   => BadRequest
       case (DocRefIdResponses.DoesNotExist, _)                              => NotFound
       case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok))            => Ok

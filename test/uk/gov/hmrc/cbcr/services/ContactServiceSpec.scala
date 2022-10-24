@@ -22,7 +22,6 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.MustMatchers.convertToAnyMustWrapper
 import play.api.http.Status.OK
 import play.api.inject.bind
-import play.api.libs.json.Json
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.connectors.SubscriptionConnector

@@ -73,7 +73,7 @@ class SubscriptionCacheControllerSpec
 
   "Cache Controller" should {
     "store a subscription when given a valid create subscription payload" in {
-      when(mockSubscriptionCacheService.storeSubscriptionDetails(any(), any()))
+      when(mockSubscriptionCacheService.storeSubscriptionDetails(any(), any())(any()))
         .thenReturn(Future.successful(true))
 
       forAll(arbitrary[CreateSubscriptionForCBCRequest]) { subscriptionRequest =>

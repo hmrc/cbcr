@@ -65,14 +65,13 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   val redm = ReportingEntityDataModel(
     NonEmptyList(docRefId, Nil),
-    List(docRefId),
+    Right(List(docRefId)),
     docRefId,
     TIN("90000000001", "GB"),
     UltimateParentEntity("Foo Corp"),
     CBC701,
     Some(LocalDate.now()),
     Some(LocalDate.now()),
-    oldModel = false,
     None,
     None
   )
@@ -243,10 +242,10 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
         verifyStatusCode(result, Status.NOT_FOUND)
       }
       "return an OK response, with a json body containing reportEntityDataModel" in {
-        when(repo.queryModel(any())) thenReturn Future.successful(Some(redm))
+        when(repo.queryModel(any())) thenReturn Future.successful(Some(redm.toPublicModel))
         val result = controller.queryModel(docRefId)(fakeGetRequest)
         verifyStatusCode(result, Status.OK)
-        verifyResult(result, redm)
+        verifyResult(result, redm.toPublicModel)
       }
 
       "recover from a future failed and return an internalServerError" in {

@@ -46,10 +46,9 @@ class AuditSubscriptionService @Inject()(
         .split("_")
         .toList
         .flatMap(CBCId.apply)
-    val subscriptions = Json.obj("cbcId" -> Json.obj("$in" -> cbcIds))
 
     repo
-      .getSubscriptions(subscriptions)
+      .getSubscriptions("cbcId" -> Json.obj("$in" -> cbcIds))
       .map(sd =>
         sd.foreach(s =>
           auditSubscriptionDetails(s).onComplete {

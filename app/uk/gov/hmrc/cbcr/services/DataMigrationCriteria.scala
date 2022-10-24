@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import configs.syntax._
 import play.api.Configuration
 import play.api.libs.json.Json
+import play.api.libs.json.Json.JsValueWrapper
 
 object DataMigrationCriteria {
 
@@ -33,7 +34,7 @@ object DataMigrationCriteria {
     result.valueOrElse(Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC00.*")))
   }
 
-  val LOCAL_CBCID_CRITERIA = Json.obj("cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC0.*"))
+  val LOCAL_CBCID_CRITERIA: (String, JsValueWrapper) = "cbcId" -> Json.obj("$regex" -> "X[A-Z]CBC0.*")
 
   val NAME_SPLIT_CRITERIA = Json.obj(
     "subscriberContact.name"      -> Json.obj("$exists" -> true),

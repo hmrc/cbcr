@@ -40,18 +40,18 @@ class UploadSessionRepositorySpec
   val uploadDetails = UploadSessionDetails(BSONObjectID.generate(), uploadId, Reference("xxxx"), Quarantined)
 
   override def afterEach(): Unit = {
-    await(uploadRep.mongo.database.map(_.drop()))
+    await(uploadRep.removeAll())
     super.beforeEach()
   }
 
   "Insert" must {
-    "must insert UploadStatus" in {
+    "insert UploadStatus" in {
       val res = uploadRep.insert(uploadDetails)
       whenReady(res) { result =>
-        result shouldBe true
+        result.ok shouldBe true
       }
     }
-    "must read UploadStatus" in {
+    "read UploadStatus" in {
       await(uploadRep.insert(uploadDetails))
       val res: Future[Option[UploadSessionDetails]] = uploadRep.findByUploadId(uploadId)
       val result = res.futureValue.value
