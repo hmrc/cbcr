@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import org.mongodb.scala.model.Filters.equal
+
 import javax.inject.Inject
 import play.api.{Configuration, Logger}
 import play.api.libs.json.{JsString, Json}
@@ -23,6 +25,7 @@ import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails}
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -48,7 +51,7 @@ class AuditSubscriptionService @Inject()(
         .flatMap(CBCId.apply)
 
     repo
-      .getSubscriptions("cbcId" -> Json.obj("$in" -> cbcIds))
+      .getSubscriptions(equal("cbcId", Json.obj("$in" -> cbcIds)))
       .map(sd =>
         sd.foreach(s =>
           auditSubscriptionDetails(s).onComplete {

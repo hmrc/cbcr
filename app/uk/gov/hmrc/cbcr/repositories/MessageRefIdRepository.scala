@@ -15,34 +15,34 @@
  */
 
 package uk.gov.hmrc.cbcr.repositories
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.bson.BSONObjectID
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models.MessageRefId
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository @Inject()(val rmc: ReactiveMongoComponent)
-    extends ReactiveRepository[MessageRefId, BSONObjectID](
-      "MessageRefId",
-      rmc.mongoConnector.db,
-      MessageRefId.format,
-      ReactiveMongoFormats.objectIdFormats) {
-  override def indexes: List[Index] = List(
-    Index(Seq("messageRefId" -> Ascending), Some("Message Ref MessageRefId"), unique = true)
-  )
+class MessageRefIdRepository @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[MessageRefId](
+      mongoComponent = mongo,
+      collectionName = "MessageRefId",
+      domainFormat = MessageRefId.format,
+      indexes = Seq(
+        IndexModel(ascending("messageRefId"), IndexOptions().unique(true).name("Message Ref MessageRefId"))
+      )
+    ) {
 
-  def save2(f: MessageRefId)(implicit ec: ExecutionContext): Future[WriteResult] = insert(f)
+  def save2(f: MessageRefId): Future[InsertOneResult] =
+    collection.insertOne(f).toFuture()
 
-  def exists(messageRefId: String)(implicit ec: ExecutionContext): Future[Boolean] =
-    find("messageRefId" -> messageRefId).map(_.nonEmpty)
+  def exists(messageRefId: String): Future[Boolean] =
+    collection.find(equal("messageRefId", messageRefId)).headOption().map(_.isDefined)
 
-  def delete(m: MessageRefId)(implicit ec: ExecutionContext): Future[WriteResult] =
-    remove("messageRefId" -> m.id)
+  def delete(m: MessageRefId): Future[DeleteResult] =
+    collection.deleteOne(equal("messageRefId", m.id)).head()
 }

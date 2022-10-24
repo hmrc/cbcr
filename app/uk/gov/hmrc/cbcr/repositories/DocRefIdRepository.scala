@@ -16,80 +16,84 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-import uk.gov.hmrc.mongo.ReactiveRepository
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(val rmc: ReactiveMongoComponent, val records: ReactiveDocRefIdRepository)
-    extends ReactiveRepository[DocRefId, BSONObjectID](
-      "DocRefId",
-      rmc.mongoConnector.db,
-      DocRefId.format,
-      ReactiveMongoFormats.objectIdFormats) {
+class DocRefIdRepository @Inject()(val mongo: MongoComponent, val records: ReactiveDocRefIdRepository)(
+  implicit ec: ExecutionContext)
+    extends PlayMongoRepository[DocRefId](
+      mongoComponent = mongo,
+      collectionName = "DocRefId",
+      domainFormat = DocRefId.format,
+      indexes = Seq(),
+    ) {
 
-  def delete(d: DocRefId)(implicit ec: ExecutionContext): Future[WriteResult] =
-    remove("id" -> d.id)
+  def delete(d: DocRefId): Future[DeleteResult] =
+    collection.deleteOne(equal("id", d.id)).toFuture()
 
-  def edit(doc: DocRefId)(implicit ec: ExecutionContext): Future[Int] =
-    findAndUpdate(query = Json.obj("id" -> doc.id), update = Json.obj("$set" -> Json.obj("valid" -> true)))
-      .map(_.value.size)
+  def edit(doc: DocRefId): Future[Long] =
+    collection
+      .updateMany(
+        equal("id", doc.id),
+        set("valid", true),
+      )
+      .toFuture()
+      .map(_.getModifiedCount())
 
-  def save2(id: DocRefId)(implicit ec: ExecutionContext): Future[DocRefIdSaveResponse] =
-    records
-      .find("id" -> id.id)
-      .map(_.headOption.map(_.valid))
+  def save2(id: DocRefId): Future[DocRefIdSaveResponse] =
+    records.collection
+      .find(equal("id", id.id))
+      .headOption()
       .flatMap {
-        case Some(true) => Future.successful(AlreadyExists)
+        case Some(entry) if entry.valid => Future.successful(AlreadyExists)
         case _ =>
-          records.insert(DocRefIdRecord(id, valid = true)).map {
-            case r if r.ok => Ok
-            case _         => Failed
+          records.collection.insertOne(DocRefIdRecord(id, valid = true)).toFuture().map {
+            case r if r.wasAcknowledged() => Ok
+            case _                        => Failed
           }
       }
 
-  def save2(c: CorrDocRefId, d: DocRefId)(
-    implicit ec: ExecutionContext): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] = {
-    val criteria = Json.obj("id" -> c.cid.id, "valid" -> true)
+  def save2(c: CorrDocRefId, d: DocRefId): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
     query(c.cid).zip(query(d)).flatMap {
       case (Invalid, _)             => Future.successful((Invalid, None))
       case (DoesNotExist, _)        => Future.successful((DoesNotExist, None))
       case (Valid, Valid | Invalid) => Future.successful((Valid, Some(AlreadyExists)))
       case (Valid, DoesNotExist) =>
         for {
-          doc <- records.findAndUpdate(query = criteria, update = Json.obj("$set" -> Json.obj("valid" -> false)))
-          x <- if (doc.result[DocRefIdRecord].isDefined) {
+          doc <- records.collection
+                  .findOneAndUpdate(and(equal("id", c.cid.id), equal("valid", true)), set("valid", false))
+                  .toFutureOption()
+          x <- if (doc.isDefined) {
                 val valid = DocRefIdRecord.docRefIdValidity(d.id)
-                records
-                  .insert(DocRefIdRecord(d, valid))
+                records.collection
+                  .insertOne(DocRefIdRecord(d, valid))
+                  .toFuture()
                   .map {
-                    case r if r.ok => Ok
-                    case _         => Failed
+                    case r if r.wasAcknowledged() => Ok
+                    case _                        => Failed
                   }
               } else {
-                logger.error(doc.toString)
                 Future.successful(Failed)
               }
         } yield (Valid, Some(x))
     }
-  }
 
-  def query(docRefId: DocRefId)(implicit ec: ExecutionContext): Future[DocRefIdQueryResponse] =
-    records
-      .find("id" -> docRefId.id)
-      .map(_.headOption match {
+  def query(docRefId: DocRefId): Future[DocRefIdQueryResponse] =
+    records.collection
+      .find(equal("id", docRefId.id))
+      .headOption()
+      .map {
         case Some(r) if r.valid => Valid
         case Some(_)            => Invalid
         case None               => DoesNotExist
-      })
-
+      }
 }

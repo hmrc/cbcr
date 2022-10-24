@@ -25,7 +25,6 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
-import cats.instances.future._
 import uk.gov.hmrc.http.HeaderCarrier
 
 @Singleton

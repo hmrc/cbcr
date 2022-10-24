@@ -16,67 +16,71 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import java.time.LocalDate
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.{equal, regex}
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.Updates.{set, unset}
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
+import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
+import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import play.api.libs.json._
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+
 import java.time._
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
-import play.api.libs.json.{Json, _}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
-import uk.gov.hmrc.cbcr.models._
-
-import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
-
 import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
-class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implicit ec: ExecutionContext)
-    extends ReactiveRepository[ReportingEntityDataModel, BSONObjectID](
-      "ReportingEntityData",
-      rmc.mongoConnector.db,
-      ReportingEntityDataModel.format,
-      ReactiveMongoFormats.objectIdFormats) {
+class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
+    extends PlayMongoRepository[ReportingEntityDataModel](
+      mongoComponent = mongo,
+      collectionName = "ReportingEntityData",
+      domainFormat = ReportingEntityDataModel.format,
+      indexes = Seq(
+        IndexModel(ascending("reportingEntityDRI"), IndexOptions().name("Reporting Entity DocRefId").unique(true))
+      )
+    ) {
 
-  override def indexes: List[Index] = List(
-    Index(Seq("reportingEntityDRI" -> Ascending), Some("Reporting Entity DocRefId"), unique = true)
-  )
+  def delete(d: DocRefId): Future[DeleteResult] =
+    collection
+      .deleteMany(
+        Filters.or(
+          equal("cbcReportsDRI", d.id),
+          equal("additionalInfoDRI", d.id),
+          equal("reportingEntityDRI", d.id)
+        )
+      )
+      .toFuture
 
-  def delete(d: DocRefId): Future[WriteResult] =
-    remove(
-      "$or" -> Json.arr(
-        Json.obj("cbcReportsDRI"      -> d.id),
-        Json.obj("additionalInfoDRI"  -> d.id),
-        Json.obj("reportingEntityDRI" -> d.id)
-      ))
+  def removeAllDocs(): Future[DeleteResult] = collection.deleteMany(Filters.empty()).toFuture
 
-  def removeAllDocs(): Future[WriteResult] = remove()
-
-  def save(f: ReportingEntityData): Future[WriteResult] =
-    insert(f.copy(creationDate = Some(LocalDate.now())).toDataModel)
+  def save(f: ReportingEntityData): Future[InsertOneResult] =
+    collection.insertOne(f.copy(creationDate = Some(LocalDate.now())).toDataModel).toFuture
 
   def update(p: ReportingEntityData): Future[Boolean] =
-    findAndUpdate(
-      Json.obj("cbcReportsDRI" -> p.cbcReportsDRI.head.id),
-      Json.obj("$set"          -> Json.toJson(p.toDataModel))
-    ).map(_.value.isDefined)
+    collection
+      .findOneAndReplace(
+        equal("cbcReportsDRI", p.cbcReportsDRI.head.id),
+        p.toDataModel
+      )
+      .toFutureOption()
+      .map(_.isDefined)
 
+  // TODO: Probably has to go into its own collection
   /**This is an admin endpoint**/
   def updateReportingEntityDRI(
     adminReportingEntityData: AdminReportingEntityData,
-    docRefId: DocRefId): Future[Boolean] =
-    findAndUpdate(
-      Json.obj("reportingEntityDRI" -> docRefId.id),
-      Json.obj("$set"               -> Json.toJson(adminReportingEntityData))
-    ).map(_.value.isDefined)
+    docRefId: DocRefId): Future[Boolean] = ???
+//  def updateReportingEntityDRI(adminReportingEntityData: AdminReportingEntityData, docRefId: DocRefId): Future[Boolean] =
+//    collection.findOneAndReplace(
+//      equal("reportingEntityDRI", docRefId.id),
+//      Json.toJson(adminReportingEntityData)
+//    ).toFutureOption().map(_.isDefined)
 
   def update(p: PartialReportingEntityData): Future[Boolean] =
     if (p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
@@ -86,57 +90,85 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
         p.reportingEntityDRI.docRefId,
         p.entityReportingPeriod.getOrElse(throw new RuntimeException("EntityReportingPeriod missing")))
     } else {
-      val conditions =
-        p.additionalInfoDRI.flatMap(_.corrDocRefId).map(c => Json.obj("additionalInfoDRI" -> c.cid.id)) ++
-          p.reportingEntityDRI.corrDocRefId.map(c => Json.obj("reportingEntityDRI"        -> c.cid.id)) ++
-          p.cbcReportsDRI.flatMap(_.corrDocRefId).map(c => Json.obj("cbcReportsDRI"       -> c.cid.id))
+      val condition = {
+        val conditions: Seq[Bson] =
+          p.additionalInfoDRI.flatMap(_.corrDocRefId).map(c => equal("additionalInfoDRI", c.cid.id)) ++
+            p.reportingEntityDRI.corrDocRefId.map(c => equal("reportingEntityDRI", c.cid.id)) ++
+            p.cbcReportsDRI.flatMap(_.corrDocRefId).map(c => equal("cbcReportsDRI", c.cid.id))
+        Filters.and(conditions: _*)
+      }
 
       for {
-        record <- find("$and" -> JsArray(conditions)).map {
-                   case record :: _ => record
+        record <- collection.find(condition).headOption().map {
+                   case Some(record) => record
                    case _ =>
                      throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
                  }
         modifier = buildModifier(p, record)
-        update <- findAndUpdate(Json.obj("$and" -> JsArray(conditions)), modifier)
-      } yield update.lastError.exists(_.updatedExisting)
+        update <- collection.findOneAndUpdate(condition, modifier).toFutureOption()
+      } yield update.isDefined
     }
 
   /** Find a reportingEntity that has a reportingEntityDRI with the provided docRefId */
   def queryReportingEntity(d: DocRefId): Future[Option[ReportingEntityData]] =
-    find("reportingEntityDRI" -> d.id).map(_.headOption.map(_.toPublicModel))
+    collection
+      .find(equal("reportingEntityDRI", d.id))
+      .map(_.toPublicModel)
+      .headOption()
 
   def query(d: DocRefId): Future[Option[ReportingEntityData]] =
-    find(
-      "$or" -> Json.arr(
-        Json.obj("cbcReportsDRI"      -> d.id),
-        Json.obj("additionalInfoDRI"  -> d.id),
-        Json.obj("reportingEntityDRI" -> d.id)
-      ))
-      .map(_.headOption.map(_.toPublicModel))
+    collection
+      .find(
+        Filters.or(
+          equal("cbcReportsDRI", d.id),
+          equal("additionalInfoDRI", d.id),
+          equal("reportingEntityDRI", d.id)
+        )
+      )
+      .map(_.toPublicModel)
+      .headOption
 
-  def query(d: String): Future[List[ReportingEntityData]] =
-    find(
-      "$or" -> Json.arr(
-        Json.obj("cbcReportsDRI"      -> Json.obj("$regex" -> (".*" + d + ".*"))),
-        Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + d + ".*"))),
-        Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + d + ".*")))
-      )).map(_.map(_.toPublicModel))
+  def query(d: String): Future[Seq[ReportingEntityData]] =
+    collection
+      .find(
+        Filters.or(
+          regex("cbcReportsDRI", ".*" + d + ".*"),
+          regex("additionalInfoDRI", ".*" + d + ".*"),
+          regex("reportingEntityDRI", ".*" + d + ".*")
+        )
+      )
+      .map(_.toPublicModel)
+      .toFuture
 
   def queryCbcId(cbcId: CBCId, reportingPeriod: LocalDate): Future[Option[ReportingEntityData]] =
-    find(
-      "reportingEntityDRI" -> Json.obj("$regex" -> (".*" + cbcId.toString + ".*")),
-      "reportingPeriod"    -> reportingPeriod.toString
-    ).map(_.headOption.map(_.toPublicModel))
+    collection
+      .find(
+        Filters.and(
+          regex("reportingEntityDRI", ".*" + cbcId.toString + ".*"),
+          equal("reportingPeriod", reportingPeriod.toString)
+        )
+      )
+      .map(_.toPublicModel)
+      .headOption
 
-  def queryTIN(tin: String, reportingPeriod: String): Future[List[ReportingEntityData]] =
-    find("tin" -> tin, "reportingPeriod" -> reportingPeriod)
-      .map(_.map(_.toPublicModel))
+  def queryTIN(tin: String, reportingPeriod: String): Future[Seq[ReportingEntityData]] =
+    collection
+      .find(
+        Filters.and(
+          equal("tin", tin),
+          equal("reportingPeriod", reportingPeriod)
+        )
+      )
+      .map(_.toPublicModel)
+      .toFuture
 
   def queryTINDatesOverlapping(tin: String, entityReportingPeriod: EntityReportingPeriod): Future[Boolean] =
-    find("tin" -> tin).map(_.map(_.toPublicModel).pipe(datesAreOverlapping(_, entityReportingPeriod)))
+    collection
+      .find(equal("tin", tin))
+      .toFuture()
+      .map(_.map(_.toPublicModel).pipe(datesAreOverlapping(_, entityReportingPeriod)))
 
-  def getLatestReportingEntityData(reportingEntityData: List[ReportingEntityData]): List[ReportingEntityData] = {
+  def getLatestReportingEntityData(reportingEntityData: Seq[ReportingEntityData]): Seq[ReportingEntityData] = {
     val timestampRegex = """\d{8}T\d{6}""".r
     val timestampSeparator = Set('-', ':')
     val searchedFor =
@@ -152,50 +184,57 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
   }
 
   def query(c: String, r: String): Future[Option[ReportingEntityData]] =
-    find(
-      "$and" -> Json.arr(
-        Json.obj("$or" -> Json.arr(
-          Json.obj("cbcReportsDRI"      -> Json.obj("$regex" -> (".*" + c + ".*"))),
-          Json.obj("additionalInfoDRI"  -> Json.obj("$regex" -> (".*" + c + ".*"))),
-          Json.obj("reportingEntityDRI" -> Json.obj("$regex" -> (".*" + c + ".*")))
-        )),
-        Json.obj("reportingPeriod" -> r)
-      )).map(_.headOption.map(_.toPublicModel))
+    collection
+      .find(
+        Filters.and(
+          Filters.or(
+            regex("cbcReportsDRI", ".*" + c + ".*"),
+            regex("additionalInfoDRI", ".*" + c + ".*"),
+            regex("reportingEntityDRI", ".*" + c + ".*"),
+          ),
+          equal("reportingPeriod", r)
+        )
+      )
+      .map(_.toPublicModel)
+      .headOption
 
   def queryModel(d: DocRefId): Future[Option[ReportingEntityData]] =
-    find(
-      "$or" -> Json.arr(
-        Json.obj("cbcReportsDRI"      -> d.id),
-        Json.obj("additionalInfoDRI"  -> d.id),
-        Json.obj("reportingEntityDRI" -> d.id)
-      )).map(_.headOption.map(_.toPublicModel))
+    collection
+      .find(
+        Filters.or(
+          equal("cbcReportsDRI", d.id),
+          equal("additionalInfoDRI", d.id),
+          equal("reportingEntityDRI", d.id)
+        )
+      )
+      .map(_.toPublicModel)
+      .headOption
 
-  private def buildModifier(p: PartialReportingEntityData, r: ReportingEntityDataModel): JsObject = {
-    val x: immutable.Seq[(String, JsValue)] = List(
+  private def buildModifier(p: PartialReportingEntityData, r: ReportingEntityDataModel): List[Bson] =
+    List(
       r.additionalInfoDRI match {
-        case Left(_) => p.additionalInfoDRI.headOption.map(_.docRefId).map(i => "additionalInfoDRI" -> JsString(i.id))
+        case Left(_) =>
+          p.additionalInfoDRI.headOption.map(_.docRefId).map(i => set("additionalInfoDRI", JsString(i.id)))
         case Right(rest) =>
           p.additionalInfoDRI.headOption.map(_ =>
-            "additionalInfoDRI" -> JsArray(mergeListsAddInfo(p, rest).map(JsString)))
+            set("additionalInfoDRI", JsArray(mergeListsAddInfo(p, rest).map(JsString))))
       },
       p.cbcReportsDRI.headOption.map { _ =>
-        "cbcReportsDRI" -> JsArray(mergeListsReports(p, r).map(d => JsString(d)))
+        set("cbcReportsDRI", JsArray(mergeListsReports(p, r).map(d => JsString(d))))
       },
-      p.reportingEntityDRI.corrDocRefId.map(_ => "reportingEntityDRI" -> JsString(p.reportingEntityDRI.docRefId.id)),
-      Some("reportingRole"        -> JsString(p.reportingRole.toString)),
-      Some("tin"                  -> JsString(p.tin.value)),
-      Some("ultimateParentEntity" -> JsString(p.ultimateParentEntity.ultimateParentEntity)),
-      p.reportingPeriod.map(rd => "reportingPeriod" -> JsString(rd.toString)),
-      p.currencyCode.map(cc => "currencyCode"       -> JsString(cc)),
+      p.reportingEntityDRI.corrDocRefId.map(_ => set("reportingEntityDRI", JsString(p.reportingEntityDRI.docRefId.id))),
+      Some(set("reportingRole", p.reportingRole.toString)),
+      Some(set("tin", p.tin.value)),
+      Some(set("ultimateParentEntity", p.ultimateParentEntity.ultimateParentEntity)),
+      p.reportingPeriod.map(rd => set("reportingPeriod", rd.toString)),
+      p.currencyCode.map(cc => set("currencyCode", JsString(cc))),
       p.entityReportingPeriod.map(
         erp =>
-          "entityReportingPeriod" -> Json
-            .obj("startDate" -> JsString(erp.startDate.toString), "endDate" -> JsString(erp.endDate.toString)))
+          set(
+            "entityReportingPeriod",
+            Json
+              .obj("startDate" -> JsString(erp.startDate.toString), "endDate" -> JsString(erp.endDate.toString))))
     ).flatten
-
-    Json.obj("$set" -> JsObject(x))
-
-  }
 
   def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]) = {
     val databaseRefIds = additionalInfoDRI.map(_.id)
@@ -213,48 +252,75 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
     updatedDocRefIds ++ notModifiedDocRefIds
   }
 
-  def updateCreationDate(d: DocRefId, c: LocalDate): Future[Int] =
-    findAndUpdate(
-      Json.obj("cbcReportsDRI" -> d.id),
-      Json.obj("$set"          -> Json.obj("creationDate" -> c))
-    ).map(_.value.size)
+  def updateCreationDate(d: DocRefId, c: LocalDate): Future[Long] =
+    collection
+      .updateMany(
+        equal("cbcReportsDRI", d.id),
+        set("creationDate", c)
+      )
+      .toFuture
+      .map(_.getModifiedCount)
 
   def updateEntityReportingPeriod(d: DocRefId, erp: EntityReportingPeriod): Future[Boolean] =
-    findAndUpdate(
-      Json.obj("reportingEntityDRI" -> d.id),
-      Json.obj(
-        "$set" -> Json.obj("entityReportingPeriod" ->
-          Json.obj("startDate" -> JsString(erp.startDate.toString), "endDate" -> JsString(erp.endDate.toString))))
-    ).map(_.value.isDefined)
+    collection
+      .findOneAndUpdate(
+        equal("reportingEntityDRI", d.id),
+        set(
+          "entityReportingPeriod",
+          Json.obj("startDate" -> JsString(erp.startDate.toString), "endDate" -> JsString(erp.endDate.toString)))
+      )
+      .headOption
+      .map(_.isDefined)
 
-  def deleteCreationDate(d: DocRefId): Future[Int] =
-    findAndUpdate(
-      Json.obj("cbcReportsDRI" -> d.id),
-      Json.obj("$unset"        -> Json.obj("creationDate" -> 1))
-    ).map(_.value.size)
+  def deleteCreationDate(d: DocRefId): Future[Long] =
+    collection
+      .updateMany(
+        equal("cbcReportsDRI", d.id),
+        unset("creationDate")
+      )
+      .toFuture
+      .map(_.getModifiedCount)
 
-  def confirmCreationDate(d: DocRefId, c: LocalDate): Future[Int] =
-    count(Json.obj("cbcReportsDRI" -> d.id, "creationDate" -> c))
+  def confirmCreationDate(d: DocRefId, c: LocalDate): Future[Long] =
+    collection
+      .countDocuments(
+        Filters.and(
+          equal("cbcReportsDRI", d.id),
+          equal("creationDate", c)
+        )
+      )
+      .toFuture
 
-  def deleteReportingPeriod(d: DocRefId): Future[Int] =
-    findAndUpdate(
-      Json.obj("cbcReportsDRI" -> d.id),
-      Json.obj("$unset"        -> Json.obj("reportingPeriod" -> 1))
-    ).map(_.value.size)
+  def deleteReportingPeriod(d: DocRefId): Future[Long] =
+    collection
+      .updateMany(
+        equal("cbcReportsDRI", d.id),
+        unset("reportingPeriod")
+      )
+      .toFuture
+      .map(_.getModifiedCount)
 
-  def deleteReportingPeriodByRepEntDocRefId(d: DocRefId): Future[Int] =
-    findAndUpdate(
-      Json.obj("reportingEntityDRI" -> d.id),
-      Json.obj("$unset"             -> Json.obj("entityReportingPeriod" -> 1))
-    ).map(_.value.size)
+  def deleteReportingPeriodByRepEntDocRefId(d: DocRefId): Future[Long] =
+    collection
+      .updateMany(
+        equal("reportingEntityDRI", d.id),
+        unset("entityReportingPeriod")
+      )
+      .toFuture
+      .map(_.getModifiedCount)
 
-  def updateAdditionalInfoDRI(d: DocRefId): Future[Int] =
-    findAndUpdate(
-      Json.obj("additionalInfoDRI" -> d.id),
-      Json.obj("$set"              -> Json.obj("additionalInfoDRI" -> d.id))
-    ).map(_.value.size)
+  def updateAdditionalInfoDRI(d: DocRefId): Future[Long] =
+    collection
+      .updateMany(
+        equal("additionalInfoDRI", d.id),
+        set("additionalInfoDRI", d.id)
+      )
+      .toFuture
+      .map(_.getModifiedCount)
 
-  def datesAreOverlapping(existingData: List[ReportingEntityData], entityReportingPeriod: EntityReportingPeriod) = {
+  def datesAreOverlapping(
+    existingData: Seq[ReportingEntityData],
+    entityReportingPeriod: EntityReportingPeriod): Boolean = {
     val groupedData =
       existingData
         .filter(_.reportingPeriod.isDefined)
@@ -283,14 +349,14 @@ class ReportingEntityDataRepo @Inject()(val rmc: ReactiveMongoComponent)(implici
     !(entDocRefId.contains("OECD3"))
   }
 
-  def checkBySingleDate(entityReportingPeriod: EntityReportingPeriod, reportingPeriod: LocalDate) = {
+  def checkBySingleDate(entityReportingPeriod: EntityReportingPeriod, reportingPeriod: LocalDate): Boolean = {
     val check1 = reportingPeriod.isAfter(entityReportingPeriod.startDate) && reportingPeriod.isBefore(
       entityReportingPeriod.endDate)
     val check2 = reportingPeriod.isEqual(entityReportingPeriod.startDate)
     check1 || check2
   }
 
-  def checkBothDates(erp1: EntityReportingPeriod, erp2: EntityReportingPeriod) = {
+  def checkBothDates(erp1: EntityReportingPeriod, erp2: EntityReportingPeriod): Boolean = {
     val check1 = erp1.startDate.isAfter(erp2.startDate) && erp1.startDate.isBefore(erp2.endDate)
     val check2 = erp1.endDate.isAfter(erp2.startDate) && erp1.endDate.isBefore(erp2.endDate)
     val check3 = erp2.startDate.isAfter(erp1.startDate) && erp2.startDate.isBefore(erp1.endDate)

@@ -49,8 +49,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
             },
             (data: ReportingEntityData) =>
               repo.save(data).map {
-                case result if result.ok => Ok
-                case result              => InternalServerError(result.writeErrors.mkString)
+                case result if result.wasAcknowledged() => Ok
+                case _                                  => InternalServerError("Mongo Error")
             }
           )
       },

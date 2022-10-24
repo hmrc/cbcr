@@ -16,16 +16,20 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import com.google.inject.Inject
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.bson.BSONObjectID
+import com.google.inject.{Inject, Singleton}
+import org.mongodb.scala.model.Filters
 import uk.gov.hmrc.cbcr.models.DocRefIdRecord
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
-class ReactiveDocRefIdRepository @Inject()(implicit rmc: ReactiveMongoComponent)
-    extends ReactiveRepository[DocRefIdRecord, BSONObjectID](
-      "DocRefId",
-      rmc.mongoConnector.db,
-      DocRefIdRecord.format,
-      ReactiveMongoFormats.objectIdFormats) {}
+import scala.concurrent.{ExecutionContext, Future}
+
+@Singleton
+class ReactiveDocRefIdRepository @Inject()(implicit mongo: MongoComponent, ec: ExecutionContext)
+    extends PlayMongoRepository[DocRefIdRecord](
+      mongoComponent = mongo,
+      collectionName = "DocRefId",
+      domainFormat = DocRefIdRecord.format,
+      indexes = Seq()) {
+  def findAll(): Future[Seq[DocRefIdRecord]] = collection.find(Filters.empty()).toFuture()
+}

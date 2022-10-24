@@ -38,8 +38,8 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
         error => Future.successful(BadRequest(JsError.toJson(error))),
         response =>
           repo.save2(response).map {
-            case result if result.ok => Ok
-            case result              => InternalServerError(result.writeErrors.mkString)
+            case result if result.wasAcknowledged() => Ok
+            case _                                  => InternalServerError("Mongo error")
         }
       )
   }

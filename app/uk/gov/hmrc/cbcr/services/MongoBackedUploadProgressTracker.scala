@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import org.bson.types.ObjectId
 import org.slf4j.LoggerFactory
-import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.cbcr.models.upscan._
 import uk.gov.hmrc.cbcr.repositories.UploadSessionRepository
 
@@ -39,7 +39,7 @@ class MongoBackedUploadProgressTracker @Inject()(repository: UploadSessionReposi
   private val logger = LoggerFactory.getLogger(getClass)
 
   override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Boolean] =
-    repository.insert(UploadSessionDetails(BSONObjectID.generate(), uploadId, fileReference, InProgress)).map(_.ok)
+    repository.insert(UploadSessionDetails(ObjectId.get(), uploadId, fileReference, InProgress))
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Boolean] = {
     logger.debug("In the register " + fileReference.toString + "   " + uploadStatus.toString)

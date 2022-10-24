@@ -16,38 +16,38 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.bson.BSONObjectID
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{FindOneAndReplaceOptions, IndexModel, IndexOptions}
 import uk.gov.hmrc.cbcr.models.subscription.request.CreateSubscriptionForCBCRequest
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import java.time.LocalDateTime
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class SubscriptionCacheRepository @Inject()(implicit rmc: ReactiveMongoComponent)
-    extends ReactiveRepository[CreateSubscriptionForCBCRequest, BSONObjectID](
-      "subscriptionCacheRepository",
-      rmc.mongoConnector.db,
-      CreateSubscriptionForCBCRequest.format,
-      ReactiveMongoFormats.objectIdFormats) {
+class SubscriptionCacheRepository @Inject()(implicit mongo: MongoComponent, ec: ExecutionContext)
+    extends PlayMongoRepository[CreateSubscriptionForCBCRequest](
+      mongoComponent = mongo,
+      collectionName = "subscriptionCacheRepository",
+      domainFormat = CreateSubscriptionForCBCRequest.format,
+      indexes = Seq(
+        IndexModel(ascending("lastUpdated"), IndexOptions().name("subscription-last-updated-index").unique(true))
+      )
+    ) {
 
-  override def indexes: List[Index] = List(
-    Index(Seq("lastUpdated" -> Ascending), Some("subscription-last-updated-index"), unique = true)
-  )
+  def get(id: String): Future[Option[CreateSubscriptionForCBCRequest]] =
+    collection.find(equal("_id", id)).headOption
 
-  def get(id: String)(implicit ec: ExecutionContext): Future[Option[CreateSubscriptionForCBCRequest]] =
-    find("_id" -> id).map(_.headOption)
-
-  def set(id: String, subscription: CreateSubscriptionForCBCRequest)(implicit ec: ExecutionContext): Future[Boolean] =
-    findAndUpdate(
-      Json.obj("_id"  -> id),
-      Json.obj("$set" -> (subscription copy (lastUpdated = LocalDateTime.now))),
-      upsert = true
-    ).map(_.value.isDefined)
+  def set(id: String, subscription: CreateSubscriptionForCBCRequest): Future[Boolean] =
+    collection
+      .findOneAndReplace(
+        equal("_id", id),
+        subscription copy (lastUpdated = LocalDateTime.now),
+        FindOneAndReplaceOptions().upsert(true)
+      )
+      .headOption
+      .map(_.isDefined)
 
 }

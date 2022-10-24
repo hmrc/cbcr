@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.models.subscription
 
 import play.api.libs.json.{Format, Json, OFormat}
-import uk.gov.hmrc.cbcr.models.subscription.request.{RequestCommonForUpdate, RequestDetailForUpdate}
 
 package object response {
 

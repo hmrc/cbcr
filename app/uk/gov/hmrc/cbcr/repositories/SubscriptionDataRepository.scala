@@ -16,80 +16,86 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import play.api.libs.json.Json.JsValueWrapper
-import play.api.libs.json.{JsObject, Json}
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.api.commands.WriteResult
-import reactivemongo.api.indexes.Index
-import reactivemongo.api.indexes.IndexType.Ascending
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers.JsObjectDocumentWriter
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.result.{DeleteResult, InsertManyResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BackupSubscriptionDataRepository @Inject()(implicit rmc: ReactiveMongoComponent)
-    extends ReactiveRepository[SubscriptionDetails, BSONObjectID](
-      "Subscription_Data_Backup",
-      rmc.mongoConnector.db,
-      SubscriptionDetails.format,
-      ReactiveMongoFormats.objectIdFormats) {}
+class BackupSubscriptionDataRepository @Inject()(implicit mongo: MongoComponent, ec: ExecutionContext)
+    extends PlayMongoRepository[SubscriptionDetails](
+      mongoComponent = mongo,
+      collectionName = "Subscription_Data_Backup",
+      domainFormat = SubscriptionDetails.format,
+      indexes = Seq(),
+    ) {}
 
 @Singleton
 class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRepository)(
-  implicit rmc: ReactiveMongoComponent)
-    extends ReactiveRepository[SubscriptionDetails, BSONObjectID](
-      "Subscription_Data",
-      rmc.mongoConnector.db,
-      SubscriptionDetails.format,
-      ReactiveMongoFormats.objectIdFormats) {
+  implicit mongo: MongoComponent,
+  ec: ExecutionContext)
+    extends PlayMongoRepository[SubscriptionDetails](
+      mongoComponent = mongo,
+      collectionName = "Subscription_Data",
+      domainFormat = SubscriptionDetails.format,
+      indexes = Seq(
+        IndexModel(ascending("cbcId"), IndexOptions().name("CBCId Index").unique(true)),
+        IndexModel(ascending("utr"), IndexOptions().name("Utr Index").unique(true)),
+      )
+    ) {
 
-  override def indexes: List[Index] = List(
-    Index(Seq("cbcId" -> Ascending), Some("CBCId Index"), unique = true),
-    Index(Seq("utr"   -> Ascending), Some("Utr Index"), unique = true),
-  )
+  def clearCBCId(cbcId: CBCId): Future[DeleteResult] =
+    collection.deleteOne(equal("cbcId", cbcId.value)).toFuture
 
-  def clearCBCId(cbcId: CBCId)(implicit ec: ExecutionContext): Future[WriteResult] = remove("cbcId" -> cbcId.value)
+  def removeAll(): Future[DeleteResult] = collection.deleteMany(Filters.empty).toFuture
 
-  def removeAll()(implicit ec: ExecutionContext): Future[WriteResult] = remove()
+  def clear(utr: Utr): Future[DeleteResult] =
+    collection.deleteOne(equal("utr", utr.utr)).toFuture
 
-  def clear(utr: Utr)(implicit ec: ExecutionContext): Future[WriteResult] = remove("utr" -> utr.utr)
+  def update(criteria: Bson, s: SubscriberContact): Future[Boolean] =
+    collection
+      .findOneAndUpdate(
+        criteria,
+        set("subscriberContact", s)
+      )
+      .headOption
+      .map(_.isDefined)
 
-  def update(criteria: JsObject, s: SubscriberContact)(implicit ec: ExecutionContext): Future[Boolean] =
-    findAndUpdate(
-      criteria,
-      Json.obj("$set" -> Json.obj("subscriberContact" -> Json.toJson(s)))
-    ).map(_.value.isDefined)
+  def update(criteria: Bson, cc: CountryCode): Future[Boolean] =
+    collection
+      .findOneAndUpdate(
+        criteria,
+        set("businessPartnerRecord.address.countryCode", cc)
+      )
+      .headOption
+      .map(_.isDefined)
 
-  def update(criteria: JsObject, cc: CountryCode)(implicit ec: ExecutionContext): Future[Boolean] =
-    findAndUpdate(
-      criteria,
-      Json.obj("$set" -> Json.obj("businessPartnerRecord.address.countryCode" -> cc))
-    ).map(_.value.isDefined)
+  def save2(s: SubscriptionDetails): Future[InsertOneResult] = collection.insertOne(s).toFuture
 
-  def save2(s: SubscriptionDetails)(implicit ec: ExecutionContext): Future[WriteResult] = insert(s)
+  def backup(s: List[SubscriptionDetails]): Future[InsertManyResult] =
+    backupRepo.collection.insertMany(s).toFuture
 
-  def backup(s: List[SubscriptionDetails])(implicit ec: ExecutionContext): Future[List[WriteResult]] =
-    Future.sequence(s.map(sd => backupRepo.insert(sd)))
+  def get(safeId: String): Future[Option[SubscriptionDetails]] =
+    collection.find(equal("businessPartnerRecord.safeId", safeId)).headOption
 
-  def get(safeId: String)(implicit ec: ExecutionContext): Future[Option[SubscriptionDetails]] =
-    find("businessPartnerRecord.safeId" -> safeId).map(_.headOption)
+  def get(cbcId: CBCId): Future[Option[SubscriptionDetails]] =
+    collection.find(equal("cbcId", cbcId.value)).headOption
 
-  def get(cbcId: CBCId)(implicit ec: ExecutionContext): Future[Option[SubscriptionDetails]] =
-    find("cbcId" -> cbcId.value).map(_.headOption)
+  def get(utr: Utr): Future[Option[SubscriptionDetails]] =
+    collection.find(equal("utr", utr.utr)).headOption
 
-  def get(utr: Utr)(implicit ec: ExecutionContext): Future[Option[SubscriptionDetails]] =
-    find("utr" -> utr.utr).map(_.headOption)
+  def getSubscriptions(query: Bson): Future[Seq[SubscriptionDetails]] =
+    collection.find(query).toFuture()
 
-  def getSubscriptions(query: (String, JsValueWrapper)*)(
-    implicit ec: ExecutionContext): Future[List[SubscriptionDetails]] =
-    find(query: _*)
-
-  def checkNumberOfCbcIdForUtr(utr: String)(implicit ec: ExecutionContext): Future[Int] =
-    count(Json.obj("utr" -> utr))
+  def checkNumberOfCbcIdForUtr(utr: String): Future[Long] =
+    collection.countDocuments(equal("utr", utr)).toFuture()
 
 }

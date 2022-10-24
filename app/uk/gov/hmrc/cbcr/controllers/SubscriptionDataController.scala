@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import org.mongodb.scala.model.Filters.equal
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json.{JsError, JsValue, Json}
@@ -46,8 +48,8 @@ class SubscriptionDataController @Inject()(
             error => Future.successful(BadRequest(JsError.toJson(error))),
             response =>
               repo.save2(response).map {
-                case result if !result.ok => InternalServerError(result.writeErrors.mkString)
-                case _                    => Ok
+                case result if result.wasAcknowledged() => Ok
+                case _                                  => InternalServerError("Mongo error")
             }
           )
       },
@@ -62,9 +64,9 @@ class SubscriptionDataController @Inject()(
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
             response =>
-              repo.update(Json.obj("cbcId" -> Json.toJson(cbcId)), response).map {
-                case result if !result => InternalServerError
-                case _                 => Ok
+              repo.update(equal("cbcId", Json.toJson(cbcId)), response).map {
+                case true  => Ok
+                case false => InternalServerError
             }
           )
       },
@@ -75,8 +77,8 @@ class SubscriptionDataController @Inject()(
     repo
       .clearCBCId(cbcId)
       .map {
-        case r if r.ok => if (r.n > 0) Ok("ok") else NotFound
-        case result    => InternalServerError(result.writeErrors.mkString)
+        case r if r.wasAcknowledged() => if (r.getDeletedCount > 0) Ok("ok") else NotFound
+        case _                        => InternalServerError("Mongo error")
       }
   }
 
