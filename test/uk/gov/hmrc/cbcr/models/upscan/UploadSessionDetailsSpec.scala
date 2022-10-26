@@ -17,25 +17,27 @@
 package uk.gov.hmrc.cbcr.models.upscan
 
 import org.bson.types.ObjectId
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.must.Matchers
 import play.api.libs.json.Json
 
-class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
+class UploadSessionDetailsSpec extends AnyWordSpec with Matchers {
 
   "Upload Session Details" must {
     "be able to be marshalled correctly for status: NotStarted" in {
+      val id = ObjectId.get()
       val json =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "NotStarted"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "NotStarted"
+           |   }
+           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         NotStarted
@@ -45,39 +47,41 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
     }
 
     "must be able to be written correctly for status: NotStarted" in {
+      val id = ObjectId.get()
       val uploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         NotStarted
       )
 
       val expectedUploadSessionDetails =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "NotStarted"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "NotStarted"
+           |   }
+           |}""".stripMargin
 
       Json.toJson(uploadSessionDetails) mustBe Json.parse(expectedUploadSessionDetails)
     }
 
     "must be able to be marshalled correctly for status: InProgress" in {
+      val id = ObjectId.get()
       val json =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "InProgress"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "InProgress"
+           |   }
+           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         InProgress
@@ -87,18 +91,19 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
     }
 
     "must be written correctly for status: InProgress" in {
+      val id = ObjectId.get()
       val expectedUploadSessionDetails =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "InProgress"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "InProgress"
+           |   }
+           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         InProgress
@@ -108,18 +113,19 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
     }
 
     "must be able to be marshalled correctly for status: Failed" in {
+      val id = ObjectId.get()
       val json =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "Failed"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "Failed"
+           |   }
+           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         Failed
@@ -129,18 +135,19 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
     }
 
     "must be written correctly for status: Failed" in {
+      val id = ObjectId.get()
       val expectedUploadSessionDetails =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "Failed"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "Failed"
+           |   }
+           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         Failed
@@ -150,21 +157,22 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
     }
 
     "must written correctly for status: UploadedSuccessfully" in {
+      val id = ObjectId.get()
       val expectedUploadSessionDetails =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "UploadedSuccessfully",
-          |     "name": "name",
-          |     "downloadUrl": "downloadUrl",
-          |     "mimeType":"xml"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "UploadedSuccessfully",
+           |     "name": "name",
+           |     "downloadUrl": "downloadUrl",
+           |     "mimeType":"xml"
+           |   }
+           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         UploadedSuccessfully("name", "xml", "downloadUrl", None)
@@ -174,21 +182,22 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
     }
 
     "must be able to be marshalled correctly for status: UploadedSuccessfully" in {
+      val id = ObjectId.get()
       val json =
-        """{
-          |"_id": { "$oid": "111111111111111111111111"},
-          |"uploadId": { "value": "121" },
-          |"reference": { "value": "ref" },
-          |"status": {
-          |     "_type": "UploadedSuccessfully",
-          |     "name": "name",
-          |     "downloadUrl": "downloadUrl",
-          |     "mimeType": "xml"
-          |   }
-          |}""".stripMargin
+        s"""{
+           |"_id": { "$$oid": "${id.toString}"},
+           |"uploadId": { "value": "121" },
+           |"reference": { "value": "ref" },
+           |"status": {
+           |     "_type": "UploadedSuccessfully",
+           |     "name": "name",
+           |     "downloadUrl": "downloadUrl",
+           |     "mimeType": "xml"
+           |   }
+           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        ObjectId.get(),
+        id,
         UploadId("121"),
         Reference("ref"),
         UploadedSuccessfully("name", "xml", "downloadUrl", None)
