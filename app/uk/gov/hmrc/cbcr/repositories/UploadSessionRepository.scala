@@ -17,9 +17,10 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions}
+import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, IndexModel, IndexOptions}
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.result.DeleteResult
 import play.api.libs.json._
 import uk.gov.hmrc.cbcr.models.upscan._
 import uk.gov.hmrc.mongo.MongoComponent
@@ -56,4 +57,7 @@ class UploadSessionRepository @Inject()(backupRepo: BackupSubscriptionDataReposi
       )
       .headOption()
       .map(_.isDefined)
+
+  def removeAll(): Future[DeleteResult] = collection.deleteMany(Filters.empty()).toFuture()
+
 }

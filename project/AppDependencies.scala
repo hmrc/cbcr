@@ -24,10 +24,12 @@ object AppDependencies {
     "com.vladsch.flexmark"    %  "flexmark-all"            % "0.35.10"   % scope,
     "org.pegdown"             %  "pegdown"                 % "1.6.0"     % scope,
     "org.scalatestplus.play"  %% "scalatestplus-play"      % "5.0.0"     % scope,
+    "org.scalatestplus"       %% "scalatestplus-scalacheck" % "3.1.0.0-RC2" % Test,
     "org.mockito"             %  "mockito-core"            % "3.11.2"    % scope,
     "org.scalacheck"          %% "scalacheck"              % "1.15.0"    % scope,
     "com.github.tomakehurst"  %  "wiremock-standalone"     % "2.25.0"    % scope,
     "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.73.0",
+    "org.scalatestplus"       %% "scalatestplus-mockito"   % "1.0.0-M2"  % Test,
   )
 
 

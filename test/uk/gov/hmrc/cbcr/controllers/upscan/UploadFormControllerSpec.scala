@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.cbcr.controllers.upscan
 
+import org.bson.types.ObjectId
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
-import org.scalatest.MustMatchers.convertToAnyMustWrapper
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import play.api.Application
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{GET, route, status, _}
-import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.upscan._
@@ -51,7 +51,7 @@ class UploadFormControllerSpec extends SpecBase with BeforeAndAfterEach with Moc
     "must return ok with status" in {
 
       val uploadDetails = UploadSessionDetails(
-        BSONObjectID.generate(),
+        ObjectId.get(),
         UploadId("123"),
         Reference("123"),
         InProgress

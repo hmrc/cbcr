@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.cbcr.models.upscan
 
+import org.bson.types.ObjectId
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.Json
-import reactivemongo.bson.BSONObjectID
 
 class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
 
@@ -35,7 +35,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         NotStarted
@@ -46,7 +46,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
 
     "must be able to be written correctly for status: NotStarted" in {
       val uploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         NotStarted
@@ -77,7 +77,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         InProgress
@@ -98,7 +98,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         InProgress
@@ -119,7 +119,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         Failed
@@ -140,7 +140,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         Failed
@@ -164,7 +164,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val uploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         UploadedSuccessfully("name", "xml", "downloadUrl", None)
@@ -188,7 +188,7 @@ class UploadSessionDetailsSpec extends WordSpec with MustMatchers {
           |}""".stripMargin
 
       val expectedUploadSessionDetails = UploadSessionDetails(
-        BSONObjectID.parse("111111111111111111111111").get,
+        ObjectId.get(),
         UploadId("121"),
         Reference("ref"),
         UploadedSuccessfully("name", "xml", "downloadUrl", None)

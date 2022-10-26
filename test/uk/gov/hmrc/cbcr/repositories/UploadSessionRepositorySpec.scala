@@ -16,18 +16,16 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
+import org.bson.types.ObjectId
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.upscan.{Quarantined, Reference, UploadId, UploadSessionDetails}
 import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class UploadSessionRepositorySpec
@@ -36,8 +34,7 @@ class UploadSessionRepositorySpec
   lazy val uploadRep = app.injector.instanceOf[UploadSessionRepository]
   val uploadId = UploadId(UUID.randomUUID().toString)
   val config = app.injector.instanceOf[Configuration]
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
-  val uploadDetails = UploadSessionDetails(BSONObjectID.generate(), uploadId, Reference("xxxx"), Quarantined)
+  val uploadDetails = UploadSessionDetails(ObjectId.get(), uploadId, Reference("xxxx"), Quarantined)
 
   override def afterEach(): Unit = {
     await(uploadRep.removeAll())
@@ -47,9 +44,7 @@ class UploadSessionRepositorySpec
   "Insert" must {
     "insert UploadStatus" in {
       val res = uploadRep.insert(uploadDetails)
-      whenReady(res) { result =>
-        result.ok shouldBe true
-      }
+      await(res) shouldBe true
     }
     "read UploadStatus" in {
       await(uploadRep.insert(uploadDetails))

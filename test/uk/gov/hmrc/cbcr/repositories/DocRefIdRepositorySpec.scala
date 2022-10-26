@@ -19,7 +19,6 @@ package uk.gov.hmrc.cbcr.repositories
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.{CorrDocRefId, DocRefId}
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses.{AlreadyExists, DocRefIdQueryResponse, DocRefIdSaveResponse, DoesNotExist, Invalid, Ok, Valid}
@@ -40,8 +39,8 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
   "Calls to edit a DocRefId" should {
     "should successfully edit that docRefId" in {
 
-      val result: Future[Int] = docRefIdRepository.edit(docRefId)
-      await(result) shouldBe 0
+      val result = docRefIdRepository.edit(docRefId)
+      await(result) shouldBe 0L
 
     }
   }
@@ -49,8 +48,8 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
   "Calls to delete a DocRefId" should {
     "should delete that docRefId" in {
 
-      val result: Future[WriteResult] = docRefIdRepository.delete(docRefId)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = docRefIdRepository.delete(docRefId)
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
@@ -90,14 +89,14 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
 
     "should delete the corrDocRefId if it exists" in {
 
-      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId(corrRefId.cid.id))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = docRefIdRepository.delete(DocRefId(corrRefId.cid.id))
+      await(result).wasAcknowledged() shouldBe true
 
     }
     "should delete the doesNotExistYet if it exists" in {
 
-      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
@@ -147,20 +146,20 @@ class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerS
 
     "should delete the corrRefId-SaveTest if it exists finally" in {
 
-      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("corrRefId-SaveTest"))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = docRefIdRepository.delete(DocRefId("corrRefId-SaveTest"))
+      await(result).wasAcknowledged() shouldBe true
 
     }
     "should delete the docRefId-SaveTest if it exists finally" in {
 
-      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("docRefId-SaveTest"))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = docRefIdRepository.delete(DocRefId("docRefId-SaveTest"))
+      await(result).wasAcknowledged() shouldBe true
 
     }
     "should delete the doesNotExistYet if it exists finally" in {
 
-      val result: Future[WriteResult] = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = docRefIdRepository.delete(DocRefId("doesNotExistYet"))
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }

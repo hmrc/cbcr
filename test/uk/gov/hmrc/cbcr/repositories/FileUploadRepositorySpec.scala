@@ -18,7 +18,6 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.UploadFileResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -37,8 +36,8 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   "Calls to Save  UploadFileResponse" should {
     "should successfully save that UploadFileResponse" in {
 
-      val result: Future[WriteResult] = fileUploadRepository.save2(fir)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = fileUploadRepository.save2(fir)
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
