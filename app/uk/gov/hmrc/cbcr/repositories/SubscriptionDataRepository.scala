@@ -24,7 +24,7 @@ import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.result.{DeleteResult, InsertManyResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,6 +35,9 @@ class BackupSubscriptionDataRepository @Inject()(implicit mongo: MongoComponent,
       mongoComponent = mongo,
       collectionName = "Subscription_Data_Backup",
       domainFormat = SubscriptionDetails.format,
+      extraCodecs = Seq(
+        Codecs.playFormatCodec(SubscriberContact.formats),
+      ),
       indexes = Seq(),
     ) {}
 
@@ -46,6 +49,9 @@ class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRep
       mongoComponent = mongo,
       collectionName = "Subscription_Data",
       domainFormat = SubscriptionDetails.format,
+      extraCodecs = Seq(
+        Codecs.playFormatCodec(SubscriberContact.formats)
+      ),
       indexes = Seq(
         IndexModel(ascending("cbcId"), IndexOptions().name("CBCId Index").unique(true)),
         IndexModel(ascending("utr"), IndexOptions().name("Utr Index").unique(true)),
