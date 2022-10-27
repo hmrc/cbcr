@@ -21,10 +21,9 @@ import org.mongodb.scala.model.{Filters, FindOneAndUpdateOptions, IndexModel, In
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.result.DeleteResult
-import play.api.libs.json._
 import uk.gov.hmrc.cbcr.models.upscan._
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +42,7 @@ class UploadSessionRepository @Inject()(backupRepo: BackupSubscriptionDataReposi
     ) {
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadSessionDetails]] =
-    collection.find(equal("uploadId", Json.toJson(uploadId))).headOption()
+    collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()
 
   def insert(sessionDetails: UploadSessionDetails): Future[Boolean] =
     collection.insertOne(sessionDetails).head.map(_.wasAcknowledged())
@@ -51,8 +50,8 @@ class UploadSessionRepository @Inject()(backupRepo: BackupSubscriptionDataReposi
   def updateStatus(reference: Reference, newStatus: UploadStatus): Future[Boolean] =
     collection
       .findOneAndUpdate(
-        equal("reference", Json.toJson(reference)),
-        set("status", Json.toJson(newStatus)),
+        equal("reference", Codecs.toBson(reference)),
+        set("status", Codecs.toBson(newStatus)),
         FindOneAndUpdateOptions().upsert(true)
       )
       .headOption()
