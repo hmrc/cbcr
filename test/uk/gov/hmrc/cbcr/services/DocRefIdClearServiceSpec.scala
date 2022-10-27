@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import com.mongodb.client.result.{DeleteResult, InsertOneResult}
-import org.bson.BsonNull
+import com.mongodb.client.result.DeleteResult
 import org.scalatest.concurrent.Eventually
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
@@ -41,9 +40,9 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
   val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
   val mockAudit = mock[AuditConnector]
 
-  val testConfig = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
-  val writeResult = DeleteResult.acknowledged(1)
-  val notFoundWriteResult = DeleteResult.unacknowledged()
+  val testConfig: Configuration = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
+  val writeResult: DeleteResult = DeleteResult.acknowledged(1)
+  val notFoundWriteResult: DeleteResult = DeleteResult.unacknowledged()
 
   when(runMode.env) thenReturn "Dev"
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
