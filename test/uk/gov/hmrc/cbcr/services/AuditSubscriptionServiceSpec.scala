@@ -70,8 +70,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     mockAudit)
   "Calls to getSubscriptios" should {
     "complete and call audit for each subcription returned " in {
-
-      eventually { verify(mockAudit, times(2)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(2)).sendExtendedEvent(any())(any(), any())
     }
     "complete and audit fails" in {
       reset(subscriptionDataRepo)
@@ -85,7 +84,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         config.withFallback(testConfig).withFallback(cbcIdConfig),
         runMode,
         mockAudit)
-      eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
     "complete and audit disabled" in {
       reset(subscriptionDataRepo)
@@ -98,7 +97,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         config.withFallback(testConfig).withFallback(cbcIdConfig),
         runMode,
         mockAudit)
-      eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
     "complete and audit throws error" in {
       reset(subscriptionDataRepo)
@@ -111,7 +110,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         config.withFallback(testConfig).withFallback(cbcIdConfig),
         runMode,
         mockAudit)
-      eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
 
   }

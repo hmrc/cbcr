@@ -26,7 +26,8 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class AuditSubscriptionService @Inject()(
@@ -50,19 +51,22 @@ class AuditSubscriptionService @Inject()(
         .toList
         .flatMap(CBCId.apply)
 
-    repo
-      .getSubscriptions(Filters.in("cbcId", cbcIds: _*))
-      .map(sd =>
-        sd.foreach(s =>
-          auditSubscriptionDetails(s).onComplete {
-            case Success(AuditResult.Success) =>
-              logger.info(s"Successfully audited SubscriptionDetails of CBCId ${s.cbcId.toString}")
-            case Success(AuditResult.Failure(msg, _)) =>
-              logger.warn(s"Unable to audit SubscriptionDetails of CBCId ${s.cbcId.toString} $msg")
-            case Success(AuditResult.Disabled) =>
-              logger.warn(s"Auditing is disabled for SubscriptionDetails of CBCId ${s.cbcId.toString}")
-            case Failure(e) => logger.warn(s"Audit failed to complete for CBCId ${s.cbcId.toString}, ${e.getMessage}")
-        }))
+    Await.result(
+      repo
+        .getSubscriptions(Filters.in("cbcId", cbcIds: _*))
+        .map(sd =>
+          sd.foreach(s =>
+            auditSubscriptionDetails(s).onComplete {
+              case Success(AuditResult.Success) =>
+                logger.info(s"Successfully audited SubscriptionDetails of CBCId ${s.cbcId.toString}")
+              case Success(AuditResult.Failure(msg, _)) =>
+                logger.warn(s"Unable to audit SubscriptionDetails of CBCId ${s.cbcId.toString} $msg")
+              case Success(AuditResult.Disabled) =>
+                logger.warn(s"Auditing is disabled for SubscriptionDetails of CBCId ${s.cbcId.toString}")
+              case Failure(e) => logger.warn(s"Audit failed to complete for CBCId ${s.cbcId.toString}, ${e.getMessage}")
+          })),
+      Duration(60, "second")
+    )
 
   }
 
