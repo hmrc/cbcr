@@ -26,7 +26,9 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{times, verify, when}
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,6 +50,9 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
   when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(writeResult)
 
+  // This is now being called and it wasn't bruv
+  when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
+
   new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config.withFallback(testConfig), runMode, mockAudit)
 
   "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
@@ -62,7 +67,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
 
     "make an audit call" in {
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
-      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }
 
   }
@@ -81,8 +86,8 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
         config.withFallback(testConfig),
         runMode,
         mockAudit)
-      eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
-      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any()) }
+      verify(reportingEntityDataRepo, times(4)).delete(any())
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }
 
     "complete without error but audit fails" in {
@@ -98,8 +103,8 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
         config.withFallback(testConfig),
         runMode,
         mockAudit)
-      eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
-      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any()) }
+      verify(reportingEntityDataRepo, times(4)).delete(any())
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }
 
     "complete without error but audit disabled" in {
@@ -114,8 +119,8 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
         config.withFallback(testConfig),
         runMode,
         mockAudit)
-      eventually { verify(reportingEntityDataRepo, times(4)).delete(any()) }
-      eventually { verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any()) }
+      verify(reportingEntityDataRepo, times(4)).delete(any())
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }
 
   }
