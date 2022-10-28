@@ -22,18 +22,23 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.{set, unset}
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
-import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json._
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import java.time._
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps
+
+case class DateRange(startDate: String, endDate: String)
+
+object DateRange {
+  implicit val format: Format[DateRange] = Json.format[DateRange]
+}
 
 @Singleton
 class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
@@ -71,16 +76,21 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .toFutureOption()
       .map(_.isDefined)
 
-  // TODO: Probably has to go into its own collection
   /**This is an admin endpoint**/
-  def updateReportingEntityDRI(
-    adminReportingEntityData: AdminReportingEntityData,
-    docRefId: DocRefId): Future[Boolean] = ???
-//  def updateReportingEntityDRI(adminReportingEntityData: AdminReportingEntityData, docRefId: DocRefId): Future[Boolean] =
-//    collection.findOneAndReplace(
-//      equal("reportingEntityDRI", docRefId.id),
-//      Json.toJson(adminReportingEntityData)
-//    ).toFutureOption().map(_.isDefined)
+  def updateReportingEntityDRI(admin: AdminReportingEntityData, docRefId: DocRefId): Future[Boolean] = {
+    import DocRefId.format
+    collection
+      .findOneAndUpdate(
+        equal("reportingEntityDRI", docRefId.id),
+        Seq(
+          set("cbcReportsDRI", Codecs.toBson(admin.cbcReportsDRI)),
+          set("additionalInfoDRI", Codecs.toBson(admin.additionalInfoDRI)),
+          set("reportingEntityDRI", Codecs.toBson(admin.reportingEntityDRI)),
+        )
+      )
+      .toFutureOption()
+      .map(_.isDefined)
+  }
 
   def update(p: PartialReportingEntityData): Future[Boolean] =
     if (p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
@@ -214,26 +224,21 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
     List(
       r.additionalInfoDRI match {
         case Left(_) =>
-          p.additionalInfoDRI.headOption.map(_.docRefId).map(i => set("additionalInfoDRI", JsString(i.id)))
+          p.additionalInfoDRI.headOption.map(_.docRefId).map(i => set("additionalInfoDRI", i.id))
         case Right(rest) =>
-          p.additionalInfoDRI.headOption.map(_ =>
-            set("additionalInfoDRI", JsArray(mergeListsAddInfo(p, rest).map(JsString))))
+          p.additionalInfoDRI.headOption.map(_ => set("additionalInfoDRI", mergeListsAddInfo(p, rest)))
       },
       p.cbcReportsDRI.headOption.map { _ =>
-        set("cbcReportsDRI", JsArray(mergeListsReports(p, r).map(d => JsString(d))))
+        set("cbcReportsDRI", mergeListsReports(p, r))
       },
-      p.reportingEntityDRI.corrDocRefId.map(_ => set("reportingEntityDRI", JsString(p.reportingEntityDRI.docRefId.id))),
+      p.reportingEntityDRI.corrDocRefId.map(_ => set("reportingEntityDRI", p.reportingEntityDRI.docRefId.id)),
       Some(set("reportingRole", p.reportingRole.toString)),
       Some(set("tin", p.tin.value)),
       Some(set("ultimateParentEntity", p.ultimateParentEntity.ultimateParentEntity)),
       p.reportingPeriod.map(rd => set("reportingPeriod", rd.toString)),
-      p.currencyCode.map(cc => set("currencyCode", JsString(cc))),
-      p.entityReportingPeriod.map(
-        erp =>
-          set(
-            "entityReportingPeriod",
-            Json
-              .obj("startDate" -> JsString(erp.startDate.toString), "endDate" -> JsString(erp.endDate.toString))))
+      p.currencyCode.map(cc => set("currencyCode", cc)),
+      p.entityReportingPeriod.map(erp =>
+        set("entityReportingPeriod", Codecs.toBson(DateRange(erp.startDate.toString, erp.endDate.toString))))
     ).flatten
 
   def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]) = {
@@ -267,7 +272,8 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("reportingEntityDRI", d.id),
         set(
           "entityReportingPeriod",
-          Json.obj("startDate" -> JsString(erp.startDate.toString), "endDate" -> JsString(erp.endDate.toString)))
+          Codecs.toBson(DateRange(erp.startDate.toString, erp.endDate.toString))
+        )
       )
       .headOption
       .map(_.isDefined)
