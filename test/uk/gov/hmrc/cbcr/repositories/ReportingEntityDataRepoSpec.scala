@@ -180,7 +180,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to query" should {
     "with additional reportingPeriod param should return the List of ReportingEntityData object for a given docRefId" in {
 
-      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId.id, "2019-10-01")
+      val result: Future[Option[ReportingEntityData]] =
+        reportingEntityDataRepository.query(docRefId.id, LocalDate.parse("2019-10-01"))
       await(result).get.reportingEntityDRI shouldBe docRefId
 
     }
@@ -217,7 +218,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to queryTIN" should {
     "should return ReportingEntityData if it exists by criteria" in {
 
-      val result: Future[Seq[ReportingEntityData]] = reportingEntityDataRepository.queryTIN("3590617086", "2019-10-01")
+      val result: Future[Seq[ReportingEntityData]] =
+        reportingEntityDataRepository.queryTIN("3590617086", LocalDate.parse("2019-10-01"))
       await(result).head.ultimateParentEntity shouldBe UltimateParentEntity("ABCCorp")
 
     }
@@ -512,7 +514,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       await(result) shouldBe true
 
       val updatedResult: Future[Option[ReportingEntityData]] =
-        reportingEntityDataRepository.query(doc5.id, "2019-12-01")
+        reportingEntityDataRepository.query(doc5.id, LocalDate.parse("2019-12-01"))
       await(updatedResult).get.entityReportingPeriod shouldBe Some(
         EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
 

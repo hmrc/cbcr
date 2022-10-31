@@ -78,7 +78,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   val tin = "tin"
 
-  val reportingPeriod = "aReportingPeriod"
+  val reportingPeriod = "2022-02-22"
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
 

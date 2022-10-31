@@ -233,8 +233,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       Some(set("ultimateParentEntity", p.ultimateParentEntity.ultimateParentEntity)),
       p.reportingPeriod.map(rd => set("reportingPeriod", rd.toString)),
       p.currencyCode.map(cc => set("currencyCode", cc)),
-      p.entityReportingPeriod.map(erp =>
-        set("entityReportingPeriod", Codecs.toBson(erp)))
+      p.entityReportingPeriod.map(erp => set("entityReportingPeriod", Codecs.toBson(erp)))
     ).flatten
 
   def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]) = {
