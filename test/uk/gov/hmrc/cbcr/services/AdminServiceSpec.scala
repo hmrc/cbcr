@@ -51,7 +51,7 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
   private val adminService = new AdminService(docRefIdRepo, config, repo, docRepo, runMode, audit, cc)
   private val fakeRequest = FakeRequest()
   private val tin = "tin"
-  private val reportingPeriod = "aReportingPeriod"
+  private val reportingPeriod = "2022-02-22"
   private val cbcId = CBCId.create(56).toOption
 
   private val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
