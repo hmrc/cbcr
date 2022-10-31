@@ -51,6 +51,8 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       )
     ) {
 
+  private implicit val dateFormat: Format[LocalDate] = ReportingEntityDataModel.dateFormat
+
   def delete(d: DocRefId): Future[DeleteResult] =
     collection
       .deleteMany(
@@ -155,7 +157,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .find(
         Filters.and(
           regex("reportingEntityDRI", ".*" + cbcId.toString + ".*"),
-          equal("reportingPeriod", reportingPeriod.toString)
+          equal("reportingPeriod", Codecs.toBson(reportingPeriod))
         )
       )
       .map(_.toPublicModel)
@@ -166,7 +168,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .find(
         Filters.and(
           equal("tin", tin),
-          equal("reportingPeriod", reportingPeriod)
+          equal("reportingPeriod", Codecs.toBson(LocalDate.parse(reportingPeriod)))
         )
       )
       .map(_.toPublicModel)
@@ -202,7 +204,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
             regex("additionalInfoDRI", ".*" + c + ".*"),
             regex("reportingEntityDRI", ".*" + c + ".*"),
           ),
-          equal("reportingPeriod", r)
+          equal("reportingPeriod", Codecs.toBson(LocalDate.parse(r)))
         )
       )
       .map(_.toPublicModel)
