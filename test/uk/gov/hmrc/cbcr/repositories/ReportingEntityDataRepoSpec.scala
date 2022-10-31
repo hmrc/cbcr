@@ -181,7 +181,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "with additional reportingPeriod param should return the List of ReportingEntityData object for a given docRefId" in {
 
       val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId.id, "2019-10-01")
-      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+      await(result).get.reportingEntityDRI shouldBe docRefId
 
     }
   }
@@ -190,7 +190,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "should return the ReportingEntityData object for a given docRefId" in {
 
       val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryReportingEntity(docRefId)
-      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+      await(result).get.reportingEntityDRI shouldBe docRefId
 
     }
   }
@@ -209,7 +209,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
 
       val result: Future[Option[ReportingEntityData]] =
         reportingEntityDataRepository.queryCbcId(cbcId.get, reportingPeriod)
-      await(result.map(x => x.get.ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+      await(result).get.ultimateParentEntity shouldBe UltimateParentEntity("ABCCorp")
 
     }
   }
@@ -218,7 +218,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "should return ReportingEntityData if it exists by criteria" in {
 
       val result: Future[Seq[ReportingEntityData]] = reportingEntityDataRepository.queryTIN("3590617086", "2019-10-01")
-      await(result.map(x => x.head.ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+      await(result).head.ultimateParentEntity shouldBe UltimateParentEntity("ABCCorp")
 
     }
   }
@@ -513,7 +513,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
 
       val updatedResult: Future[Option[ReportingEntityData]] =
         reportingEntityDataRepository.query(doc5.id, "2019-12-01")
-      await(updatedResult.map(x => x.get.entityReportingPeriod)) shouldBe Some(
+      await(updatedResult).get.entityReportingPeriod shouldBe Some(
         EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
 
     }
