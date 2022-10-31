@@ -34,12 +34,6 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps
 
-case class DateRange(startDate: String, endDate: String)
-
-object DateRange {
-  implicit val format: Format[DateRange] = Json.format[DateRange]
-}
-
 @Singleton
 class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[ReportingEntityDataModel](
@@ -163,12 +157,12 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .map(_.toPublicModel)
       .headOption
 
-  def queryTIN(tin: String, reportingPeriod: String): Future[Seq[ReportingEntityData]] =
+  def queryTIN(tin: String, reportingPeriod: LocalDate): Future[Seq[ReportingEntityData]] =
     collection
       .find(
         Filters.and(
           equal("tin", tin),
-          equal("reportingPeriod", Codecs.toBson(LocalDate.parse(reportingPeriod)))
+          equal("reportingPeriod", Codecs.toBson(reportingPeriod))
         )
       )
       .map(_.toPublicModel)
@@ -195,7 +189,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
     reportingEntityData.filter(_.reportingEntityDRI.id.contains(searchedFor))
   }
 
-  def query(c: String, r: String): Future[Option[ReportingEntityData]] =
+  def query(c: String, r: LocalDate): Future[Option[ReportingEntityData]] =
     collection
       .find(
         Filters.and(
@@ -204,7 +198,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
             regex("additionalInfoDRI", ".*" + c + ".*"),
             regex("reportingEntityDRI", ".*" + c + ".*"),
           ),
-          equal("reportingPeriod", Codecs.toBson(LocalDate.parse(r)))
+          equal("reportingPeriod", Codecs.toBson(r))
         )
       )
       .map(_.toPublicModel)
@@ -240,7 +234,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       p.reportingPeriod.map(rd => set("reportingPeriod", rd.toString)),
       p.currencyCode.map(cc => set("currencyCode", cc)),
       p.entityReportingPeriod.map(erp =>
-        set("entityReportingPeriod", Codecs.toBson(DateRange(erp.startDate.toString, erp.endDate.toString))))
+        set("entityReportingPeriod", Codecs.toBson(erp)))
     ).flatten
 
   def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]) = {
@@ -274,7 +268,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("reportingEntityDRI", d.id),
         set(
           "entityReportingPeriod",
-          Codecs.toBson(DateRange(erp.startDate.toString, erp.endDate.toString))
+          Codecs.toBson(erp)
         )
       )
       .headOption
