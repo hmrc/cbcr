@@ -31,7 +31,6 @@ import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.cbcr.services.DataMigrationCriteria
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.cbcr.util.UnitSpec
 
@@ -58,8 +57,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     SubscriberContact(None, "firstName", "lastName", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
 
   val desConnector = mock[DESConnector]
-  val a1 = DataMigrationCriteria.LOCAL_CBCID_CRITERIA._1
-  val b1 = DataMigrationCriteria.LOCAL_CBCID_CRITERIA._2
   when(store.getSubscriptions(any())).thenReturn(Future.successful(List()))
   val controller = new SubscriptionDataController(store, desConnector, cBCRAuth, config, cc)
 
