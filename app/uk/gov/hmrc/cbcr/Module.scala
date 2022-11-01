@@ -24,7 +24,7 @@ import com.google.inject.AbstractModule
 import org.codehaus.stax2.validation.{XMLValidationSchema, XMLValidationSchemaFactory}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import services.{MongoBackedUploadProgressTracker, RunMode, UploadProgressTracker}
+import services.{MongoBackedUploadProgressTracker, UploadProgressTracker}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector

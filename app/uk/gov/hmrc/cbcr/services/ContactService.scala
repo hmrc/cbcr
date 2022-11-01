@@ -53,10 +53,7 @@ class ContactService @Inject()(
 
   def retrieveContactFromCacheOrHOD(
     enrolmentID: String
-  )(
-    implicit request: Request[_],
-    hc: HeaderCarrier,
-    ex: ExecutionContext): Future[Option[DisplaySubscriptionForCBCResponse]] = {
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[DisplaySubscriptionForCBCResponse]] = {
     val subscriptionForCBCRequest: DisplaySubscriptionForCBCRequest =
       DisplaySubscriptionForCBCRequest(
         DisplaySubscriptionDetails(

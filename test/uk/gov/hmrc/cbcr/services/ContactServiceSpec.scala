@@ -67,8 +67,6 @@ class ContactServiceSpec extends SpecBase with BeforeAndAfterEach {
           Some(ContactInformationForOrganisation(OrganisationDetails("orgName"), "email@n.com", None, None))
         )
 
-      implicit val userRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-
       val result = service.getLatestContacts("111111111")
 
       whenReady(result) { sub =>
@@ -84,7 +82,7 @@ class ContactServiceSpec extends SpecBase with BeforeAndAfterEach {
       when(mockSubscriptionConnector.displaySubscriptionForCBC(any())(any(), any()))
         .thenReturn(Future.successful(HttpResponse(OK, contactsResponse)))
 
-      val g = DisplaySubscriptionForCBCResponse(
+      DisplaySubscriptionForCBCResponse(
         SubscriptionForCBCResponse(
           ResponseCommon("", None, "", None),
           ResponseDetail(
@@ -124,8 +122,6 @@ class ContactServiceSpec extends SpecBase with BeforeAndAfterEach {
         ContactInformationForOrganisation(OrganisationDetails(""), "", None, None),
         Some(ContactInformationForOrganisation(OrganisationDetails(""), "", None, None))
       )
-
-      implicit val request: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
 
       val result = service.getLatestContacts("111111111")
 
