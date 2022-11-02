@@ -156,13 +156,6 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
         status(result) shouldBe Status.NOT_FOUND
       }
 
-      "something goes wrong return a 500" in {
-        when(repo.delete(any()))
-          .thenReturn(Future.successful(DeleteResult.unacknowledged()))
-        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
-        status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-      }
-
       "return NOT_IMPLEMENTED if enableTestApis = false" in {
         val controller = new DocRefIdController(
           repo,

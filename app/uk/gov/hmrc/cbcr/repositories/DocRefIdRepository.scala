@@ -55,11 +55,7 @@ class DocRefIdRepository @Inject()(val mongo: MongoComponent, val records: React
       .headOption()
       .flatMap {
         case Some(entry) if entry.valid => Future.successful(AlreadyExists)
-        case _ =>
-          records.collection.insertOne(DocRefIdRecord(id, valid = true)).toFuture().map {
-            case r if r.wasAcknowledged() => Ok
-            case _                        => Failed
-          }
+        case _                          => records.collection.insertOne(DocRefIdRecord(id, valid = true)).toFuture().map(_ => Ok)
       }
 
   def save2(c: CorrDocRefId, d: DocRefId): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
@@ -77,10 +73,7 @@ class DocRefIdRepository @Inject()(val mongo: MongoComponent, val records: React
                 records.collection
                   .insertOne(DocRefIdRecord(d, valid))
                   .toFuture()
-                  .map {
-                    case r if r.wasAcknowledged() => Ok
-                    case _                        => Failed
-                  }
+                  .map(_ => Ok)
               } else {
                 Future.successful(Failed)
               }

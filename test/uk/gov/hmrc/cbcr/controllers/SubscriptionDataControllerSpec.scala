@@ -41,7 +41,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
 
   val store = mock[SubscriptionDataRepository]
 
-  val failResult = InsertOneResult.unacknowledged()
   val config = app.injector.instanceOf[Configuration]
 
   val bpr = BusinessPartnerRecord(
@@ -87,12 +86,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
         .thenReturn(Future.successful(InsertOneResult.acknowledged(BsonNull.VALUE)))
       val result = controller.saveSubscriptionData()(fakePostRequest)
       status(result) shouldBe Status.OK
-    }
-
-    "respond with a 500 if there is a DB failure during save" in {
-      when(store.save2(any(classOf[SubscriptionDetails]))).thenReturn(Future.successful(failResult))
-      val result = controller.saveSubscriptionData()(fakePostRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 400 if invalid SubscriptionData passed in request" in {
@@ -157,13 +150,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
         .thenReturn(Future(DeleteResult.acknowledged(0L)))
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.NOT_FOUND
-    }
-
-    "respond with a 500 when asked to clear a record but something goes wrong" in {
-      when(store.clearCBCId(any(classOf[CBCId])))
-        .thenReturn(Future(DeleteResult.unacknowledged()))
-      val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
   }

@@ -18,7 +18,6 @@ package uk.gov.hmrc.cbcr.services
 
 import play.api.http.Status.OK
 import play.api.libs.json.{JsError, JsSuccess}
-import play.api.mvc.Request
 import uk.gov.hmrc.cbcr.connectors.SubscriptionConnector
 import uk.gov.hmrc.cbcr.models.subscription.SubscriptionDetails
 import uk.gov.hmrc.cbcr.models.subscription.request.{DisplayRequestDetail, DisplaySubscriptionDetails, DisplaySubscriptionForCBCRequest, RequestCommonForDisplay}
@@ -32,10 +31,8 @@ class ContactService @Inject()(
   subscriptionCacheService: SubscriptionCacheService,
   subscriptionConnector: SubscriptionConnector) {
 
-  def getLatestContacts(enrolmentID: String)(
-    implicit request: Request[_],
-    hc: HeaderCarrier,
-    ex: ExecutionContext): Future[SubscriptionDetails] =
+  def getLatestContacts(
+    enrolmentID: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[SubscriptionDetails] =
     retrieveContactFromCacheOrHOD(enrolmentID: String) map { retrievedSubscription =>
       retrievedSubscription.map { sub =>
         val details: ResponseDetail = sub.displaySubscriptionForCBCResponse.responseDetail

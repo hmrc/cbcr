@@ -46,11 +46,7 @@ class SubscriptionDataController @Inject()(
           .validate[SubscriptionDetails]
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
-            response =>
-              repo.save2(response).map {
-                case result if result.wasAcknowledged() => Ok
-                case _                                  => InternalServerError("Mongo error")
-            }
+            response => repo.save2(response).map(_ => Ok)
           )
       },
       parse.json
@@ -76,10 +72,7 @@ class SubscriptionDataController @Inject()(
   def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .clearCBCId(cbcId)
-      .map {
-        case r if r.wasAcknowledged() => if (r.getDeletedCount > 0) Ok("ok") else NotFound
-        case _                        => InternalServerError("Mongo error")
-      }
+      .map(r => if (r.getDeletedCount > 0) Ok("ok") else NotFound)
   }
 
   def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { _ =>

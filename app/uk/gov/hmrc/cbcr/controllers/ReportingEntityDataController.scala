@@ -47,11 +47,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
               logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
               Future.successful(BadRequest)
             },
-            (data: ReportingEntityData) =>
-              repo.save(data).map {
-                case result if result.wasAcknowledged() => Ok
-                case _                                  => InternalServerError("Mongo Error")
-            }
+            (data: ReportingEntityData) => repo.save(data).map(_ => Ok)
           )
       },
       parse.json

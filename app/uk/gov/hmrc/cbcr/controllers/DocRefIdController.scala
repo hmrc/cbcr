@@ -71,11 +71,7 @@ class DocRefIdController @Inject()(
     if (config.underlying.getBoolean(s"${runMode.env}.CBCId.enableTestApis")) {
       repo
         .delete(docRefId)
-        .map(w => {
-          if (!w.wasAcknowledged()) InternalServerError
-          else if (w.getDeletedCount == 0) NotFound
-          else Ok
-        })
+        .map(w => if (w.getDeletedCount == 0) NotFound else Ok)
     } else {
       Future.successful(NotImplemented)
     }

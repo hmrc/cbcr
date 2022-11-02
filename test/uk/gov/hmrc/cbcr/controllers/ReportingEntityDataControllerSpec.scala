@@ -109,12 +109,6 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
       verifyStatusCode(result, Status.OK)
     }
 
-    "respond with a 500 if there is a DB failure" in {
-      when(repo.save(any())).thenReturn(Future.successful(InsertOneResult.unacknowledged()))
-      val result = controller.save()(fakePostRequest)
-      verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
-    }
-
     "respond with a 400 if ReportingEntity in request is invalid" in {
       val result = controller.save()(badFakePostRequest)
       verifyStatusCode(result, Status.BAD_REQUEST)

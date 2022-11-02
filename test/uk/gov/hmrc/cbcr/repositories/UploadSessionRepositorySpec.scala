@@ -44,7 +44,7 @@ class UploadSessionRepositorySpec
   "Insert" must {
     "insert UploadStatus" in {
       val res = uploadRep.insert(uploadDetails)
-      await(res) shouldBe true
+      await(res) // shouldn't throw
     }
     "read UploadStatus" in {
       await(uploadRep.insert(uploadDetails))

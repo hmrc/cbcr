@@ -36,11 +36,7 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
       .validate[UploadFileResponse]
       .fold(
         error => Future.successful(BadRequest(JsError.toJson(error))),
-        response =>
-          repo.save2(response).map {
-            case result if result.wasAcknowledged() => Ok
-            case _                                  => InternalServerError("Mongo error")
-        }
+        response => repo.save2(response).map(_ => Ok)
       )
   }
 

@@ -38,32 +38,20 @@ class TestSubscriptionDataController @Inject()(
 
   def insertData() = Action.async[JsValue](parse.json) { implicit request =>
     withJsonBody[SubscriptionDetails] {
-      subRepo.save2(_).map {
-        case w if w.wasAcknowledged() => Ok("data submitted successfully")
-        case _                        => InternalServerError("error submitting data")
-      }
+      subRepo.save2(_).map(_ => Ok("data submitted successfully"))
     }
   }
 
   def deleteSubscription(utrs: String): Action[AnyContent] = Action.async {
-    subRepo.clear(Utr(utrs)).map {
-      case w if w.wasAcknowledged() => Ok
-      case _                        => InternalServerError
-    }
+    subRepo.clear(Utr(utrs)).map(_ => Ok)
   }
 
   def deleteSingleDocRefId(docRefIds: DocRefId): Action[AnyContent] = Action.async {
-    docRefRepo.delete(docRefIds).map {
-      case w if w.wasAcknowledged() => Ok
-      case _                        => InternalServerError
-    }
+    docRefRepo.delete(docRefIds).map(_ => Ok)
   }
 
   def deleteSingleMessageRefId(messageRefIds: String): Action[AnyContent] = Action.async {
-    messageRefIdRepository.delete(MessageRefId(messageRefIds)).map {
-      case w if w.wasAcknowledged() => Ok
-      case _                        => InternalServerError
-    }
+    messageRefIdRepository.delete(MessageRefId(messageRefIds)).map(_ => Ok)
   }
 
   def deleteReportingEntityData(docRefId: DocRefId) = Action.async {
@@ -71,10 +59,7 @@ class TestSubscriptionDataController @Inject()(
   }
 
   def dropReportingEntityDataCollection(): Action[AnyContent] = Action.async {
-    reportingEntityDataRepo.removeAllDocs().map {
-      case w if w.wasAcknowledged() => Ok("Successfully drop reporting entity data collection")
-      case _                        => InternalServerError("Failed drop reporting entity data collection")
-    }
+    reportingEntityDataRepo.removeAllDocs().map(_ => Ok("Successfully drop reporting entity data collection"))
   }
 
   def updateReportingEntityCreationDate(creationDate: String, docRefId: DocRefId) = Action.async {
@@ -146,10 +131,7 @@ class TestSubscriptionDataController @Inject()(
   }
 
   def dropSubscriptionDataCollection() = Action.async {
-    subRepo.removeAll().map {
-      case w if w.wasAcknowledged() => Ok("Successfully drop subscription data collection")
-      case _                        => InternalServerError("Failed drop subscription data collection")
-    }
+    subRepo.removeAll().map(_ => Ok("Successfully drop subscription data collection"))
   }
 
 }

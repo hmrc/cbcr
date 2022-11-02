@@ -44,8 +44,8 @@ class UploadSessionRepository @Inject()(backupRepo: BackupSubscriptionDataReposi
   def findByUploadId(uploadId: UploadId): Future[Option[UploadSessionDetails]] =
     collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()
 
-  def insert(sessionDetails: UploadSessionDetails): Future[Boolean] =
-    collection.insertOne(sessionDetails).head.map(_.wasAcknowledged())
+  def insert(sessionDetails: UploadSessionDetails): Future[Unit] =
+    collection.insertOne(sessionDetails).head.map(_ => ())
 
   def updateStatus(reference: Reference, newStatus: UploadStatus): Future[Boolean] =
     collection

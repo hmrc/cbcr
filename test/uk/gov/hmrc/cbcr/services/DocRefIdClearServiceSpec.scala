@@ -44,7 +44,6 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
 
   val testConfig: Configuration = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
   val writeResult: DeleteResult = DeleteResult.acknowledged(1)
-  val notFoundWriteResult: DeleteResult = DeleteResult.unacknowledged()
 
   when(runMode.env) thenReturn "Dev"
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
@@ -77,7 +76,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
     "complete without error" in {
       reset(reportingEntityDataRepo)
       reset(mockAudit)
-      when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
+      when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
 
       new DocRefIdClearService(
@@ -93,7 +92,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
     "complete without error but audit fails" in {
       reset(reportingEntityDataRepo)
       reset(mockAudit)
-      when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
+      when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         AuditResult.Failure("Audit Failure", None))
 
@@ -110,7 +109,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
     "complete without error but audit disabled" in {
       reset(reportingEntityDataRepo)
       reset(mockAudit)
-      when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(notFoundWriteResult)
+      when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
 
       new DocRefIdClearService(

@@ -43,8 +43,6 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   val okResult = InsertOneResult.acknowledged(BsonNull.VALUE)
 
-  val failResult = InsertOneResult.unacknowledged()
-
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fir))
 
   val badFakePostRequest: FakeRequest[JsValue] =
@@ -65,14 +63,9 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
       status(result) shouldBe Status.OK
     }
 
-    "respond with a 500 if there is a DB failure" in {
-      when(repo.save2(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
-      val result = controller.saveFileUploadResponse(fakePostRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
     "respond with a 400 if UploadFileResponse in request is invalid" in {
-      when(repo.save2(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(failResult))
+      when(repo.save2(any(classOf[UploadFileResponse])))
+        .thenReturn(Future.failed[InsertOneResult](new RuntimeException()))
       val result = controller.saveFileUploadResponse(badFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }

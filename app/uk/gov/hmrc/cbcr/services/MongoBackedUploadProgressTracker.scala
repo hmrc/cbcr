@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait UploadProgressTracker {
 
-  def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Boolean]
+  def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit]
 
   def registerUploadResult(reference: Reference, uploadStatus: UploadStatus): Future[Boolean]
 
@@ -38,7 +38,7 @@ class MongoBackedUploadProgressTracker @Inject()(repository: UploadSessionReposi
     extends UploadProgressTracker {
   private val logger = LoggerFactory.getLogger(getClass)
 
-  override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Boolean] =
+  override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit] =
     repository.insert(UploadSessionDetails(ObjectId.get(), uploadId, fileReference, InProgress))
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Boolean] = {
