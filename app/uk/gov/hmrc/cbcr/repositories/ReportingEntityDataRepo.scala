@@ -45,8 +45,6 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       )
     ) {
 
-  private implicit val dateFormat: Format[LocalDate] = ReportingEntityDataModel.dateFormat
-
   def delete(d: DocRefId): Future[DeleteResult] =
     collection
       .deleteMany(
@@ -151,7 +149,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .find(
         Filters.and(
           regex("reportingEntityDRI", ".*" + cbcId.toString + ".*"),
-          equal("reportingPeriod", Codecs.toBson(reportingPeriod))
+          equal("reportingPeriod", reportingPeriod.toString)
         )
       )
       .map(_.toPublicModel)
@@ -162,7 +160,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .find(
         Filters.and(
           equal("tin", tin),
-          equal("reportingPeriod", Codecs.toBson(reportingPeriod))
+          equal("reportingPeriod", reportingPeriod.toString)
         )
       )
       .map(_.toPublicModel)
@@ -198,7 +196,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
             regex("additionalInfoDRI", ".*" + c + ".*"),
             regex("reportingEntityDRI", ".*" + c + ".*"),
           ),
-          equal("reportingPeriod", Codecs.toBson(r))
+          equal("reportingPeriod", r.toString)
         )
       )
       .map(_.toPublicModel)
@@ -256,7 +254,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
     collection
       .updateMany(
         equal("cbcReportsDRI", d.id),
-        set("creationDate", c)
+        set("creationDate", c.toString)
       )
       .toFuture
       .map(_.getModifiedCount)
@@ -287,7 +285,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       .countDocuments(
         Filters.and(
           equal("cbcReportsDRI", d.id),
-          equal("creationDate", c)
+          equal("creationDate", c.toString)
         )
       )
       .toFuture
