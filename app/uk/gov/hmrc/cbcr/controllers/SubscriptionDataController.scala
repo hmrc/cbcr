@@ -26,6 +26,7 @@ import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -60,7 +61,7 @@ class SubscriptionDataController @Inject()(
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
             response =>
-              repo.update(equal("cbcId", Json.toJson(cbcId)), response).map {
+              repo.update(equal("cbcId", Codecs.toBson(cbcId)), response).map {
                 case true  => Ok
                 case false => InternalServerError
             }
