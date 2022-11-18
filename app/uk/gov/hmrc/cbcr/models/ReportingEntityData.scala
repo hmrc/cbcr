@@ -76,7 +76,8 @@ case class ReportingEntityData(
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod]) {
+  entityReportingPeriod: Option[EntityReportingPeriod],
+  oldModel: Boolean = false) {
   def toDataModel: ReportingEntityDataModel = ReportingEntityDataModel(
     cbcReportsDRI,
     Right(additionalInfoDRI),
@@ -105,11 +106,11 @@ object ReportingEntityData {
       (JsPath \ "creationDate").readNullable[LocalDate] and
       (JsPath \ "reportingPeriod").readNullable[LocalDate] and
       (JsPath \ "currencyCode").readNullable[String] and
-      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
+      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod] and
+      (JsPath \ "tin").read[String].map(_ => false)
   )(ReportingEntityData.apply _)
 
   implicit val writes = Json.writes[ReportingEntityData]
-
 }
 
 case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
@@ -158,7 +159,8 @@ case class ReportingEntityDataModel(
       creationDate,
       reportingPeriod,
       currencyCode,
-      entityReportingPeriod
+      entityReportingPeriod,
+      oldModel = this.additionalInfoDRI.isLeft
     )
 }
 
