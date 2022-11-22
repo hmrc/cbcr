@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
-import cats.data.EitherT
 import cats.instances.all._
 import cats.syntax.all._
 import configs.syntax._
@@ -28,8 +27,9 @@ import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRep
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
 class DocRefIdClearService @Inject()(
@@ -52,24 +52,24 @@ class DocRefIdClearService @Inject()(
 
   if (docRefIds.nonEmpty) {
     logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")
-    docRefIds
-      .map { d =>
-        (for {
-          _ <- EitherT.right(docRefIdRepo.delete(d))
-          _ <- EitherT.right(reportingEntityDataRepo.delete(d))
-          _ <- auditDocRefIdClear(d)
-        } yield ()).value
-      }
-      .sequence[Future, Either[String, Unit]]
-      .map(_.separate._1.foreach(logger.error(_)))
-      .onComplete {
-        case Success(_) => logger.info(s"Successfully deleted and audited ${docRefIds.size} DocRefIds")
-        case Failure(t) => logger.error(s"Error in deleting and auditing the docRefIds: ${t.getMessage}", t)
-      }
+    def ignoreOutputAndHandleError(f: Future[_]): Future[Unit] =
+      f.map(_ => ()).handleError(_.getMessage.pipe(logger.error(_)))
+    Await.result(
+      docRefIds
+        .map { d =>
+          for {
+            _   <- docRefIdRepo.delete(d).pipe(ignoreOutputAndHandleError)
+            _   <- reportingEntityDataRepo.delete(d).pipe(ignoreOutputAndHandleError)
+            err <- auditDocRefIdClear(d)
+          } yield err.foreach(logger.error(_))
+        }
+        .pipe(Future.sequence(_)),
+      Duration(60, "second")
+    )
   }
 
-  private def auditDocRefIdClear(docRefId: DocRefId): EitherT[Future, String, Unit] =
-    EitherT[Future, String, Unit](
+  private def auditDocRefIdClear(docRefId: DocRefId): Future[Option[String]] = {
+    val k =
       audit
         .sendExtendedEvent(
           ExtendedDataEvent(
@@ -78,9 +78,10 @@ class DocRefIdClearService @Inject()(
             detail = Json.obj(
               "docRefId" -> Json.toJson(docRefId)
             )))
-        .map {
-          case AuditResult.Success         => Right(())
-          case AuditResult.Failure(msg, _) => Left(s"failed to audit: $msg")
-          case AuditResult.Disabled        => Right(())
-        })
+    k.map {
+      case AuditResult.Success         => None
+      case AuditResult.Failure(msg, _) => Some(s"failed to audit: $msg")
+      case AuditResult.Disabled        => None
+    }
+  }
 }

@@ -16,34 +16,26 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
+import org.mongodb.scala.model.Filters
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.Json
-import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
-  lazy val reactiveMongoApi = app.injector.instanceOf[ReactiveMongoApi]
   val subscriptionDataRepository = app.injector.instanceOf[SubscriptionDataRepository]
   val subscriberContact =
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
-  val subscriberContact1 = SubscriberContact(
-    None,
-    "changedFirstName",
-    "changedLastName",
-    PhoneNumber("07777888866").get,
-    EmailAddress("changedbob@bob.com"))
   val utr = Utr("7000000003")
   val cbcId = CBCId("XGCBC0000000001")
   val address = EtmpAddress("address1", Some("address2"), Some("address3"), Some("address4"), Some("PO1 1OP"), "UK")
@@ -61,21 +53,21 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
   "Calls to clear cbcId Details" should {
     "successfully clear  details using cbcId" in {
       val result = subscriptionDataRepository.clearCBCId(cbcId.value)
-      await(result).ok shouldBe true
+      await(result).wasAcknowledged() shouldBe true
     }
   }
 
   "Calls to clear  " should {
     "should successfully clear all data" in {
-      val result: Future[WriteResult] = subscriptionDataRepository.clear(utr)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = subscriptionDataRepository.clear(utr)
+      await(result).wasAcknowledged() shouldBe true
     }
   }
 
   "Calls to Save  SubscriptionData" should {
     "successfully save that SubscriptionData" in {
-      val result: Future[WriteResult] = subscriptionDataRepository.save2(exampleSubscriptionData)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = subscriptionDataRepository.save2(exampleSubscriptionData)
+      await(result).wasAcknowledged() shouldBe true
     }
   }
 
@@ -102,14 +94,14 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
 
   "Calls to get  checkNumberOfCbcIdForUtr Details" should {
     "successfully fetch that checkNumberOfCbcIdForUtr details using utr" in {
-      val result: Future[Int] = subscriptionDataRepository.checkNumberOfCbcIdForUtr("7000000003")
-      await(result) shouldBe cbcId.size
+      val result = subscriptionDataRepository.checkNumberOfCbcIdForUtr("7000000003")
+      await(result) shouldBe cbcId.size.toLong
     }
   }
 
   "Calls to  getSubscriptions Details" should {
     "successfully fetch that getSubscriptions details " in {
-      val result = subscriptionDataRepository.getSubscriptions("subscriberContact" -> Json.toJson(subscriberContact))
+      val result = subscriptionDataRepository.getSubscriptions(Filters.equal("subscriberContact", subscriberContact))
       await(result).head.subscriberContact.email.value shouldBe "dave@dave.com"
     }
   }
@@ -117,23 +109,7 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
   "Calls to  backup data" should {
     "successfully backup details " in {
       val result = subscriptionDataRepository.backup(List(exampleSubscriptionData))
-      await(result) should not be empty
-    }
-  }
-
-  "Calls to update  subscription repository using subscriber Contact" should {
-    "successfully update that Subscription details using subscriber Contact" in {
-      val modifier = Json.obj("subscriberContact" -> Json.toJson(subscriberContact))
-      val result: Future[Boolean] = subscriptionDataRepository.update(modifier, subscriberContact1)
-      await(result) shouldBe true
-    }
-  }
-
-  "Calls to update  subscription repository using country code" should {
-    "should successfully update that Subscription details using country code" in {
-      val modifier = Json.obj("businessPartnerRecord.address.countryCode" -> "GB")
-      val result: Future[Boolean] = subscriptionDataRepository.update(modifier, CountryCode("FR"))
-      await(result) shouldBe true
+      await(result).wasAcknowledged() shouldBe true
     }
   }
 }

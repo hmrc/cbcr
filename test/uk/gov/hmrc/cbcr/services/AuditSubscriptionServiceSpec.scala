@@ -59,8 +59,8 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     utr)
 
   when(runMode.env) thenReturn "Dev"
-  when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
-    List(subscriptionDetails, subscriptionDetails2))
+  when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful(
+    Seq(subscriptionDetails, subscriptionDetails2))
   when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
 
   new AuditSubscriptionService(
@@ -70,14 +70,12 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     mockAudit)
   "Calls to getSubscriptios" should {
     "complete and call audit for each subcription returned " in {
-
-      eventually { verify(mockAudit, times(2)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(2)).sendExtendedEvent(any())(any(), any())
     }
     "complete and audit fails" in {
       reset(subscriptionDataRepo)
       reset(mockAudit)
-      when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
-        List(subscriptionDetails))
+      when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful(Seq(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         AuditResult.Failure("failed audit", None))
 
@@ -86,13 +84,12 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         config.withFallback(testConfig).withFallback(cbcIdConfig),
         runMode,
         mockAudit)
-      eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
     "complete and audit disabled" in {
       reset(subscriptionDataRepo)
       reset(mockAudit)
-      when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
-        List(subscriptionDetails))
+      when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful(Seq(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
 
       new AuditSubscriptionService(
@@ -100,13 +97,12 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         config.withFallback(testConfig).withFallback(cbcIdConfig),
         runMode,
         mockAudit)
-      eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
     "complete and audit throws error" in {
       reset(subscriptionDataRepo)
       reset(mockAudit)
-      when(subscriptionDataRepo.getSubscriptions(any())(any())) thenReturn Future.successful[List[SubscriptionDetails]](
-        List(subscriptionDetails))
+      when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful(Seq(subscriptionDetails))
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.failed(new Throwable("audit error"))
 
       new AuditSubscriptionService(
@@ -114,7 +110,7 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
         config.withFallback(testConfig).withFallback(cbcIdConfig),
         runMode,
         mockAudit)
-      eventually { verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any()) }
+      verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
 
   }

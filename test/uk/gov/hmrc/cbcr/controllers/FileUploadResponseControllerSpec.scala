@@ -17,6 +17,8 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
+import com.mongodb.client.result.InsertOneResult
+import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -25,7 +27,6 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{UpdateWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -40,9 +41,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   val fir = UploadFileResponse("id1", "fid1", "status", None)
 
-  val okResult = UpdateWriteResult(true, 0, 0, Seq.empty, Seq.empty, None, None, None)
-
-  val failResult = UpdateWriteResult(false, 1, 1, Seq.empty, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+  val okResult = InsertOneResult.acknowledged(BsonNull.VALUE)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fir))
 
@@ -59,32 +58,27 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   "The FileUploadResponseController" should {
     "respond with a 200 when asked to store an UploadFileResponse" in {
-      when(repo.save2(any(classOf[UploadFileResponse]))(any())).thenReturn(Future.successful(okResult))
+      when(repo.save2(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(okResult))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
     }
 
-    "respond with a 500 if there is a DB failure" in {
-      when(repo.save2(any(classOf[UploadFileResponse]))(any())).thenReturn(Future.successful(failResult))
-      val result = controller.saveFileUploadResponse(fakePostRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
-    }
-
     "respond with a 400 if UploadFileResponse in request is invalid" in {
-      when(repo.save2(any(classOf[UploadFileResponse]))(any())).thenReturn(Future.successful(failResult))
+      when(repo.save2(any(classOf[UploadFileResponse])))
+        .thenReturn(Future.failed[InsertOneResult](new RuntimeException()))
       val result = controller.saveFileUploadResponse(badFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
     "respond with a 200 and a FileUploadResponse when asked to retrieve an existing envelopeId" in {
-      when(repo.get(any(classOf[String]))(any())).thenReturn(Future.successful(Some(fir)))
+      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(Some(fir)))
       val result = controller.retrieveFileUploadResponse("envelopeIdOk")(fakeGetRequest)
       status(result) shouldBe Status.OK
       jsonBodyOf(result).validate[UploadFileResponse].isSuccess shouldBe true
     }
 
     "respond with a 204 when asked to retrieve a non-existent envelopeId" in {
-      when(repo.get(any(classOf[String]))(any())).thenReturn(Future.successful(None))
+      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(None))
       val result = controller.retrieveFileUploadResponse("envelopeIdFail")(fakeGetRequest)
       status(result) shouldBe Status.NO_CONTENT
     }

@@ -17,11 +17,11 @@
 package uk.gov.hmrc.cbcr.models
 
 import java.time.LocalDate
-
 import cats.data.NonEmptyList
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
 object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }
@@ -76,7 +76,8 @@ case class ReportingEntityData(
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod]) {
+  entityReportingPeriod: Option[EntityReportingPeriod],
+  oldModel: Boolean = false) {
   def toDataModel: ReportingEntityDataModel = ReportingEntityDataModel(
     cbcReportsDRI,
     Right(additionalInfoDRI),
@@ -105,11 +106,11 @@ object ReportingEntityData {
       (JsPath \ "creationDate").readNullable[LocalDate] and
       (JsPath \ "reportingPeriod").readNullable[LocalDate] and
       (JsPath \ "currencyCode").readNullable[String] and
-      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
+      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod] and
+      (JsPath \ "tin").read[String].map(_ => false)
   )(ReportingEntityData.apply _)
 
   implicit val writes = Json.writes[ReportingEntityData]
-
 }
 
 case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
@@ -158,7 +159,8 @@ case class ReportingEntityDataModel(
       creationDate,
       reportingPeriod,
       currencyCode,
-      entityReportingPeriod
+      entityReportingPeriod,
+      oldModel = this.additionalInfoDRI.isLeft
     )
 }
 
@@ -167,5 +169,26 @@ object ReportingEntityDataModel {
   import FormatEither.formatEither
   import FormatOption.formatOption
 
-  implicit val format: Format[ReportingEntityDataModel] = Json.format[ReportingEntityDataModel]
+  import FormatNotEmptyList.formatNEL
+  implicit val reads: Reads[ReportingEntityDataModel] = (
+    (JsPath \ "cbcReportsDRI").read[NonEmptyList[DocRefId]] and
+      (JsPath \ "additionalInfoDRI")
+        .read[List[DocRefId]]
+        .map(Right(_).asInstanceOf[Either[Option[DocRefId], List[DocRefId]]])
+        .orElse((JsPath \ "additionalInfoDRI")
+          .readNullable[DocRefId]
+          .map(Left(_).asInstanceOf[Either[Option[DocRefId], List[DocRefId]]])) and
+      (JsPath \ "reportingEntityDRI").read[DocRefId] and
+      (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN(_, "")) and
+      (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and
+      (JsPath \ "reportingRole").read[ReportingRole] and
+      (JsPath \ "creationDate").readNullable[String].map(_.map(LocalDate.parse)) and
+      (JsPath \ "reportingPeriod").readNullable[String].map(_.map(LocalDate.parse)) and
+      (JsPath \ "currencyCode").readNullable[String] and
+      (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
+  )(ReportingEntityDataModel.apply _)
+
+  implicit val writes: Writes[ReportingEntityDataModel] = Json.writes[ReportingEntityDataModel]
+
+  implicit val format: Format[ReportingEntityDataModel] = Format(reads, writes)
 }

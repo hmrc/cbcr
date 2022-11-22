@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter
 import cats.data.NonEmptyList
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
@@ -117,8 +116,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to delete a DocRefId" should {
     "should delete that docRefId" in {
 
-      val result: Future[WriteResult] = reportingEntityDataRepository.delete(docRefId)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = reportingEntityDataRepository.delete(docRefId)
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
@@ -126,8 +125,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to save" should {
     "should save the reportingEntityData in the database" in {
 
-      val result: Future[WriteResult] = reportingEntityDataRepository.save(reportingEntityData)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = reportingEntityDataRepository.save(reportingEntityData)
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
@@ -144,8 +143,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to getLatestReportingEntityData" should {
     "should return the ReportingEntityDataList sorted in ascending order" in {
 
-      val result: List[ReportingEntityData] =
-        reportingEntityDataRepository.getLatestReportingEntityData(List(reportingEntityData))
+      val result = reportingEntityDataRepository.getLatestReportingEntityData(List(reportingEntityData))
       result.size shouldBe 1
 
     }
@@ -154,8 +152,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to confirmCreationDate" should {
     "should confirm the creationDate for the docRefId" in {
 
-      val result: Future[Int] = reportingEntityDataRepository.confirmCreationDate(docRefId, creationDate)
-      await(result) shouldBe 1
+      val result = reportingEntityDataRepository.confirmCreationDate(docRefId, creationDate)
+      await(result) shouldBe 1L
 
     }
   }
@@ -163,8 +161,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to updateCreationDate" should {
     "should update the creationDate for the docRefId" in {
 
-      val result: Future[Int] = reportingEntityDataRepository.updateCreationDate(docRefId, updateForcreationDate)
-      await(result) shouldBe 1
+      val result = reportingEntityDataRepository.updateCreationDate(docRefId, updateForcreationDate)
+      await(result) shouldBe 1L
 
     }
   }
@@ -182,8 +180,9 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to query" should {
     "with additional reportingPeriod param should return the List of ReportingEntityData object for a given docRefId" in {
 
-      val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.query(docRefId.id, "2019-10-01")
-      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+      val result: Future[Option[ReportingEntityData]] =
+        reportingEntityDataRepository.query(docRefId.id, LocalDate.parse("2019-10-01"))
+      await(result).get.reportingEntityDRI shouldBe docRefId
 
     }
   }
@@ -192,7 +191,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "should return the ReportingEntityData object for a given docRefId" in {
 
       val result: Future[Option[ReportingEntityData]] = reportingEntityDataRepository.queryReportingEntity(docRefId)
-      await(result.map(x => x.get.reportingEntityDRI)) shouldBe docRefId
+      await(result).get.reportingEntityDRI shouldBe docRefId
 
     }
   }
@@ -200,8 +199,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to updateAdditionalInfoDRI" should {
     "should update AdditionalInfoDRI docRefId for a given docRefId" in {
 
-      val result: Future[Int] = reportingEntityDataRepository.updateAdditionalInfoDRI(docRefId)
-      await(result) shouldBe 1
+      val result = reportingEntityDataRepository.updateAdditionalInfoDRI(docRefId)
+      await(result) shouldBe 1L
 
     }
   }
@@ -211,7 +210,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
 
       val result: Future[Option[ReportingEntityData]] =
         reportingEntityDataRepository.queryCbcId(cbcId.get, reportingPeriod)
-      await(result.map(x => x.get.ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+      await(result).get.ultimateParentEntity shouldBe UltimateParentEntity("ABCCorp")
 
     }
   }
@@ -219,8 +218,9 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to queryTIN" should {
     "should return ReportingEntityData if it exists by criteria" in {
 
-      val result: Future[List[ReportingEntityData]] = reportingEntityDataRepository.queryTIN("3590617086", "2019-10-01")
-      await(result.map(x => x(0).ultimateParentEntity)) shouldBe UltimateParentEntity("ABCCorp")
+      val result: Future[Seq[ReportingEntityData]] =
+        reportingEntityDataRepository.queryTIN("3590617086", LocalDate.parse("2019-10-01"))
+      await(result).head.ultimateParentEntity shouldBe UltimateParentEntity("ABCCorp")
 
     }
   }
@@ -228,8 +228,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to deleteReportingPeriod" should {
     "should delete the reporting period for a given docRefId" in {
 
-      val result: Future[Int] = reportingEntityDataRepository.deleteReportingPeriod(docRefId)
-      await(result) shouldBe 1
+      val result = reportingEntityDataRepository.deleteReportingPeriod(docRefId)
+      await(result) shouldBe 1L
 
     }
   }
@@ -237,8 +237,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to save a RepEntity" should {
     "should save the reportingEntityData in the database for deleting purposes" in {
 
-      val result: Future[WriteResult] = reportingEntityDataRepository.save(reportingEntityData1)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = reportingEntityDataRepository.save(reportingEntityData1)
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
@@ -246,8 +246,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to deleteReportingPeriod by RepEntDocRefId" should {
     "should delete the reporting period for a given docRefId" in {
 
-      val result: Future[Int] = reportingEntityDataRepository.deleteReportingPeriodByRepEntDocRefId(docRefIdForDelete)
-      await(result) shouldBe 1
+      val result = reportingEntityDataRepository.deleteReportingPeriodByRepEntDocRefId(docRefIdForDelete)
+      await(result) shouldBe 1L
 
     }
   }
@@ -255,8 +255,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to deleteCreationDate" should {
     "should delete the reporting period for a given docRefId" in {
 
-      val result: Future[Int] = reportingEntityDataRepository.deleteCreationDate(docRefId)
-      await(result) shouldBe 1
+      val result = reportingEntityDataRepository.deleteCreationDate(docRefId)
+      await(result) shouldBe 1L
 
     }
   }
@@ -264,11 +264,11 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
   "Calls to delete a DocRefId as cleanup process" should {
     "should delete that docRefId" in {
 
-      val result: Future[WriteResult] = reportingEntityDataRepository.delete(docRefId)
-      await(result.map(r => r.ok)) shouldBe true
+      val result = reportingEntityDataRepository.delete(docRefId)
+      await(result).wasAcknowledged() shouldBe true
 
-      val result1: Future[WriteResult] = reportingEntityDataRepository.delete(docRefIdForDelete)
-      await(result1.map(r => r.ok)) shouldBe true
+      val result1 = reportingEntityDataRepository.delete(docRefIdForDelete)
+      await(result1).wasAcknowledged() shouldBe true
 
     }
   }
@@ -450,10 +450,10 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     }
 
     "Check overlapping to make sure deleted records are ignored" in {
-      val result1: Future[WriteResult] = reportingEntityDataRepository.save(red1)
-      await(result1.map(r => r.ok)) shouldBe true
-      val result2: Future[WriteResult] = reportingEntityDataRepository.save(red2)
-      await(result2.map(r => r.ok)) shouldBe true
+      val result1 = reportingEntityDataRepository.save(red1)
+      await(result1).wasAcknowledged() shouldBe true
+      val result2 = reportingEntityDataRepository.save(red2)
+      await(result2).wasAcknowledged() shouldBe true
       val res = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
@@ -463,8 +463,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     }
 
     "Overlapping should work as expected if database records overlap with current submission" in {
-      val result1: Future[WriteResult] = reportingEntityDataRepository.save(red3)
-      await(result1.map(r => r.ok)) shouldBe true
+      val result1 = reportingEntityDataRepository.save(red3)
+      await(result1).wasAcknowledged() shouldBe true
       val res1 = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
@@ -481,10 +481,10 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     }
 
     "Overlapping should work as expected when database records overlap with current submission when having both dates" in {
-      val result1: Future[WriteResult] = reportingEntityDataRepository.save(red4)
-      await(result1.map(r => r.ok)) shouldBe true
-      val result2: Future[WriteResult] = reportingEntityDataRepository.save(red5)
-      await(result2.map(r => r.ok)) shouldBe true
+      val result1 = reportingEntityDataRepository.save(red4)
+      await(result1).wasAcknowledged() shouldBe true
+      val result2 = reportingEntityDataRepository.save(red5)
+      await(result2).wasAcknowledged() shouldBe true
       val res1 = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
@@ -514,8 +514,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       await(result) shouldBe true
 
       val updatedResult: Future[Option[ReportingEntityData]] =
-        reportingEntityDataRepository.query(doc5.id, "2019-12-01")
-      await(updatedResult.map(x => x.get.entityReportingPeriod)) shouldBe Some(
+        reportingEntityDataRepository.query(doc5.id, LocalDate.parse("2019-12-01"))
+      await(updatedResult).get.entityReportingPeriod shouldBe Some(
         EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
 
     }

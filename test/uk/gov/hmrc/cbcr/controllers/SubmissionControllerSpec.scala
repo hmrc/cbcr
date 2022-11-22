@@ -66,7 +66,7 @@ class SubmissionControllerSpec extends SpecBase with BeforeAndAfterEach with Moc
 
       when(mockSubmissionConnector.submitReport(any())(any()))
         .thenReturn(Future.successful(HttpResponse(OK, "")))
-      when(mockContactService.getLatestContacts(any())(any(), any(), any()))
+      when(mockContactService.getLatestContacts(any())(any(), any()))
         .thenReturn(Future.successful(details))
 
       val request = FakeRequest(POST, routes.SubmissionController.submitDocument.url).withXmlBody(minimalPassing)

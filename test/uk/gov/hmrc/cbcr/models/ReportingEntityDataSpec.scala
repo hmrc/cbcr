@@ -95,20 +95,6 @@ class ReportingEntityDataSpec extends UnitSpec with Suite {
   }
 
   "ReportingEntityDataModel" should {
-    "create oldModel and set value to true" in {
-      val oldModel = Json.parse(additionalInfoDocRefId).as[ReportingEntityDataModel]
-      oldModel shouldBe a[ReportingEntityDataModel]
-      oldModel.additionalInfoDRI should equal(
-        Left(Some(DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP"))))
-    }
-
-    "create oldModel and set value to false" in {
-      val newModel = Json.parse(additionalInfoList).as[ReportingEntityDataModel]
-      newModel shouldBe a[ReportingEntityDataModel]
-      newModel.additionalInfoDRI should equal(
-        Right(List(DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP"))))
-    }
-
     "just create remaining role values" in {
       ReportingRole.parseFromString("CBC702")
       ReportingRole.parseFromString("CBC703")

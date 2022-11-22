@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import org.mongodb.scala.model.Filters.equal
+
 import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json.{JsError, JsValue, Json}
@@ -24,6 +26,7 @@ import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
+import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,11 +47,7 @@ class SubscriptionDataController @Inject()(
           .validate[SubscriptionDetails]
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
-            response =>
-              repo.save2(response).map {
-                case result if !result.ok => InternalServerError(result.writeErrors.mkString)
-                case _                    => Ok
-            }
+            response => repo.save2(response).map(_ => Ok)
           )
       },
       parse.json
@@ -62,9 +61,9 @@ class SubscriptionDataController @Inject()(
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
             response =>
-              repo.update(Json.obj("cbcId" -> Json.toJson(cbcId)), response).map {
-                case result if !result => InternalServerError
-                case _                 => Ok
+              repo.update(equal("cbcId", Codecs.toBson(cbcId)), response).map {
+                case true  => Ok
+                case false => InternalServerError
             }
           )
       },
@@ -74,10 +73,7 @@ class SubscriptionDataController @Inject()(
   def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .clearCBCId(cbcId)
-      .map {
-        case r if r.ok => if (r.n > 0) Ok("ok") else NotFound
-        case result    => InternalServerError(result.writeErrors.mkString)
-      }
+      .map(r => if (r.getDeletedCount > 0) Ok("ok") else NotFound)
   }
 
   def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { _ =>

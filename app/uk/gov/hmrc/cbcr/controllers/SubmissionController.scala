@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import org.slf4j.LoggerFactory
 import play.api.Logging
 import play.api.libs.json.{JsSuccess, Json}
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.mvc.{Action, ControllerComponents, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.SubmissionConnector
 import uk.gov.hmrc.cbcr.models.{ErrorDetails, SubmissionMetaData}
@@ -31,7 +30,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.{Success, Try}
 import scala.xml.NodeSeq
 
@@ -51,10 +50,8 @@ class SubmissionController @Inject()(
           //receive xml and find import instructions
           val xml = transformService.addNameSpaceDefinitions(request.body)
           val fileName = (xml \ "fileName").text
-          val submissionFile: NodeSeq = xml \ "file" \ "CBC_OECD"
           val cbcId = (xml \ "cbcId").text
           val submissionTime = LocalDateTime.now()
-          val messageRefId = (xml \\ "MessageRefId").text
 
           val conversationID: String = hc
             .headers(HeaderNames.explicitlyIncludedHeaders)

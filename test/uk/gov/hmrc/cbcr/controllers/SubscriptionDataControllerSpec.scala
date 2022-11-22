@@ -17,6 +17,8 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
+import com.mongodb.client.result.{DeleteResult, InsertOneResult}
+import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -26,11 +28,9 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{UpdateWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.cbcr.services.DataMigrationCriteria
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.cbcr.util.UnitSpec
 
@@ -41,9 +41,6 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
 
   val store = mock[SubscriptionDataRepository]
 
-  val okResult = UpdateWriteResult(true, 0, 1, Seq.empty, Seq.empty, None, None, None)
-
-  val failResult = UpdateWriteResult(false, 1, 1, Seq.empty, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
   val config = app.injector.instanceOf[Configuration]
 
   val bpr = BusinessPartnerRecord(
@@ -59,9 +56,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     SubscriberContact(None, "firstName", "lastName", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
 
   val desConnector = mock[DESConnector]
-  val a1 = DataMigrationCriteria.LOCAL_CBCID_CRITERIA._1
-  val b1 = DataMigrationCriteria.LOCAL_CBCID_CRITERIA._2
-  when(store.getSubscriptions(any())(any())).thenReturn(Future.successful(List()))
+  when(store.getSubscriptions(any())).thenReturn(Future.successful(List()))
   val controller = new SubscriptionDataController(store, desConnector, cBCRAuth, config, cc)
 
   val fakePostRequest: FakeRequest[JsValue] =
@@ -87,15 +82,10 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
 
   "The SubscriptionDataController" should {
     "respond with a 200 when asked to store SubscriptionData" in {
-      when(store.save2(any(classOf[SubscriptionDetails]))(any())).thenReturn(Future.successful(okResult))
+      when(store.save2(any(classOf[SubscriptionDetails])))
+        .thenReturn(Future.successful(InsertOneResult.acknowledged(BsonNull.VALUE)))
       val result = controller.saveSubscriptionData()(fakePostRequest)
       status(result) shouldBe Status.OK
-    }
-
-    "respond with a 500 if there is a DB failure during save" in {
-      when(store.save2(any(classOf[SubscriptionDetails]))(any())).thenReturn(Future.successful(failResult))
-      val result = controller.saveSubscriptionData()(fakePostRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "respond with a 400 if invalid SubscriptionData passed in request" in {
@@ -104,13 +94,13 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     }
 
     "respond with a 200 when asked to update SubscriptionData" in {
-      when(store.update(any(), any(classOf[SubscriberContact]))(any())) thenReturn Future.successful(true)
+      when(store.update(any(), any(classOf[SubscriberContact]))) thenReturn Future.successful(true)
       val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure during update" in {
-      when(store.update(any(), any(classOf[SubscriberContact]))(any())) thenReturn Future.successful(false)
+      when(store.update(any(), any(classOf[SubscriberContact]))) thenReturn Future.successful(false)
       val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
@@ -121,7 +111,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     }
 
     "respond with a 200 and a SubscriptionData when asked to retrieve an existing CBCID" in {
-      when(store.get(any(classOf[CBCId]))(any()))
+      when(store.get(any(classOf[CBCId])))
         .thenReturn(Future(Some(exampleSubscriptionData)))
       val result = controller.retrieveSubscriptionDataCBCId(cbcId)(fakeGetRequest)
       status(result) shouldBe Status.OK
@@ -129,44 +119,37 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     }
 
     "respond with a 404 when asked to retrieve a non-existent CBCID" in {
-      when(store.get(any(classOf[CBCId]))(any())).thenReturn(Future(None))
+      when(store.get(any(classOf[CBCId]))).thenReturn(Future(None))
       val result = controller.retrieveSubscriptionDataCBCId(cbcId)(fakeGetRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "respond with a 200 when queried with a utr that already exists" in {
-      when(store.get(any(classOf[Utr]))(any()))
+      when(store.get(any(classOf[Utr])))
         .thenReturn(Future(Some(exampleSubscriptionData)))
       val result = controller.retrieveSubscriptionDataUtr(utr)(fakeGetRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 404 when queried with a utr that doesnt exist" in {
-      when(store.get(any(classOf[Utr]))(any())).thenReturn(Future(None))
+      when(store.get(any(classOf[Utr]))).thenReturn(Future(None))
       val result = controller.retrieveSubscriptionDataUtr(utr)(fakeGetRequest)
       status(result) shouldBe Status.NOT_FOUND
 
     }
 
     "respond with a 200 when asked to clear a record that exists" in {
-      when(store.clearCBCId(any(classOf[CBCId]))(any()))
-        .thenReturn(Future(okResult.copy(n = 1)))
+      when(store.clearCBCId(any(classOf[CBCId])))
+        .thenReturn(Future(DeleteResult.acknowledged(1L)))
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 404 when asked to clear a record that doesn't exist" in {
-      when(store.clearCBCId(any(classOf[CBCId]))(any()))
-        .thenReturn(Future(okResult.copy(n = 0)))
+      when(store.clearCBCId(any(classOf[CBCId])))
+        .thenReturn(Future(DeleteResult.acknowledged(0L)))
       val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
       status(result) shouldBe Status.NOT_FOUND
-    }
-
-    "respond with a 500 when asked to clear a record but something goes wrong" in {
-      when(store.clearCBCId(any(classOf[CBCId]))(any()))
-        .thenReturn(Future(failResult))
-      val result = controller.clearSubscriptionData(cbcId)(fakeDeleteRequest)
-      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
   }

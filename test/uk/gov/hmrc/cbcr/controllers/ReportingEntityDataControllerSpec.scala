@@ -17,16 +17,16 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import java.time.LocalDate
-
 import akka.actor.ActorSystem
 import cats.data.NonEmptyList
+import com.mongodb.client.result.InsertOneResult
+import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.{FakeRequest, Helpers}
-import reactivemongo.api.commands.{UpdateWriteResult, WriteError}
 import uk.gov.hmrc.cbcr.models.{CBC701, _}
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.util.{LogCapturing, UnitSpec}
@@ -76,13 +76,9 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     None
   )
 
-  val okResult = UpdateWriteResult(true, 0, 1, Seq.empty, Seq.empty, None, None, None)
-
   val tin = "tin"
 
-  val reportingPeriod = "aReportingPeriod"
-
-  val failResult = UpdateWriteResult(false, 1, 1, Seq.empty, Seq(WriteError(1, 1, "Error")), None, None, Some("Error"))
+  val reportingPeriod = "2022-02-22"
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
 
@@ -108,15 +104,9 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a ReportingEntityData" in {
-      when(repo.save(any())) thenReturn Future.successful(okResult)
+      when(repo.save(any())) thenReturn Future.successful(InsertOneResult.acknowledged(BsonNull.VALUE))
       val result = controller.save()(fakePostRequest)
       verifyStatusCode(result, Status.OK)
-    }
-
-    "respond with a 500 if there is a DB failure" in {
-      when(repo.save(any())).thenReturn(Future.successful(failResult))
-      val result = controller.save()(fakePostRequest)
-      verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
     }
 
     "respond with a 400 if ReportingEntity in request is invalid" in {

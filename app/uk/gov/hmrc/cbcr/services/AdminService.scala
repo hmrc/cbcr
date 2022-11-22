@@ -17,8 +17,8 @@
 package uk.gov.hmrc.cbcr.services
 
 import java.time.LocalDate
-
 import com.google.inject.Singleton
+
 import javax.inject.Inject
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.ControllerComponents
@@ -28,7 +28,9 @@ import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReactiveDocRefIdReposi
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.ExecutionContext
+import java.time.format.DateTimeParseException
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.chaining.scalaUtilChainingOps
 import scala.util.control.NonFatal
 
 case class AdminReportingEntityData(
@@ -54,7 +56,7 @@ class AdminService @Inject()(
   lazy val logger: Logger = Logger(this.getClass)
 
   def showAllDocRef = Action.async {
-    docRefIdRepo.findAll().map(response => Ok(Json.toJson(displayAllDocRefId(response))))
+    docRefIdRepo.findAll().map(_.toList.pipe(displayAllDocRefId).pipe(Json.toJson(_)).pipe(Ok(_)))
   }
 
   def countDocRefId(docs: List[DocRefIdRecord]): ListDocRefIdRecord =
@@ -79,16 +81,20 @@ class AdminService @Inject()(
   }
 
   def adminQueryTin(tin: String, reportingPeriod: String) = Action.async {
-    repo
-      .queryTIN(tin, reportingPeriod)
-      .map { reportEntityData =>
-        if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
-      }
-      .recover {
-        case NonFatal(t) =>
-          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
-      }
+    try {
+      repo
+        .queryTIN(tin, LocalDate.parse(reportingPeriod))
+        .map { reportEntityData =>
+          if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
+        }
+        .recover {
+          case NonFatal(t) =>
+            logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+            InternalServerError
+        }
+    } catch {
+      case e: DateTimeParseException => Future.successful(BadRequest(s"Invalid reporting period ${e.getMessage}}"))
+    }
   }
 
   def adminQueryCbcId(cbcId: CBCId, reportingPeriod: String) = Action.async {

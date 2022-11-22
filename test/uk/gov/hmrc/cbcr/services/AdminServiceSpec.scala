@@ -51,7 +51,7 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
   private val adminService = new AdminService(docRefIdRepo, config, repo, docRepo, runMode, audit, cc)
   private val fakeRequest = FakeRequest()
   private val tin = "tin"
-  private val reportingPeriod = "aReportingPeriod"
+  private val reportingPeriod = "2022-02-22"
   private val cbcId = CBCId.create(56).toOption
 
   private val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
@@ -135,12 +135,12 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
   "editDocRefId" should {
     "respond with a 200 code" in {
-      when(docRepo.edit(any())(any())) thenReturn Future.successful(200)
+      when(docRepo.edit(any())) thenReturn Future.successful(200L)
       val result = adminService.editDocRefId(docRefId)(fakeRequest)
       verifyStatusCode(result, Status.OK)
     }
     "respond with a NotModified response if the status code is less than 1" in {
-      when(docRepo.edit(any())(any())) thenReturn Future.successful(0)
+      when(docRepo.edit(any())) thenReturn Future.successful(0L)
       val result = adminService.editDocRefId(docRefId)(fakeRequest)
       verifyStatusCode(result, Status.NOT_MODIFIED)
     }
@@ -148,19 +148,19 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
   "saveDocRefId" should {
     "respond with a 200 response code" in {
-      when(docRepo.save2(any())(any())) thenReturn Future.successful(Ok)
+      when(docRepo.save2(any())) thenReturn Future.successful(Ok)
       val result = adminService.saveDocRefId(docRefId)(fakeRequest)
       verifyStatusCode(result, Status.OK)
     }
 
     "respond with a Conflict response code when the docRefId already exists" in {
-      when(docRepo.save2(any())(any())) thenReturn Future.successful(AlreadyExists)
+      when(docRepo.save2(any())) thenReturn Future.successful(AlreadyExists)
       val result = adminService.saveDocRefId(docRefId)(fakeRequest)
       verifyStatusCode(result, Status.CONFLICT)
     }
 
     "respond with an internalServerError" in {
-      when(docRepo.save2(any())(any())) thenReturn Future.successful(Failed)
+      when(docRepo.save2(any())) thenReturn Future.successful(Failed)
       val result = adminService.saveDocRefId(docRefId)(fakeRequest)
       verifyStatusCode(result, Status.INTERNAL_SERVER_ERROR)
     }
@@ -168,7 +168,7 @@ class AdminServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
   "showAllDocRef" in {
     val docRefIdRecord = DocRefIdRecord(docRefId, valid = true)
-    when(docRefIdRepo.findAll(any())(any())) thenReturn Future.successful(List(docRefIdRecord))
+    when(docRefIdRepo.findAll()) thenReturn Future.successful(Seq(docRefIdRecord))
     val result = adminService.showAllDocRef(fakeRequest)
     verifyStatusCode(result, Status.OK)
   }

@@ -37,18 +37,15 @@ class UploadFormController @Inject()(
 
   def requestUpload: Action[JsValue] =
     auth.authCBCRWithJson(
-      { implicit request =>
-        val upscanIdentifiers = request.body.validate[UpscanIdentifiers]
-        upscanIdentifiers.fold(
+      _.body
+        .validate[UpscanIdentifiers]
+        .fold(
           invalid = _ => Future.successful(BadRequest("")),
           valid = identifiers =>
             uploadProgressTracker
               .requestUpload(identifiers.uploadId, identifiers.fileReference)
-              .map(
-                _ => Ok
-            )
-        )
-      },
+              .map(_ => Ok)
+        ),
       parse.json
     )
 

@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.cbcr.models.upscan
 
+import org.bson.types.ObjectId
 import play.api.libs.json._
-import reactivemongo.bson.BSONObjectID
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 
-case class UploadSessionDetails(_id: BSONObjectID, uploadId: UploadId, reference: Reference, status: UploadStatus)
+case class UploadSessionDetails(_id: ObjectId, uploadId: UploadId, reference: Reference, status: UploadStatus)
 
 object UploadSessionDetails {
   val status = "status"
 
-  implicit val objectIdFormats: Format[BSONObjectID] = ReactiveMongoFormats.objectIdFormats
+  implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
   val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
 
   implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]

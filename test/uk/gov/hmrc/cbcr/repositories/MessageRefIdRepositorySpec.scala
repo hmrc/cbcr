@@ -18,7 +18,6 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
-import reactivemongo.api.commands.WriteResult
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -36,8 +35,8 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneApp
   "Calls to Save  MessageRefId" should {
     "successfully save that MessageRefId" in {
 
-      val result: Future[WriteResult] = messageRefIdRepository.save2(MessageRefId("mRId"))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = messageRefIdRepository.save2(MessageRefId("mRId"))
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }
@@ -62,8 +61,8 @@ class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneApp
   "Calls to delete a MessageRefId which exists" should {
     "delete that MessageRefId" in {
 
-      val result: Future[WriteResult] = messageRefIdRepository.delete(MessageRefId("mRId"))
-      await(result.map(r => r.ok)) shouldBe true
+      val result = messageRefIdRepository.delete(MessageRefId("mRId"))
+      await(result).wasAcknowledged() shouldBe true
 
     }
   }

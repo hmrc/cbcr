@@ -17,7 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import java.time.LocalDate
-
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
@@ -27,6 +26,7 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.format.DateTimeParseException
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -47,11 +47,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
               logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
               Future.successful(BadRequest)
             },
-            (data: ReportingEntityData) =>
-              repo.save(data).map {
-                case result if result.ok => Ok
-                case result              => InternalServerError(result.writeErrors.mkString)
-            }
+            (data: ReportingEntityData) => repo.save(data).map(_ => Ok)
           )
       },
       parse.json
@@ -123,16 +119,20 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
   }
 
   def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { _ =>
-    repo
-      .queryTIN(tin, reportingPeriod)
-      .map { reportEntityData =>
-        if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
-      }
-      .recover {
-        case NonFatal(t) =>
-          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
-      }
+    try {
+      repo
+        .queryTIN(tin, LocalDate.parse(reportingPeriod))
+        .map { reportEntityData =>
+          if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
+        }
+        .recover {
+          case NonFatal(t) =>
+            logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+            InternalServerError
+        }
+    } catch {
+      case e: DateTimeParseException => Future.successful(BadRequest(s"Invalid reporting period ${e.getMessage}}"))
+    }
   }
 
   def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { _ =>
