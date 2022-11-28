@@ -42,8 +42,3 @@ GET           /admin/reporting-entity/query-tin/:tin/:reportingPeriod           
 PUT           /admin/updateDocRefId/$id<(.*)>                                                   uk.gov.hmrc.cbcr.services.AdminService.editDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 POST          /admin/updateReportingEntityDRI/$docRefId<(.*)>                                   uk.gov.hmrc.cbcr.services.AdminService.editReportingEntityData(docRefId: uk.gov.hmrc.cbcr.models.DocRefId)
 POST          /admin/saveDocRefId/$id<(.*)>                                                     uk.gov.hmrc.cbcr.services.AdminService.saveDocRefId(id: uk.gov.hmrc.cbcr.models.DocRefId)
-
-POST          /callback                                                                         uk.gov.hmrc.cbcr.controllers.upscan.UploadCallbackController.callback
-GET           /upscan/details/:uploadId                                                         uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.getDetails(uploadId: String)
-GET           /upscan/status/:uploadId                                                          uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.getStatus(uploadId: String)
-POST          /upscan/upload                                                                    uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.requestUpload

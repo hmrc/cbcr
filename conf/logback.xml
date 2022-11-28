@@ -47,9 +47,9 @@
 
     <logger name="org.asynchttpclient" level="ERROR"/>
     
-    <logger name="uk.gov" level="WARN"/>
+    <logger name="uk.gov" level="INFO"/>
 
-    <logger name="application" level="WARN"/>
+    <logger name="application" level="DEBUG"/>
 
     <logger name="reactivemongo.core" level="ERROR" />
 
