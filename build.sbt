@@ -1,15 +1,44 @@
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
-import play.sbt.PlayImport.PlayKeys.playDefaultPort
+import uk.gov.hmrc._
+import DefaultBuildSettings._
+import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
+import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 import sbt.Keys._
 import sbt.Tests.{Group, SubProcess}
-import sbt._
-import uk.gov.hmrc.DefaultBuildSettings._
-import uk.gov.hmrc._
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
-import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
+import play.sbt.PlayImport.PlayKeys.playDefaultPort
+import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
+import play.sbt.PlayImport._
+import sbt._
 
 val appName = "cbcr"
+
+lazy val appDependencies: Seq[ModuleID] = compile ++ test()
+
+val compile = Seq(
+  ws,
+  "org.reactivemongo" %% "play2-reactivemongo"        % "0.18.8-play27",
+  "org.reactivemongo" %% "reactivemongo-bson"         % "0.18.8",
+  "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % "5.8.0",
+  "uk.gov.hmrc"       %% "domain"                     % "6.1.0-play-28",
+  "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
+  "com.github.kxbmap" %% "configs"                    % "0.6.0",
+  "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
+  "uk.gov.hmrc"       %% "simple-reactivemongo"       % "8.0.0-play-28",
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full
+)
+
+def test(scope: String = "test,it") = Seq(
+  "com.typesafe.akka"       %% "akka-testkit"         % "2.6.14"    % scope,
+  "org.scalatest"           %% "scalatest"            % "3.0.9"     % scope,
+  "com.vladsch.flexmark"    %  "flexmark-all"         % "0.35.10"   % scope,
+  "org.pegdown"             %  "pegdown"              % "1.6.0"     % scope,
+  "org.scalatestplus.play"  %% "scalatestplus-play"   % "5.0.0"     % scope,
+  "org.mockito"             %  "mockito-core"         % "3.11.2"    % scope,
+  "org.scalacheck"          %% "scalacheck"           % "1.15.0"    % scope,
+  "org.eu.acolyte"          %% "play-reactive-mongo"  % "1.0.50"    % scope,
+  "com.github.tomakehurst"  %  "wiremock-standalone"  % "2.25.0"    % scope
+)
 
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
@@ -63,7 +92,7 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     scalaVersion := "2.12.13",
-    libraryDependencies ++= AppDependencies(),
+    libraryDependencies ++= appDependencies,
     retrieveManaged := true,
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     Compile / scalafmtOnCompile := true,

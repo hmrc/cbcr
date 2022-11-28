@@ -21,16 +21,13 @@ import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
-import org.codehaus.stax2.validation.{XMLValidationSchema, XMLValidationSchemaFactory}
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
-import services.{MongoBackedUploadProgressTracker, RunMode, UploadProgressTracker}
+import services.{MongoBackedUploadProgressTracker, UploadProgressTracker}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
-
-import java.io.File
 
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
@@ -47,16 +44,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   val graphiteEnabled: Boolean = metricsPluginEnabled && graphitePublisherEnabled
 
   val registryName: String = configuration.getOptional[String]("metrics.name").getOrElse("default")
-
-  val runMode: RunMode = new RunMode(configuration)
-
-  // TODO review property when actual DCT06_EIS_UK_SCHEMA.xsd is available
-  val path = s"${runMode.env}.oecd-schema-version"
-
-  val schemaVer: String = configuration.getOptional[String](path).getOrElse {
-    logger.error(s"Failed to find $path in config")
-    throw new Exception(s"Missing configuration $path")
-  }
 
   private def startGraphite(): Unit = {
     logger.info("Graphite metrics enabled, starting the reporter")
@@ -86,12 +73,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     if (graphiteEnabled) startGraphite
 
-    bind(classOf[XMLValidationSchema]).toInstance {
-      val xmlValidationSchemaFactory: XMLValidationSchemaFactory =
-        XMLValidationSchemaFactory.newInstance(XMLValidationSchema.SCHEMA_ID_W3C_SCHEMA)
-      val schemaFile: File = new File(s"conf/schema/$schemaVer/CbcXML_v$schemaVer.xsd")
-      xmlValidationSchemaFactory.createSchema(schemaFile)
-    }
     bind(classOf[HttpClient]).to(classOf[DefaultHttpClient])
     bind(classOf[UploadProgressTracker]).to(classOf[MongoBackedUploadProgressTracker])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
