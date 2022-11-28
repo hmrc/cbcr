@@ -26,7 +26,6 @@ import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.xml.NodeSeq
 
 @Singleton
 class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: ControllerComponents)(
@@ -46,11 +45,6 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: Contr
 
   def authCBCRWithJson(action: AuthAction[JsValue], json: BodyParser[JsValue]): Action[JsValue] =
     Action.async(json) { implicit request ⇒
-      authCommon(action)
-    }
-
-  def authCBCRWithXml(action: AuthAction[NodeSeq], xml: BodyParser[NodeSeq]): Action[NodeSeq] =
-    Action.async(xml) { implicit request ⇒
       authCommon(action)
     }
 

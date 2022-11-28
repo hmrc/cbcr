@@ -46,13 +46,13 @@ object JsonFixtures {
       |},
       |"responseDetail": {
       |"subscriptionID": "111111111",
-      |"tradingName": "tradingName",
+      |"tradingName": "",
       |"isGBUser": true,
       |"primaryContact": [
       |{
-      |"email": "test@g.com",
-      |"phone": "phone",
-      |"mobile": "mobile",
+      |"email": "",
+      |"phone": "",
+      |"mobile": "",
       |"organisation": {
       |"organisationName": "name"
       |}
@@ -60,9 +60,9 @@ object JsonFixtures {
       |],
       |"secondaryContact": [
       |{
-      |"email": "email@n.com",
+      |"email": "",
       |"organisation": {
-      |"organisationName": "orgName"
+      |"organisationName": ""
       |}
       |}
       |]

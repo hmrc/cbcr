@@ -34,7 +34,7 @@ class SubscriptionConnector @Inject()(val config: AppConfig, val http: HttpClien
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[HttpResponse] = {
 
     // TODO review property when actual EIS endpoint is available
-    val displaySubscriptionUrl = s"${config.registrationUrl}/cbc/dct04/v1"
+    val displaySubscriptionUrl = s"${config.registrationUrl}/dac6/dct04/v1"
     //x-conversation-id must match conversationID in RequestCommon otherwise EIS will throw a 400 Bad Request
     val conversationID =
       subscriptionForCBCRequest.displaySubscriptionForCBCRequest.requestCommon.conversationID.getOrElse("")
