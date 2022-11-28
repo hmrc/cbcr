@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import org.codehaus.stax2.validation.{XMLValidationSchema, XMLValidationSchemaFactory}
 import org.mockito.Mockito.when
-import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.{Configuration, Environment}
+import uk.gov.hmrc.cbcr.controllers.mock
 
 import java.io.File
 
-class CBCXMLValidatorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar {
+class CBCXMLValidatorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
 
   private def loadFile(filename: String) = new File(s"test/resources/$filename")
 
