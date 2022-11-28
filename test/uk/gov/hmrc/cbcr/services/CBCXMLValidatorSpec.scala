@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ package uk.gov.hmrc.cbcr.services
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import org.codehaus.stax2.validation.{XMLValidationSchema, XMLValidationSchemaFactory}
+import org.mockito.Mockito.when
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.{Configuration, Environment}
 
 import java.io.File
 
-class CBCXMLValidatorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite {
+class CBCXMLValidatorSpec extends WordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar {
 
   private def loadFile(filename: String) = new File(s"test/resources/$filename")
 
@@ -35,14 +37,16 @@ class CBCXMLValidatorSpec extends WordSpec with Matchers with GuiceOneAppPerSuit
   val invalidMultipleXmlFile2 = loadFile("cbcr-invalid-multiple-errors2.xml")
   val fatal = loadFile("fatal.xml")
   val configuration = new Configuration(ConfigFactory.load("application.conf"))
+  val runMode: RunMode = mock[RunMode]
 
   implicit val env = app.injector.instanceOf[Environment]
 
   implicit val as = app.injector.instanceOf[ActorSystem]
 
+  when(runMode.env) thenReturn "Dev"
   val schemaVer: String = configuration
-    .getOptional[String]("oecd-schema-version")
-    .getOrElse("2.0")
+    .getOptional[String](s"${runMode.env}.oecd-schema-version")
+    .getOrElse(s"${runMode.env}.oecd-schema-version deos not exist")
   val xmlValidationSchemaFactory: XMLValidationSchemaFactory =
     XMLValidationSchemaFactory.newInstance(XMLValidationSchema.SCHEMA_ID_W3C_SCHEMA)
   val schemaFile: File = new File(s"conf/schema/$schemaVer/CbcXML_v$schemaVer.xsd")
