@@ -36,7 +36,4 @@ class AppConfig @Inject()(
   lazy val submissionUrl: String =
     s"${config.get[Service]("microservice.services.submission").baseUrl}${config.get[String]("microservice.services.submission.startUrl")}"
 
-  lazy val registrationUrl =
-    s"${servicesConfig.baseUrl("registration")}${config.get[String]("microservice.services.registration.startUrl")}"
-
 }
