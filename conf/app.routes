@@ -33,6 +33,8 @@ POST          /reporting-entity                                                 
 PUT           /reporting-entity                                                                 uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.update
 POST          /email                                                                            uk.gov.hmrc.cbcr.controllers.CBCREmailController.sendEmail
 
+
+
 GET           /getDocsRefId                                                                     uk.gov.hmrc.cbcr.services.AdminService.showAllDocRef
 GET           /admin/reporting-entity/doc-ref-id/$id<(.*)>                                      uk.gov.hmrc.cbcr.services.AdminService.adminDocRefIdquery(id:uk.gov.hmrc.cbcr.models.DocRefId)
 GET           /admin/reporting-entity/query-cbc-id/:cbcid/:reportingPeriod                      uk.gov.hmrc.cbcr.services.AdminService.adminQueryCbcId(cbcid:uk.gov.hmrc.cbcr.models.CBCId, reportingPeriod: String)
@@ -40,13 +42,3 @@ GET           /admin/reporting-entity/query-tin/:tin/:reportingPeriod           
 PUT           /admin/updateDocRefId/$id<(.*)>                                                   uk.gov.hmrc.cbcr.services.AdminService.editDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
 POST          /admin/updateReportingEntityDRI/$docRefId<(.*)>                                   uk.gov.hmrc.cbcr.services.AdminService.editReportingEntityData(docRefId: uk.gov.hmrc.cbcr.models.DocRefId)
 POST          /admin/saveDocRefId/$id<(.*)>                                                     uk.gov.hmrc.cbcr.services.AdminService.saveDocRefId(id: uk.gov.hmrc.cbcr.models.DocRefId)
-
-POST          /callback                                                                         uk.gov.hmrc.cbcr.controllers.upscan.UploadCallbackController.callback
-GET           /upscan/details/:uploadId                                                         uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.getDetails(uploadId: String)
-GET           /upscan/status/:uploadId                                                          uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.getStatus(uploadId: String)
-POST          /upscan/upload                                                                    uk.gov.hmrc.cbcr.controllers.upscan.UploadFormController.requestUpload
-
-POST          /submit                                                                            uk.gov.hmrc.cbcr.controllers.SubmissionController.submitDocument
-
-POST          /subscription/cache-subscription                                                  uk.gov.hmrc.cbcr.controllers.SubscriptionCacheController.storeSubscriptionDetails
-POST          /subscription/retrieve-subscription                                               uk.gov.hmrc.cbcr.controllers.SubscriptionCacheController.retrieveSubscription
