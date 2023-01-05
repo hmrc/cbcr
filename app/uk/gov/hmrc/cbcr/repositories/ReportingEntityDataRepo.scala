@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.repositories
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.{equal, regex}
 import org.mongodb.scala.model.Indexes.ascending
-import org.mongodb.scala.model.Updates.{set, unset}
+import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
 import play.api.libs.json._
@@ -76,7 +76,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
     collection
       .findOneAndUpdate(
         equal("reportingEntityDRI", docRefId.id),
-        Seq(
+        combine(
           set("cbcReportsDRI", Codecs.toBson(admin.cbcReportsDRI)),
           set("additionalInfoDRI", Codecs.toBson(admin.additionalInfoDRI)),
           set("reportingEntityDRI", Codecs.toBson(admin.reportingEntityDRI)),
@@ -109,7 +109,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
                      throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
                  }
         modifier = buildModifier(p, record)
-        update <- collection.findOneAndUpdate(condition, modifier).toFutureOption()
+        update <- collection.findOneAndUpdate(condition, combine(modifier: _*)).toFutureOption()
       } yield update.isDefined
     }
 
