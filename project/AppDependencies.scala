@@ -9,7 +9,7 @@ object AppDependencies {
     "org.typelevel"     %% "cats"                       % "0.9.0" exclude("org.scalacheck","scalacheck_2.12"),
     "com.github.kxbmap" %% "configs"                    % "0.6.0",
     "uk.gov.hmrc"       %% "emailaddress"               % "3.5.0",
-    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"         % "0.73.0",
+    "uk.gov.hmrc.mongo" %% "hmrc-mongo-play-28"         % "0.74.0",
     compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.5" cross CrossVersion.full),
     "com.github.ghik" % "silencer-lib" % "1.7.5" % Provided cross CrossVersion.full,
     "org.codehaus.woodstox"    % "woodstox-core-asl"    % "4.4.1",
@@ -28,7 +28,7 @@ object AppDependencies {
     "org.mockito"             %  "mockito-core"            % "3.11.2"    % scope,
     "org.scalacheck"          %% "scalacheck"              % "1.15.0"    % scope,
     "com.github.tomakehurst"  %  "wiremock-standalone"     % "2.25.0"    % scope,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.73.0",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.74.0",
     "org.scalatestplus"       %% "scalatestplus-mockito"   % "1.0.0-M2"  % Test,
   )
 
