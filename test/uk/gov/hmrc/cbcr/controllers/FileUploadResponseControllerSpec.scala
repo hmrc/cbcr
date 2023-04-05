@@ -19,9 +19,9 @@ package uk.gov.hmrc.cbcr.controllers
 import akka.actor.ActorSystem
 import com.mongodb.client.result.InsertOneResult
 import org.bson.BsonNull
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
@@ -59,9 +59,31 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   "The FileUploadResponseController" should {
     "respond with a 200 when asked to store an FileUploadResponse" in {
-      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(Some(fir)))
+      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(None))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
+    }
+
+    "protect the AVAILABLE status from being overridden" in {
+      val availableFur = fir.copy(status = "AVAILABLE")
+      val quarantinedFur = fir.copy(status = "QUARANTINED")
+      val argument: ArgumentCaptor[FileUploadResponse] = ArgumentCaptor.forClass(classOf[FileUploadResponse])
+      when(repo.save2(argument.capture())).thenReturn(Future.successful(Some(availableFur)))
+      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(quarantinedFur)))
+
+      status(result) shouldBe Status.OK
+      argument.getAllValues should contain theSameElementsInOrderAs List(quarantinedFur, availableFur)
+    }
+
+    "don't protect the AVAILABLE status from being overridden by DELETED" in {
+      val availableFur = fir.copy(status = "AVAILABLE")
+      val deletedFur = fir.copy(status = "DELETED")
+      val argument: ArgumentCaptor[FileUploadResponse] = ArgumentCaptor.forClass(classOf[FileUploadResponse])
+      when(repo.save2(argument.capture())).thenReturn(Future.successful(Some(availableFur)))
+      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(deletedFur)))
+
+      status(result) shouldBe Status.OK
+      argument.getAllValues should contain theSameElementsInOrderAs List(deletedFur)
     }
 
     "respond with a 400 if FileUploadResponse in request is invalid" in {
