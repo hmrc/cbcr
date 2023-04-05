@@ -21,6 +21,7 @@ import com.mongodb.client.result.InsertOneResult
 import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
@@ -57,15 +58,15 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
   val controller = new FileUploadResponseController(repo, cBCRAuth, cc)
 
   "The FileUploadResponseController" should {
-    "respond with a 200 when asked to store an UploadFileResponse" in {
-      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(okResult))
+    "respond with a 200 when asked to store an FileUploadResponse" in {
+      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(Some(fir)))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
     }
 
-    "respond with a 400 if UploadFileResponse in request is invalid" in {
+    "respond with a 400 if FileUploadResponse in request is invalid" in {
       when(repo.save2(any(classOf[FileUploadResponse])))
-        .thenReturn(Future.failed[InsertOneResult](new RuntimeException()))
+        .thenReturn(Future.failed(new RuntimeException()))
       val result = controller.saveFileUploadResponse(badFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }

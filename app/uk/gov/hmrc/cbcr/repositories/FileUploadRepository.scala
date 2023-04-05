@@ -17,13 +17,13 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.result.InsertOneResult
-
-import javax.inject.{Inject, Singleton}
+import org.mongodb.scala.model.Updates._
+import org.mongodb.scala.model.FindOneAndUpdateOptions
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -34,7 +34,19 @@ class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: Exe
       domainFormat = FileUploadResponse.ufrFormat,
       indexes = Seq()) {
 
-  def save2(f: FileUploadResponse): Future[InsertOneResult] = collection.insertOne(f).toFuture()
+  def save2(f: FileUploadResponse): Future[Option[FileUploadResponse]] =
+    collection
+      .findOneAndUpdate(
+        equal("envelopeId", f.envelopeId),
+        combine(
+          set("fileId", f.fileId),
+          set("status", f.status),
+          set("reason", Codecs.toBson(f.reason)),
+          setOnInsert("envelopeId", f.envelopeId)
+        ),
+        FindOneAndUpdateOptions().upsert(true)
+      )
+      .toFutureOption()
 
   def get(envelopeId: String): Future[Option[FileUploadResponse]] =
     collection.find(equal("envelopeId", envelopeId)).headOption()

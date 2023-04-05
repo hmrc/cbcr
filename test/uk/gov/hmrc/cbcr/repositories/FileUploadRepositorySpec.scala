@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
@@ -23,40 +24,61 @@ import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
-class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
+class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with BeforeAndAfterEach {
 
-  val config = app.injector.instanceOf[Configuration]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
-  implicit val hc = HeaderCarrier()
-  val fileUploadRepository = app.injector.instanceOf[FileUploadRepository]
-  val fir = FileUploadResponse("id1", "fid1", "status", None)
+  val config: Configuration = app.injector.instanceOf[Configuration]
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  val fileUploadRepository: FileUploadRepository = app.injector.instanceOf[FileUploadRepository]
+  val fur: FileUploadResponse = FileUploadResponse("id1", "fid1", "status", None)
 
-  "Calls to Save  UploadFileResponse" should {
-    "should successfully save that UploadFileResponse" in {
+  override def beforeEach(): Unit =
+    await(fileUploadRepository.collection.drop().toFuture())
 
-      val result = fileUploadRepository.save2(fir)
-      await(result).wasAcknowledged() shouldBe true
-
+  "saving a FileUploadResponse" should {
+    "return None (because the collection is empty)" in {
+      val result = await(fileUploadRepository.save2(fur))
+      result shouldEqual None
+    }
+    "insert the object into the repository" in {
+      await(fileUploadRepository.save2(fur))
+      val inserted = await(fileUploadRepository.get(fur.envelopeId))
+      inserted shouldEqual Some(fur)
     }
   }
 
-  "Calls to get a EnvelopId" should {
-    "should successfully fetch that envelopId" in {
+  "saving an existing FileUploadResponse" should {
+    "return the original object" in {
+      await(fileUploadRepository.save2(fur))
+      val modified = fur.copy(status = "AVAILABLE")
+      val original = await(fileUploadRepository.save2(modified))
+      original shouldEqual Some(fur)
+    }
+    "override the object" in {
+      await(fileUploadRepository.save2(fur))
+      val modified = fur.copy(status = "AVAILABLE")
+      await(fileUploadRepository.save2(modified))
+      val inserted = await(fileUploadRepository.get(fur.envelopeId))
+      inserted shouldEqual Some(modified)
+    }
+  }
 
-      val result: Future[Option[FileUploadResponse]] = fileUploadRepository.get("id1")
-      await(result.map(r => r.get.envelopeId)) shouldBe "id1"
+  "saving a FileUploadResponse with a reason" should {
+    "insert the object into the repository" in {
+      val furWithReason = FileUploadResponse("id1", "fid1", "status", Some("reason"))
+      await(fileUploadRepository.save2(furWithReason))
 
+      val inserted = await(fileUploadRepository.get(fur.envelopeId))
+      inserted shouldEqual Some(furWithReason)
     }
   }
 
   "Calls to get a EnvelopId which does not exist" should {
     "should not fetch that envelopId" in {
-
-      val result: Future[Option[FileUploadResponse]] = fileUploadRepository.get("envelopeId")
-      await(result.map(r => r)) shouldBe None
-
+      val result = await(fileUploadRepository.get("envelopeId"))
+      result shouldEqual None
     }
   }
 
