@@ -22,7 +22,6 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
-import play.api.libs.json._
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.mongo.MongoComponent
