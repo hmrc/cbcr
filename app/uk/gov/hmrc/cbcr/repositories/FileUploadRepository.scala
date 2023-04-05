@@ -20,7 +20,7 @@ import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.result.InsertOneResult
 
 import javax.inject.{Inject, Singleton}
-import uk.gov.hmrc.cbcr.models.UploadFileResponse
+import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
@@ -28,15 +28,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
-    extends PlayMongoRepository[UploadFileResponse](
+    extends PlayMongoRepository[FileUploadResponse](
       mongoComponent = mongo,
       collectionName = "FileUpload",
-      domainFormat = UploadFileResponse.ufrFormat,
+      domainFormat = FileUploadResponse.ufrFormat,
       indexes = Seq()) {
 
-  def save2(f: UploadFileResponse): Future[InsertOneResult] = collection.insertOne(f).toFuture()
+  def save2(f: FileUploadResponse): Future[InsertOneResult] = collection.insertOne(f).toFuture()
 
-  def get(envelopeId: String): Future[Option[UploadFileResponse]] =
+  def get(envelopeId: String): Future[Option[FileUploadResponse]] =
     collection.find(equal("envelopeId", envelopeId)).headOption()
 
 }

@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
-import uk.gov.hmrc.cbcr.models.UploadFileResponse
+import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -33,7 +33,7 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
 
   def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
     request.body
-      .validate[UploadFileResponse]
+      .validate[FileUploadResponse]
       .fold(
         error => Future.successful(BadRequest(JsError.toJson(error))),
         response => repo.save2(response).map(_ => Ok)

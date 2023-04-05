@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.repositories
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
-import uk.gov.hmrc.cbcr.models.UploadFileResponse
+import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -31,7 +31,7 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   implicit val hc = HeaderCarrier()
   val fileUploadRepository = app.injector.instanceOf[FileUploadRepository]
-  val fir = UploadFileResponse("id1", "fid1", "status", None)
+  val fir = FileUploadResponse("id1", "fid1", "status", None)
 
   "Calls to Save  UploadFileResponse" should {
     "should successfully save that UploadFileResponse" in {
@@ -45,7 +45,7 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   "Calls to get a EnvelopId" should {
     "should successfully fetch that envelopId" in {
 
-      val result: Future[Option[UploadFileResponse]] = fileUploadRepository.get("id1")
+      val result: Future[Option[FileUploadResponse]] = fileUploadRepository.get("id1")
       await(result.map(r => r.get.envelopeId)) shouldBe "id1"
 
     }
@@ -54,7 +54,7 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   "Calls to get a EnvelopId which does not exist" should {
     "should not fetch that envelopId" in {
 
-      val result: Future[Option[UploadFileResponse]] = fileUploadRepository.get("envelopeId")
+      val result: Future[Option[FileUploadResponse]] = fileUploadRepository.get("envelopeId")
       await(result.map(r => r)) shouldBe None
 
     }

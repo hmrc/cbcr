@@ -39,7 +39,7 @@ import scala.concurrent.Future
   */
 class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
-  val fir = UploadFileResponse("id1", "fid1", "status", None)
+  val fir = FileUploadResponse("id1", "fid1", "status", None)
 
   val okResult = InsertOneResult.acknowledged(BsonNull.VALUE)
 
@@ -58,13 +58,13 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   "The FileUploadResponseController" should {
     "respond with a 200 when asked to store an UploadFileResponse" in {
-      when(repo.save2(any(classOf[UploadFileResponse]))).thenReturn(Future.successful(okResult))
+      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(okResult))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 400 if UploadFileResponse in request is invalid" in {
-      when(repo.save2(any(classOf[UploadFileResponse])))
+      when(repo.save2(any(classOf[FileUploadResponse])))
         .thenReturn(Future.failed[InsertOneResult](new RuntimeException()))
       val result = controller.saveFileUploadResponse(badFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
@@ -74,7 +74,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
       when(repo.get(any(classOf[String]))).thenReturn(Future.successful(Some(fir)))
       val result = controller.retrieveFileUploadResponse("envelopeIdOk")(fakeGetRequest)
       status(result) shouldBe Status.OK
-      jsonBodyOf(result).validate[UploadFileResponse].isSuccess shouldBe true
+      jsonBodyOf(result).validate[FileUploadResponse].isSuccess shouldBe true
     }
 
     "respond with a 204 when asked to retrieve a non-existent envelopeId" in {
