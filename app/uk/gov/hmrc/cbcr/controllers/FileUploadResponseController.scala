@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
-import uk.gov.hmrc.cbcr.models.UploadFileResponse
+import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -32,12 +32,18 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
     extends BackendController(cc) {
 
   def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
-    request.body
-      .validate[UploadFileResponse]
-      .fold(
-        error => Future.successful(BadRequest(JsError.toJson(error))),
-        response => repo.save2(response).map(_ => Ok)
-      )
+    request.body.validate[FileUploadResponse].asEither match {
+      case Left(error) => Future.successful(BadRequest(JsError.toJson(error)))
+      case Right(response) =>
+        for {
+          before <- repo.save2(response)
+          _ <- before match {
+                case Some(existing) if existing.status == "AVAILABLE" && response.status != "DELETED" =>
+                  repo.save2(existing)
+                case _ => Future.successful()
+              }
+        } yield Ok
+    }
   }
 
   def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { _ =>
