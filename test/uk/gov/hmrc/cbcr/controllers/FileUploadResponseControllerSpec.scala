@@ -17,8 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
-import com.mongodb.client.result.InsertOneResult
-import org.bson.BsonNull
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -40,9 +38,7 @@ import scala.concurrent.Future
   */
 class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
-  val fur = FileUploadResponse("id1", "fid1", "status", None)
-
-  val okResult = InsertOneResult.acknowledged(BsonNull.VALUE)
+  private val fur = FileUploadResponse("id1", "fid1", "status", None)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fur))
 
@@ -51,9 +47,9 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveFileUploadResponse")
 
-  implicit val as = ActorSystem()
+  implicit val as: ActorSystem = ActorSystem()
 
-  val repo = mock[FileUploadRepository]
+  private val repo = mock[FileUploadRepository]
 
   val controller = new FileUploadResponseController(repo, cBCRAuth, cc)
 
