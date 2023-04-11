@@ -40,11 +40,11 @@ import scala.concurrent.Future
   */
 class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
-  val fir = FileUploadResponse("id1", "fid1", "status", None)
+  val fur = FileUploadResponse("id1", "fid1", "status", None)
 
   val okResult = InsertOneResult.acknowledged(BsonNull.VALUE)
 
-  val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fir))
+  val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fur))
 
   val badFakePostRequest: FakeRequest[JsValue] =
     FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(Json.obj("bad" -> "request"))
@@ -65,8 +65,8 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
     }
 
     "protect the AVAILABLE status from being overridden" in {
-      val availableFur = fir.copy(status = "AVAILABLE")
-      val quarantinedFur = fir.copy(status = "QUARANTINED")
+      val availableFur = fur.copy(status = "AVAILABLE")
+      val quarantinedFur = fur.copy(status = "QUARANTINED")
       val argument: ArgumentCaptor[FileUploadResponse] = ArgumentCaptor.forClass(classOf[FileUploadResponse])
       when(repo.save2(argument.capture())).thenReturn(Future.successful(Some(availableFur)))
       val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(quarantinedFur)))
@@ -76,8 +76,8 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
     }
 
     "don't protect the AVAILABLE status from being overridden by DELETED" in {
-      val availableFur = fir.copy(status = "AVAILABLE")
-      val deletedFur = fir.copy(status = "DELETED")
+      val availableFur = fur.copy(status = "AVAILABLE")
+      val deletedFur = fur.copy(status = "DELETED")
       val argument: ArgumentCaptor[FileUploadResponse] = ArgumentCaptor.forClass(classOf[FileUploadResponse])
       when(repo.save2(argument.capture())).thenReturn(Future.successful(Some(availableFur)))
       val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(deletedFur)))
@@ -94,7 +94,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
     }
 
     "respond with a 200 and a FileUploadResponse when asked to retrieve an existing envelopeId" in {
-      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(Some(fir)))
+      when(repo.get(any(classOf[String]))).thenReturn(Future.successful(Some(fur)))
       val result = controller.retrieveFileUploadResponse("envelopeIdOk")(fakeGetRequest)
       status(result) shouldBe Status.OK
       jsonBodyOf(result).validate[FileUploadResponse].isSuccess shouldBe true
