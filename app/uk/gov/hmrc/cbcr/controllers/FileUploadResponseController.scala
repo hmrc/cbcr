@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
+import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
@@ -31,6 +32,8 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
   implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
+  lazy val logger: Logger = Logger(this.getClass)
+
   def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
     request.body.validate[FileUploadResponse].asEither match {
       case Left(error) => Future.successful(BadRequest(JsError.toJson(error)))
@@ -38,8 +41,11 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
         for {
           before <- repo.save2(response)
           _ <- before match {
-                case Some(existing) if existing.status == "AVAILABLE" && response.status != "DELETED" =>
+                case Some(existing) if existing.status == "AVAILABLE" && response.status != "DELETED" => {
+                  logger.info(
+                    s"FileUploadResponse Race Condition detected: response = ${response.status}; existing = ${existing.status}")
                   repo.save2(existing)
+                }
                 case _ => Future.successful()
               }
         } yield Ok
