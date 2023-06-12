@@ -21,10 +21,12 @@ import java.time.format.DateTimeFormatter
 import play.api.libs.json._ // JSON library
 import play.api.libs.json.Reads._ // Custom validation helpers
 import play.api.libs.functional.syntax._ // Combinator syntax
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 
 import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
+import configs.Result.{Success, Try}
 
 class PhoneNumber private (val number: String)
 
@@ -32,13 +34,12 @@ class PhoneNumber private (val number: String)
 //https://[conflence]/display/CBC/DES+API+Specifications?preview=/89272679/89272676/API%20%231%20Subscription%20Create-v41-20170731.docx
 object PhoneNumber {
 
-  val pattern = "^[A-Z0-9 )/(-*#]+$"
+  private val phoneNumberUtil = PhoneNumberUtil.getInstance()
 
   def apply(number: String): Option[PhoneNumber] =
-    if (number.matches(pattern)) {
-      Some(new PhoneNumber(number))
-    } else {
-      None
+    Try(phoneNumberUtil.isPossibleNumber(phoneNumberUtil.parse(number, "GB"))) match {
+      case Success(true) => Some(new PhoneNumber(number))
+      case _             => None
     }
 
   implicit val format = new Format[PhoneNumber] {
