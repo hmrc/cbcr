@@ -15,7 +15,8 @@ object AppDependencies {
     "org.codehaus.woodstox"    % "woodstox-core-asl"    % "4.4.1",
     "msv"                      % "msv"                  % "20050913",
     "com.sun.xml"              % "relaxngDatatype"      % "1.0",
-    "com.sun.msv.datatype.xsd" % "xsdlib"               % "2013.2"
+    "com.sun.msv.datatype.xsd" % "xsdlib"               % "2013.2",
+    "com.googlecode.libphonenumber" % "libphonenumber" % "8.13.13"
   )
 
   def test(scope: String = "test,it") = Seq(
