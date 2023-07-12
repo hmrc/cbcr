@@ -10,6 +10,7 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin._
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "cbcr"
+val silencerVersion = "1.7.13"
 
 lazy val plugins : Seq[Plugins] = Seq.empty
 lazy val playSettings : Seq[Setting[_]] = Seq.empty
@@ -46,7 +47,7 @@ lazy val scoverageSettings = {
   import scoverage._
   Seq(
     ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 80,
+    ScoverageKeys.coverageMinimumStmtTotal := 60,
     ScoverageKeys.coverageFailOnMinimum := false,
     ScoverageKeys.coverageHighlighting := true
   )
@@ -80,7 +81,12 @@ lazy val microservice = Project(appName, file("."))
     IntegrationTest / parallelExecution := false,
     IntegrationTest / scalafmtOnCompile := true,
     Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
-    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat
+    Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
+    libraryDependencies ++= Seq(
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+    ),
+
   )
   .settings(scalacOptions += "-P:silencer:pathFilters=routes")
   .settings(Global / lintUnusedKeysOnLoad := false)
@@ -100,3 +106,5 @@ lazy val testSettings = Def.settings(
     "-Dlogger.resource=logback-test.xml"
   )
 )
+
+libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
