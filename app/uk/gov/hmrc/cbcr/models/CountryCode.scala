@@ -273,7 +273,7 @@ case class CountryCode(countryCode: String) {
 }
 
 object CountryCode {
-  implicit val format = new Format[CountryCode] {
+  implicit val format: Format[CountryCode] = new Format[CountryCode] {
     override def reads(json: JsValue) = json.validate[String].map(CountryCode(_))
 
     override def writes(o: CountryCode) = JsString(o.countryCode)

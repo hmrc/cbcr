@@ -34,11 +34,13 @@ class LocalSubscription @Inject()(
   cbcIdGenerator: CBCIdGenerator)(implicit ec: ExecutionContext)
     extends SubscriptionHandler {
 
-  def createCBCId =
-    cbcIdGenerator.generateCbcId.fold(
-      (error: Throwable) => throw error,
-      (id: CBCId) => Future.successful(id)
-    )
+  def createCBCId: Future[CBCId] =
+    cbcIdGenerator
+      .generateCbcId()
+      .fold(
+        (error: Throwable) => throw error,
+        (id: CBCId) => Future.successful(id)
+      )
 
   override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[Result] =
     createCBCId
@@ -49,10 +51,11 @@ class LocalSubscription @Inject()(
         case NonFatal(e) => InternalServerError(e.getMessage)
       }
 
-  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) =
+  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(
+    implicit hc: HeaderCarrier): Future[Result] =
     Future.successful(Ok(Json.toJson(UpdateResponse(LocalDateTime.now))))
 
-  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) =
+  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier): Future[Result] =
     repo
       .get(safeId)
       .map {

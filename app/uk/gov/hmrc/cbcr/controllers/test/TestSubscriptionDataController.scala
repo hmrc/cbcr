@@ -63,70 +63,54 @@ class TestSubscriptionDataController @Inject()(
   }
 
   def updateReportingEntityCreationDate(creationDate: String, docRefId: DocRefId) = Action.async {
-    {
-      val cd = LocalDate.parse(creationDate)
-
-      reportingEntityDataRepo.updateCreationDate(docRefId, cd).map {
-        case n if n > 0 => Ok
-        case _          => NotModified
-      }
+    val cd = LocalDate.parse(creationDate)
+    reportingEntityDataRepo.updateCreationDate(docRefId, cd).map {
+      case n if n > 0 => Ok
+      case _          => NotModified
     }
   }
 
   def deleteReportingEntityCreationDate(docRefId: DocRefId) = Action.async {
-    {
-      reportingEntityDataRepo.deleteCreationDate(docRefId).map {
-        case n if n > 0 => Ok
-        case _          => NotModified
-      }
+    reportingEntityDataRepo.deleteCreationDate(docRefId).map {
+      case n if n > 0 => Ok
+      case _          => NotModified
     }
   }
 
   def confirmReportingEntityCreationDate(creationDate: String, docRefId: DocRefId) = Action.async {
-    {
-      val cd = LocalDate.parse(creationDate)
+    val cd = LocalDate.parse(creationDate)
 
-      reportingEntityDataRepo.confirmCreationDate(docRefId, cd).map {
-        case n if n == 1 => Ok
-        case n if n != 1 => NotFound
-      }
+    reportingEntityDataRepo.confirmCreationDate(docRefId, cd).map {
+      case 1 => Ok
+      case _ => NotFound
     }
   }
 
   def deleteReportingEntityReportingPeriod(docRefId: DocRefId) = Action.async {
-    {
-      reportingEntityDataRepo.deleteReportingPeriod(docRefId).map {
-        case n if n > 0 => Ok
-        case _          => NotModified
-      }
+    reportingEntityDataRepo.deleteReportingPeriod(docRefId).map {
+      case n if n > 0 => Ok
+      case _          => NotModified
     }
   }
 
   def deleteReportingPeriodByRepEntDocRefId(docRefId: DocRefId) = Action.async {
-    {
-      reportingEntityDataRepo.deleteReportingPeriodByRepEntDocRefId(docRefId).map {
-        case n if n > 0 => Ok
-        case _          => NotModified
-      }
+    reportingEntityDataRepo.deleteReportingPeriodByRepEntDocRefId(docRefId).map {
+      case n if n > 0 => Ok
+      case _          => NotModified
     }
   }
 
   def validateNumberOfCbcIdForUtr(utr: String): Action[AnyContent] = Action.async {
-    {
-
-      subRepo.checkNumberOfCbcIdForUtr(utr).map {
-        case n if n > 0 => Ok(Json.toJson(n))
-        case _          => NotFound
-      }
+    subRepo.checkNumberOfCbcIdForUtr(utr).map {
+      case n if n > 0 => Ok(Json.toJson(n))
+      case _          => NotFound
     }
   }
 
   def updateReportingEntityAdditionalInfoDRI(docRefId: DocRefId) = Action.async {
-    {
-      reportingEntityDataRepo.updateAdditionalInfoDRI(docRefId).map {
-        case n if n > 0 => Ok
-        case _          => NotModified
-      }
+    reportingEntityDataRepo.updateAdditionalInfoDRI(docRefId).map {
+      case n if n > 0 => Ok
+      case _          => NotModified
     }
   }
 

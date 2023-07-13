@@ -49,6 +49,8 @@ class EmailService @Inject()(
             logger.info("CBCR Successfully sent email")
             audit(email, CBCREmailSuccess)
             Accepted
+          case _ =>
+            throw new RuntimeException("Unexpected status")
       })
       .recover {
         case _ =>

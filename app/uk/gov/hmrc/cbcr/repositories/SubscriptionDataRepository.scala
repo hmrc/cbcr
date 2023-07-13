@@ -59,12 +59,12 @@ class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRep
     ) {
 
   def clearCBCId(cbcId: CBCId): Future[DeleteResult] =
-    collection.deleteOne(equal("cbcId", cbcId.value)).toFuture
+    collection.deleteOne(equal("cbcId", cbcId.value)).toFuture()
 
-  def removeAll(): Future[DeleteResult] = collection.deleteMany(Filters.empty).toFuture
+  def removeAll(): Future[DeleteResult] = collection.deleteMany(Filters.empty()).toFuture()
 
   def clear(utr: Utr): Future[DeleteResult] =
-    collection.deleteOne(equal("utr", utr.utr)).toFuture
+    collection.deleteOne(equal("utr", utr.utr)).toFuture()
 
   def update(criteria: Bson, s: SubscriberContact): Future[Boolean] =
     collection
@@ -72,7 +72,7 @@ class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRep
         criteria,
         set("subscriberContact", s)
       )
-      .headOption
+      .headOption()
       .map(_.isDefined)
 
   def update(criteria: Bson, cc: CountryCode): Future[Boolean] =
@@ -81,22 +81,22 @@ class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRep
         criteria,
         set("businessPartnerRecord.address.countryCode", cc)
       )
-      .headOption
+      .headOption()
       .map(_.isDefined)
 
-  def save2(s: SubscriptionDetails): Future[InsertOneResult] = collection.insertOne(s).toFuture
+  def save2(s: SubscriptionDetails): Future[InsertOneResult] = collection.insertOne(s).toFuture()
 
   def backup(s: List[SubscriptionDetails]): Future[InsertManyResult] =
-    backupRepo.collection.insertMany(s).toFuture
+    backupRepo.collection.insertMany(s).toFuture()
 
   def get(safeId: String): Future[Option[SubscriptionDetails]] =
-    collection.find(equal("businessPartnerRecord.safeId", safeId)).headOption
+    collection.find(equal("businessPartnerRecord.safeId", safeId)).headOption()
 
   def get(cbcId: CBCId): Future[Option[SubscriptionDetails]] =
-    collection.find(equal("cbcId", cbcId.value)).headOption
+    collection.find(equal("cbcId", cbcId.value)).headOption()
 
   def get(utr: Utr): Future[Option[SubscriptionDetails]] =
-    collection.find(equal("utr", utr.utr)).headOption
+    collection.find(equal("utr", utr.utr)).headOption()
 
   def getSubscriptions(query: Bson): Future[Seq[SubscriptionDetails]] =
     collection.find(query).toFuture()

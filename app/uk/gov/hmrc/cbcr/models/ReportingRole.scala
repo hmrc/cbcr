@@ -34,7 +34,7 @@ object ReportingRole {
     case _        => None
   }
 
-  implicit val format = new Format[ReportingRole] {
+  implicit val format: Format[ReportingRole] = new Format[ReportingRole] {
 
     override def writes(o: ReportingRole): JsValue = JsString(o.toString)
 

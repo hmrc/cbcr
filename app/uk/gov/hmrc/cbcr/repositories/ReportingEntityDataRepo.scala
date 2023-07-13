@@ -53,12 +53,12 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
           equal("reportingEntityDRI", d.id)
         )
       )
-      .toFuture
+      .toFuture()
 
-  def removeAllDocs(): Future[DeleteResult] = collection.deleteMany(Filters.empty()).toFuture
+  def removeAllDocs(): Future[DeleteResult] = collection.deleteMany(Filters.empty()).toFuture()
 
   def save(f: ReportingEntityData): Future[InsertOneResult] =
-    collection.insertOne(f.copy(creationDate = Some(LocalDate.now())).toDataModel).toFuture
+    collection.insertOne(f.copy(creationDate = Some(LocalDate.now())).toDataModel).toFuture()
 
   def update(p: ReportingEntityData): Future[Boolean] =
     collection
@@ -129,7 +129,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         )
       )
       .map(_.toPublicModel)
-      .headOption
+      .headOption()
 
   def query(d: String): Future[Seq[ReportingEntityData]] =
     collection
@@ -141,7 +141,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         )
       )
       .map(_.toPublicModel)
-      .toFuture
+      .toFuture()
 
   def queryCbcId(cbcId: CBCId, reportingPeriod: LocalDate): Future[Option[ReportingEntityData]] =
     collection
@@ -152,7 +152,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         )
       )
       .map(_.toPublicModel)
-      .headOption
+      .headOption()
 
   def queryTIN(tin: String, reportingPeriod: LocalDate): Future[Seq[ReportingEntityData]] =
     collection
@@ -163,7 +163,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         )
       )
       .map(_.toPublicModel)
-      .toFuture
+      .toFuture()
 
   def queryTINDatesOverlapping(tin: String, entityReportingPeriod: EntityReportingPeriod): Future[Boolean] =
     collection
@@ -199,7 +199,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         )
       )
       .map(_.toPublicModel)
-      .headOption
+      .headOption()
 
   def queryModel(d: DocRefId): Future[Option[ReportingEntityData]] =
     collection
@@ -211,7 +211,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         )
       )
       .map(_.toPublicModel)
-      .headOption
+      .headOption()
 
   private def buildModifier(p: PartialReportingEntityData, r: ReportingEntityDataModel): List[Bson] =
     List(
@@ -255,7 +255,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("cbcReportsDRI", d.id),
         set("creationDate", c.toString)
       )
-      .toFuture
+      .toFuture()
       .map(_.getModifiedCount)
 
   def updateEntityReportingPeriod(d: DocRefId, erp: EntityReportingPeriod): Future[Boolean] =
@@ -267,7 +267,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
           Codecs.toBson(erp)
         )
       )
-      .headOption
+      .headOption()
       .map(_.isDefined)
 
   def deleteCreationDate(d: DocRefId): Future[Long] =
@@ -276,7 +276,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("cbcReportsDRI", d.id),
         unset("creationDate")
       )
-      .toFuture
+      .toFuture()
       .map(_.getModifiedCount)
 
   def confirmCreationDate(d: DocRefId, c: LocalDate): Future[Long] =
@@ -287,7 +287,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
           equal("creationDate", c.toString)
         )
       )
-      .toFuture
+      .toFuture()
 
   def deleteReportingPeriod(d: DocRefId): Future[Long] =
     collection
@@ -295,7 +295,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("cbcReportsDRI", d.id),
         unset("reportingPeriod")
       )
-      .toFuture
+      .toFuture()
       .map(_.getModifiedCount)
 
   def deleteReportingPeriodByRepEntDocRefId(d: DocRefId): Future[Long] =
@@ -304,7 +304,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("reportingEntityDRI", d.id),
         unset("entityReportingPeriod")
       )
-      .toFuture
+      .toFuture()
       .map(_.getModifiedCount)
 
   def updateAdditionalInfoDRI(d: DocRefId): Future[Long] =
@@ -313,7 +313,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         equal("additionalInfoDRI", d.id),
         set("additionalInfoDRI", d.id)
       )
-      .toFuture
+      .toFuture()
       .map(_.getModifiedCount)
 
   def datesAreOverlapping(

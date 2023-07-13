@@ -60,9 +60,8 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
       case _ => response
     }
 
-  implicit val httpRds = new HttpReads[HttpResponse] {
-    def read(http: String, url: String, res: HttpResponse) = customDESRead(http, url, res)
-  }
+  implicit val httpRds: HttpReads[HttpResponse] = (http: String, url: String, res: HttpResponse) =>
+    customDESRead(http, url, res)
 
   val lookupData: JsObject = Json.obj(
     "regime"            -> "ITSA",
