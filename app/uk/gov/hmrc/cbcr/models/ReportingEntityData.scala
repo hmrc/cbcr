@@ -21,7 +21,6 @@ import cats.data.NonEmptyList
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-//import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
 object EntityReportingPeriod {
@@ -167,7 +166,6 @@ case class ReportingEntityDataModel(
 }
 
 object ReportingEntityDataModel {
-  //import FormatNotEmptyList.formatNEL
   import FormatEither.formatEither
   import FormatOption.formatOption
 
