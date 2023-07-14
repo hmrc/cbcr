@@ -20,7 +20,7 @@ import java.time.LocalDate
 import com.google.inject.Singleton
 
 import javax.inject.Inject
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, Json, OFormat}
 import play.api.mvc.ControllerComponents
 import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.models.{CBCId, DocRefId, DocRefIdRecord, DocRefIdResponses}
@@ -39,7 +39,7 @@ case class AdminReportingEntityData(
   reportingEntityDRI: DocRefId)
 
 object AdminReportingEntityData {
-  implicit val format = Json.format[AdminReportingEntityData]
+  implicit val format: OFormat[AdminReportingEntityData] = Json.format[AdminReportingEntityData]
 }
 
 @Singleton

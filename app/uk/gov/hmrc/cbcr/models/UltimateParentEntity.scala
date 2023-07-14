@@ -21,7 +21,7 @@ import play.api.libs.json._
 case class UltimateParentEntity(ultimateParentEntity: String)
 
 object UltimateParentEntity {
-  implicit val format = new Format[UltimateParentEntity] {
+  implicit val format: Format[UltimateParentEntity] = new Format[UltimateParentEntity] {
     override def reads(json: JsValue) =
       json
         .asOpt[String]

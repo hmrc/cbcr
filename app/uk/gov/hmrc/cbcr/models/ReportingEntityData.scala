@@ -21,10 +21,11 @@ import cats.data.NonEmptyList
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
-object EntityReportingPeriod { implicit val format = Json.format[EntityReportingPeriod] }
+object EntityReportingPeriod {
+  implicit val format: OFormat[EntityReportingPeriod] = Json.format[EntityReportingPeriod]
+}
 
 object FormatOption {
   implicit def formatOption[T: Format]: Format[Option[T]] = new Format[Option[T]] {
@@ -110,11 +111,11 @@ object ReportingEntityData {
       (JsPath \ "tin").read[String].map(_ => false)
   )(ReportingEntityData.apply _)
 
-  implicit val writes = Json.writes[ReportingEntityData]
+  implicit val writes: OWrites[ReportingEntityData] = Json.writes[ReportingEntityData]
 }
 
 case class DocRefIdPair(docRefId: DocRefId, corrDocRefId: Option[CorrDocRefId])
-object DocRefIdPair { implicit val format = Json.format[DocRefIdPair] }
+object DocRefIdPair { implicit val format: OFormat[DocRefIdPair] = Json.format[DocRefIdPair] }
 
 case class PartialReportingEntityData(
   cbcReportsDRI: List[DocRefIdPair],
@@ -129,7 +130,7 @@ case class PartialReportingEntityData(
   entityReportingPeriod: Option[EntityReportingPeriod])
 
 object PartialReportingEntityData {
-  implicit val format = Json.format[PartialReportingEntityData]
+  implicit val format: OFormat[PartialReportingEntityData] = Json.format[PartialReportingEntityData]
 }
 
 case class ReportingEntityDataModel(
@@ -165,7 +166,6 @@ case class ReportingEntityDataModel(
 }
 
 object ReportingEntityDataModel {
-  import FormatNotEmptyList.formatNEL
   import FormatEither.formatEither
   import FormatOption.formatOption
 

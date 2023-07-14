@@ -46,7 +46,7 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
                     s"FileUploadResponse Race Condition detected: response = ${response.status}; existing = ${existing.status}")
                   repo.save2(existing)
                 }
-                case _ => Future.successful()
+                case _ => Future.successful(())
               }
         } yield Ok
     }

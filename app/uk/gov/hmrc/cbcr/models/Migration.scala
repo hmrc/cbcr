@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class MigrationRequest(safeId: String, cBCId: String, correspondenceDetails: CorrespondenceDetails)
 
 object MigrationRequest {
-  implicit val migrationWriter = new Writes[MigrationRequest] {
+  implicit val migrationWriter: Writes[MigrationRequest] = new Writes[MigrationRequest] {
     override def writes(o: MigrationRequest) = Json.obj(
       "safeId"            -> o.safeId,
       "cbcRegNumber"      -> o.cBCId,

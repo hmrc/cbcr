@@ -40,14 +40,14 @@ class CBCId private (val value: String) {
 
 object CBCId extends Modulus23Check {
 
-  implicit val pathFormat = new PathBindable[CBCId] {
+  implicit val pathFormat: PathBindable[CBCId] = new PathBindable[CBCId] {
 
     override def bind(key: String, value: String): Either[String, CBCId] = CBCId(value).toRight("Invalid CBCId")
     override def unbind(key: String, value: CBCId): String = value.value
 
   }
 
-  implicit val cbcIdFormat = new Format[CBCId] {
+  implicit val cbcIdFormat: Format[CBCId] = new Format[CBCId] {
     override def writes(o: CBCId): JsValue = JsString(o.value)
 
     override def reads(json: JsValue): JsResult[CBCId] = json match {
@@ -72,7 +72,7 @@ object CBCId extends Modulus23Check {
     if (i > 999999 || i < 0) {
       Invalid(new IllegalArgumentException("CBCId ranges from 0-999999"))
     } else {
-      val sequenceNumber = i.formatted("%06d")
+      val sequenceNumber = f"$i%06d"
       val id = s"CBC0100$sequenceNumber"
       val checkChar = calculateCheckCharacter(id)
       CBCId(s"X$checkChar" + id).fold[Validated[Throwable, CBCId]](

@@ -28,7 +28,7 @@ case class EtmpAddress(
   countryCode: String)
 
 object EtmpAddress {
-  implicit val formats = Json.format[EtmpAddress]
+  implicit val formats: OFormat[EtmpAddress] = Json.format[EtmpAddress]
 
   val subscriptionFormat = new Format[EtmpAddress] {
     override def writes(o: EtmpAddress) = Json.obj(
@@ -56,11 +56,11 @@ object EtmpAddress {
 case class OrganisationResponse(organisationName: String)
 
 object OrganisationResponse {
-  implicit val formats = Json.format[OrganisationResponse]
+  implicit val formats: OFormat[OrganisationResponse] = Json.format[OrganisationResponse]
 }
 
 case class BusinessPartnerRecord(safeId: String, organisation: Option[OrganisationResponse], address: EtmpAddress)
 
 object BusinessPartnerRecord {
-  implicit val format = Json.format[BusinessPartnerRecord]
+  implicit val format: OFormat[BusinessPartnerRecord] = Json.format[BusinessPartnerRecord]
 }

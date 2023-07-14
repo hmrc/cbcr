@@ -39,12 +39,12 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: Contr
   private def isAgentOrOrganisation(group: AffinityGroup): Boolean =
     group.toString.contains("Agent") || group.toString.contains("Organisation")
 
-  def authCBCR(action: AuthAction[AnyContent]): Action[AnyContent] = Action.async { implicit request ⇒
+  def authCBCR(action: AuthAction[AnyContent]): Action[AnyContent] = Action.async { implicit request =>
     authCommon(action)
   }
 
   def authCBCRWithJson(action: AuthAction[JsValue], json: BodyParser[JsValue]): Action[JsValue] =
-    Action.async(json) { implicit request ⇒
+    Action.async(json) { implicit request =>
       authCommon(action)
     }
 
@@ -52,8 +52,8 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: Contr
     implicit val hc = HeaderCarrierConverter.fromRequest(request)
     authorised(AuthProvider)
       .retrieve(affinityGroup) {
-        case Some(affinityG) if isAgentOrOrganisation(affinityG) ⇒ action(request)
-        case _ => Future.successful(Unauthorized)
+        case Some(affinityG) if isAgentOrOrganisation(affinityG) => action(request)
+        case _                                                   => Future.successful(Unauthorized)
       }
       .recover[Result] {
         case e: NoActiveSession => Unauthorized(e.reason)

@@ -20,7 +20,7 @@ import play.api.libs.json._
 
 case class MessageRefId(id: String)
 object MessageRefId {
-  implicit val format = new OFormat[MessageRefId] {
+  implicit val format: OFormat[MessageRefId] = new OFormat[MessageRefId] {
     override def writes(o: MessageRefId): JsObject = Json.obj("messageRefId" -> o.id)
 
     override def reads(json: JsValue): JsResult[MessageRefId] = json match {
