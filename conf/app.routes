@@ -36,9 +36,3 @@ POST          /email                                                            
 
 
 GET           /getDocsRefId                                                                     uk.gov.hmrc.cbcr.services.AdminService.showAllDocRef
-GET           /admin/reporting-entity/doc-ref-id/$id<(.*)>                                      uk.gov.hmrc.cbcr.services.AdminService.adminDocRefIdquery(id:uk.gov.hmrc.cbcr.models.DocRefId)
-GET           /admin/reporting-entity/query-cbc-id/:cbcid/:reportingPeriod                      uk.gov.hmrc.cbcr.services.AdminService.adminQueryCbcId(cbcid:uk.gov.hmrc.cbcr.models.CBCId, reportingPeriod: String)
-GET           /admin/reporting-entity/query-tin/:tin/:reportingPeriod                           uk.gov.hmrc.cbcr.services.AdminService.adminQueryTin(tin: String, reportingPeriod: String)
-PUT           /admin/updateDocRefId/$id<(.*)>                                                   uk.gov.hmrc.cbcr.services.AdminService.editDocRefId(id:uk.gov.hmrc.cbcr.models.DocRefId)
-POST          /admin/updateReportingEntityDRI/$docRefId<(.*)>                                   uk.gov.hmrc.cbcr.services.AdminService.editReportingEntityData(docRefId: uk.gov.hmrc.cbcr.models.DocRefId)
-POST          /admin/saveDocRefId/$id<(.*)>                                                     uk.gov.hmrc.cbcr.services.AdminService.saveDocRefId(id: uk.gov.hmrc.cbcr.models.DocRefId)
