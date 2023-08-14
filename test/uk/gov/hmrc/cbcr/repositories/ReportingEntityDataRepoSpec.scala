@@ -24,7 +24,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -111,8 +110,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       EntityReportingPeriod(LocalDate.parse("2019-01-01"), LocalDate.parse("2019-12-01"))
     ))
 
-  val adminReportingEntityData = AdminReportingEntityData(List(docRefId), Some(List(docRefId)), docRefId)
-
   "Calls to delete a DocRefId" should {
     "should delete that docRefId" in {
 
@@ -163,16 +160,6 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
 
       val result = reportingEntityDataRepository.updateCreationDate(docRefId, updateForcreationDate)
       await(result) shouldBe 1L
-
-    }
-  }
-
-  "Calls to updateReportingEntityDRI" should {
-    "should update the reportingEntityDRI for the docRefId" in {
-
-      val result: Future[Boolean] =
-        reportingEntityDataRepository.updateReportingEntityDRI(adminReportingEntityData, docRefId)
-      await(result) shouldBe true
 
     }
   }

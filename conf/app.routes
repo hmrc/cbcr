@@ -32,7 +32,3 @@ GET           /reporting-entity/query-dates/:tin/start-date/:startDate/end-date/
 POST          /reporting-entity                                                                 uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.save
 PUT           /reporting-entity                                                                 uk.gov.hmrc.cbcr.controllers.ReportingEntityDataController.update
 POST          /email                                                                            uk.gov.hmrc.cbcr.controllers.CBCREmailController.sendEmail
-
-
-
-GET           /getDocsRefId                                                                     uk.gov.hmrc.cbcr.services.AdminService.showAllDocRef
