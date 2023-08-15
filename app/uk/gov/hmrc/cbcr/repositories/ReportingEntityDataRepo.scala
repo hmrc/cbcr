@@ -23,7 +23,6 @@ import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.AdminReportingEntityData
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
@@ -68,22 +67,6 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
       )
       .toFutureOption()
       .map(_.isDefined)
-
-  /**This is an admin endpoint**/
-  def updateReportingEntityDRI(admin: AdminReportingEntityData, docRefId: DocRefId): Future[Boolean] = {
-    import DocRefId.format
-    collection
-      .findOneAndUpdate(
-        equal("reportingEntityDRI", docRefId.id),
-        combine(
-          set("cbcReportsDRI", Codecs.toBson(admin.cbcReportsDRI)),
-          set("additionalInfoDRI", Codecs.toBson(admin.additionalInfoDRI)),
-          set("reportingEntityDRI", Codecs.toBson(admin.reportingEntityDRI)),
-        )
-      )
-      .toFutureOption()
-      .map(_.isDefined)
-  }
 
   def update(p: PartialReportingEntityData): Future[Boolean] =
     if (p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
