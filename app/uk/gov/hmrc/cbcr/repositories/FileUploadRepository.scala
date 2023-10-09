@@ -17,11 +17,9 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.Updates._
-import org.mongodb.scala.model.FindOneAndUpdateOptions
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
