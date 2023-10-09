@@ -17,11 +17,9 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.Updates._
-import org.mongodb.scala.model.FindOneAndUpdateOptions
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,21 +32,12 @@ class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: Exe
       domainFormat = FileUploadResponse.ufrFormat,
       indexes = Seq()) {
 
-  def save2(f: FileUploadResponse): Future[Option[FileUploadResponse]] =
-    collection
-      .findOneAndUpdate(
-        equal("envelopeId", f.envelopeId),
-        combine(
-          set("fileId", f.fileId),
-          set("status", f.status),
-          set("reason", Codecs.toBson(f.reason)),
-          setOnInsert("envelopeId", f.envelopeId)
-        ),
-        FindOneAndUpdateOptions().upsert(true)
-      )
-      .toFutureOption()
+  def save2(f: FileUploadResponse): Future[Unit] =
+    collection.insertOne(f).toFutureOption().map(_ => ())
 
   def get(envelopeId: String): Future[Option[FileUploadResponse]] =
-    collection.find(equal("envelopeId", envelopeId)).headOption()
+    for {
+      responses <- collection.find(equal("envelopeId", envelopeId)).toFuture()
+    } yield responses.findLast(_.status != "QUARANTINED").orElse(responses.lastOption)
 
 }

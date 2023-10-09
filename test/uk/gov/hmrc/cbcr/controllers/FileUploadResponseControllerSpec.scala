@@ -60,28 +60,6 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
       status(result) shouldBe Status.OK
     }
 
-    "protect the AVAILABLE status from being overridden" in {
-      val availableFur = fur.copy(status = "AVAILABLE")
-      val quarantinedFur = fur.copy(status = "QUARANTINED")
-      val argument: ArgumentCaptor[FileUploadResponse] = ArgumentCaptor.forClass(classOf[FileUploadResponse])
-      when(repo.save2(argument.capture())).thenReturn(Future.successful(Some(availableFur)))
-      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(quarantinedFur)))
-
-      status(result) shouldBe Status.OK
-      argument.getAllValues should contain theSameElementsInOrderAs List(quarantinedFur, availableFur)
-    }
-
-    "don't protect the AVAILABLE status from being overridden by DELETED" in {
-      val availableFur = fur.copy(status = "AVAILABLE")
-      val deletedFur = fur.copy(status = "DELETED")
-      val argument: ArgumentCaptor[FileUploadResponse] = ArgumentCaptor.forClass(classOf[FileUploadResponse])
-      when(repo.save2(argument.capture())).thenReturn(Future.successful(Some(availableFur)))
-      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(deletedFur)))
-
-      status(result) shouldBe Status.OK
-      argument.getAllValues should contain theSameElementsInOrderAs List(deletedFur)
-    }
-
     "respond with a 400 if FileUploadResponse in request is invalid" in {
       when(repo.save2(any(classOf[FileUploadResponse])))
         .thenReturn(Future.failed(new RuntimeException()))

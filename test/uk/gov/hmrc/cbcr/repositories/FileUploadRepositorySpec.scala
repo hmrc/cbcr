@@ -37,31 +37,33 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
   override def beforeEach(): Unit =
     await(fileUploadRepository.collection.drop().toFuture())
 
-  "saving a FileUploadResponse" should {
-    "return None (because the collection is empty)" in {
-      val result = await(fileUploadRepository.save2(fur))
-      result shouldEqual None
-    }
+  "saving & reading a FileUploadResponse" should {
     "insert the object into the repository" in {
       await(fileUploadRepository.save2(fur))
-      val inserted = await(fileUploadRepository.get(fur.envelopeId))
-      inserted shouldEqual Some(fur)
+      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur)
     }
-  }
+    "return the most recently inserted object" in {
+      await(fileUploadRepository.save2(fur))
+      await(fileUploadRepository.save2(fur.copy(status = "AVAILABLE")))
+      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "AVAILABLE"))
 
-  "saving an existing FileUploadResponse" should {
-    "return the original object" in {
-      await(fileUploadRepository.save2(fur))
-      val modified = fur.copy(status = "AVAILABLE")
-      val original = await(fileUploadRepository.save2(modified))
-      original shouldEqual Some(fur)
     }
-    "override the object" in {
-      await(fileUploadRepository.save2(fur))
-      val modified = fur.copy(status = "AVAILABLE")
-      await(fileUploadRepository.save2(modified))
-      val inserted = await(fileUploadRepository.get(fur.envelopeId))
-      inserted shouldEqual Some(modified)
+    "ignore QUARANTINED when it arrives after available" in {
+      await(fileUploadRepository.save2(fur.copy(status = "AVAILABLE")))
+      await(fileUploadRepository.save2(fur.copy(status = "QUARANTINED")))
+      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "AVAILABLE"))
+    }
+    "return QUARANTINED if we only inserted quarantined" in {
+      await(fileUploadRepository.save2(fur.copy(status = "QUARANTINED")))
+      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "QUARANTINED"))
+    }
+    "return QUARANTINED if we only inserted quarantined twice" in {
+      await(fileUploadRepository.save2(fur.copy(status = "QUARANTINED")))
+      await(fileUploadRepository.save2(fur.copy(status = "QUARANTINED")))
+      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "QUARANTINED"))
+    }
+    "return empty if nothing was inserted" in {
+      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual None
     }
   }
 

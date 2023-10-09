@@ -36,19 +36,8 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
 
   def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
     request.body.validate[FileUploadResponse].asEither match {
-      case Left(error) => Future.successful(BadRequest(JsError.toJson(error)))
-      case Right(response) =>
-        for {
-          before <- repo.save2(response)
-          _ <- before match {
-                case Some(existing) if existing.status == "AVAILABLE" && response.status != "DELETED" => {
-                  logger.info(
-                    s"FileUploadResponse Race Condition detected: response = ${response.status}; existing = ${existing.status}")
-                  repo.save2(existing)
-                }
-                case _ => Future.successful(())
-              }
-        } yield Ok
+      case Left(error)     => Future.successful(BadRequest(JsError.toJson(error)))
+      case Right(response) => repo.save2(response).map(_ => Ok)
     }
   }
 
