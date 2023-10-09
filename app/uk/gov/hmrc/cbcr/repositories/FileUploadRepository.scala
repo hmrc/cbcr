@@ -34,21 +34,12 @@ class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: Exe
       domainFormat = FileUploadResponse.ufrFormat,
       indexes = Seq()) {
 
-  def save2(f: FileUploadResponse): Future[Option[FileUploadResponse]] =
-    collection
-      .findOneAndUpdate(
-        equal("envelopeId", f.envelopeId),
-        combine(
-          set("fileId", f.fileId),
-          set("status", f.status),
-          set("reason", Codecs.toBson(f.reason)),
-          setOnInsert("envelopeId", f.envelopeId)
-        ),
-        FindOneAndUpdateOptions().upsert(true)
-      )
-      .toFutureOption()
+  def save2(f: FileUploadResponse): Future[Unit] =
+    collection.insertOne(f).toFutureOption().map(_ => ())
 
   def get(envelopeId: String): Future[Option[FileUploadResponse]] =
-    collection.find(equal("envelopeId", envelopeId)).headOption()
+    for {
+      responses <- collection.find(equal("envelopeId", envelopeId)).toFuture()
+    } yield responses.findLast(_.status != "QUARANTINED").orElse(responses.lastOption)
 
 }
