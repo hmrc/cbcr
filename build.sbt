@@ -9,8 +9,6 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "cbcr"
 
-lazy val plugins : Seq[Plugins] = Seq.empty
-
 lazy val excludedPackages = Seq(
   "<empty>",
   "Reverse*",
@@ -50,7 +48,7 @@ lazy val scoverageSettings = {
 }
 
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins : _*)
+  .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .settings(scoverageSettings : _*)
   .settings(onLoadMessage := "")
   .settings(scalaSettings: _*)
