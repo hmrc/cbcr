@@ -32,13 +32,12 @@ import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 class EmailService @Inject()(
   emailConnector: EmailConnectorImpl,
   auditConnector: AuditConnector,
-  configuration: Configuration,
-  runMode: RunMode)(implicit val ec: ExecutionContext) {
+  configuration: Configuration)(implicit val ec: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
   private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
-    configuration.getOptional[String](s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
+    configuration.getOptional[String]("Prod.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
 
   def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[Result] =
     emailConnector

@@ -38,10 +38,9 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
   val mockEmailConnector = mock[EmailConnectorImpl]
   val mockAuditConnector = mock[AuditConnector]
-  val runMode = mock[RunMode]
   val config = app.injector.instanceOf[Configuration]
 
-  val emailService = new EmailService(mockEmailConnector, mockAuditConnector, config, runMode)
+  val emailService = new EmailService(mockEmailConnector, mockAuditConnector, config)
   val paramsSub = Map("f_name" → "Tyrion", "s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
   val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
   implicit val hc = HeaderCarrier()
@@ -51,7 +50,6 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(202, "202"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
-      when(runMode.env) thenReturn "Dev"
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe Accepted
     }
@@ -60,7 +58,6 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
-      when(runMode.env) thenReturn "Dev"
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe BadRequest
@@ -71,7 +68,6 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         Failure("test to designed to provoke an emotional response", None))
-      when(runMode.env) thenReturn "Dev"
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe BadRequest
@@ -81,7 +77,6 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Disabled)
-      when(runMode.env) thenReturn "Dev"
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe BadRequest

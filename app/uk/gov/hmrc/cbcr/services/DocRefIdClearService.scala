@@ -36,7 +36,6 @@ class DocRefIdClearService @Inject()(
   docRefIdRepo: DocRefIdRepository,
   reportingEntityDataRepo: ReportingEntityDataRepo,
   configuration: Configuration,
-  runMode: RunMode,
   audit: AuditConnector)(implicit ec: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
@@ -44,7 +43,7 @@ class DocRefIdClearService @Inject()(
   private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
 
   val docRefIds: List[DocRefId] = configuration.underlying
-    .get[String](s"${runMode.env}.DocRefId.clear")
+    .get[String]("Prod.DocRefId.clear")
     .valueOr(_ => "")
     .split("_")
     .toList

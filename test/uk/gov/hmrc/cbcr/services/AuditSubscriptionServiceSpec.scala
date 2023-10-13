@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.services
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, when, _}
+import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
@@ -35,15 +35,14 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
   val config = app.injector.instanceOf[Configuration]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
 
-  val runMode = mock[RunMode]
   val subscriptionDataRepo = mock[SubscriptionDataRepository]
   val mockAudit = mock[AuditConnector]
 
   val cbcId = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
   val cbcId2 = CBCId.create(2).getOrElse(fail("Couldn't generate cbcid"))
   val utr = Utr("7000000002")
-  val testConfig = Configuration("Dev.audit.subscriptions" -> true)
-  val cbcIdConfig = Configuration("Dev.audit.cbcIds"       -> s"${cbcId.toString}_${cbcId2.toString}")
+  val testConfig = Configuration("Prod.audit.subscriptions" -> true)
+  val cbcIdConfig = Configuration("Prod.audit.cbcIds"       -> s"${cbcId.toString}_${cbcId2.toString}")
   val subscriberContact =
     SubscriberContact(None, "firstName", "lastName", PhoneNumber("07777888899").get, EmailAddress("bob@bob.com"))
   val address = EtmpAddress("address1", Some("address2"), Some("address3"), Some("address4"), Some("PO1 1OP"), "UK")
@@ -58,7 +57,6 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
     Some(cbcId2),
     utr)
 
-  when(runMode.env) thenReturn "Dev"
   when(subscriptionDataRepo.getSubscriptions(any())) thenReturn Future.successful(
     Seq(subscriptionDetails, subscriptionDetails2))
   when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
@@ -66,7 +64,6 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
   new AuditSubscriptionService(
     subscriptionDataRepo,
     config.withFallback(testConfig).withFallback(cbcIdConfig),
-    runMode,
     mockAudit)
   "Calls to getSubscriptios" should {
     "complete and call audit for each subcription returned " in {
@@ -82,7 +79,6 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
       new AuditSubscriptionService(
         subscriptionDataRepo,
         config.withFallback(testConfig).withFallback(cbcIdConfig),
-        runMode,
         mockAudit)
       verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
@@ -95,7 +91,6 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
       new AuditSubscriptionService(
         subscriptionDataRepo,
         config.withFallback(testConfig).withFallback(cbcIdConfig),
-        runMode,
         mockAudit)
       verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }
@@ -108,7 +103,6 @@ class AuditSubscriptionServiceSpec extends UnitSpec with MockAuth with GuiceOneA
       new AuditSubscriptionService(
         subscriptionDataRepo,
         config.withFallback(testConfig).withFallback(cbcIdConfig),
-        runMode,
         mockAudit)
       verify(mockAudit, times(1)).sendExtendedEvent(any())(any(), any())
     }

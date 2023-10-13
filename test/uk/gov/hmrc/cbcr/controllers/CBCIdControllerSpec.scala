@@ -28,7 +28,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, RunMode, SubscriptionHandlerImpl}
+import uk.gov.hmrc.cbcr.services.{LocalSubscription, RemoteSubscription, SubscriptionHandlerImpl}
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,8 +40,6 @@ class CBCIdControllerSpec
 
   val localGen = mock[LocalSubscription]
   val remoteGen = mock[RemoteSubscription]
-  var runMode = mock[RunMode]
-  when(runMode.env) thenReturn "Dev"
 
   implicit val as = app.injector.instanceOf[ActorSystem]
   val config = app.injector.instanceOf[Configuration]
@@ -73,10 +71,9 @@ class CBCIdControllerSpec
     "query the localCBCId generator when useDESApi is set to false" in {
 
       val handler = new SubscriptionHandlerImpl(
-        config.withFallback(Configuration("Dev.CBCId.useDESApi" -> false)),
+        config.withFallback(Configuration("Prod.CBCId.useDESApi" -> false)),
         localGen,
-        remoteGen,
-        runMode)
+        remoteGen)
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(localGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
@@ -87,10 +84,9 @@ class CBCIdControllerSpec
 
     "query the remoteCBCId generator when useDESApi is set to true" in {
       val handler = new SubscriptionHandlerImpl(
-        Configuration("Dev.CBCId.useDESApi" -> true).withFallback(config),
+        Configuration("Prod.CBCId.useDESApi" -> true).withFallback(config),
         localGen,
-        remoteGen,
-        runMode)
+        remoteGen)
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(remoteGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
@@ -102,10 +98,9 @@ class CBCIdControllerSpec
     "generate bad request response if request doesn't contain valid subscriptionDetails" in {
 
       val handler = new SubscriptionHandlerImpl(
-        Configuration("Dev.CBCId.useDESApi" -> false).withFallback(config),
+        Configuration("Prod.CBCId.useDESApi" -> false).withFallback(config),
         localGen,
-        remoteGen,
-        runMode)
+        remoteGen)
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.obj("bad" -> "request"))
       val response = controller.subscribe()(fakeRequestSubscribe)
@@ -115,10 +110,9 @@ class CBCIdControllerSpec
     "return 200 when updateSubscription passed valid CorrespondenceDetails in request" in {
 
       val handler = new SubscriptionHandlerImpl(
-        Configuration("Dev.CBCId.useDESApi" -> true).withFallback(config),
+        Configuration("Prod.CBCId.useDESApi" -> true).withFallback(config),
         localGen,
-        remoteGen,
-        runMode)
+        remoteGen)
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(crb))
       when(remoteGen.updateSubscription(any(), any())(any())) thenReturn Future.successful(
@@ -130,10 +124,9 @@ class CBCIdControllerSpec
     "return 400 when updateSubscription passed invalid CorrespondenceDetails in request" in {
 
       val handler = new SubscriptionHandlerImpl(
-        config.withFallback(Configuration("Dev.CBCId.useDESApi" -> true)),
+        config.withFallback(Configuration("Prod.CBCId.useDESApi" -> true)),
         localGen,
-        remoteGen,
-        runMode)
+        remoteGen)
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.obj("bad" -> "request"))
       val response = controller.updateSubscription("safeId")(fakeRequestSubscribe)
@@ -143,10 +136,9 @@ class CBCIdControllerSpec
     "no error generated when getSubscription called" in {
 
       val handler = new SubscriptionHandlerImpl(
-        config.withFallback(Configuration("Dev.CBCId.useDESApi" -> false)),
+        config.withFallback(Configuration("Prod.CBCId.useDESApi" -> false)),
         localGen,
-        remoteGen,
-        runMode)
+        remoteGen)
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("GET", "/cbc-id")
       when(localGen.getSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("some" -> "thing")))

@@ -20,9 +20,8 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
-import uk.gov.hmrc.cbcr.models.{DocRefIdResponses, _}
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
-import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -33,7 +32,6 @@ class DocRefIdController @Inject()(
   repo: DocRefIdRepository,
   config: Configuration,
   auth: CBCRAuth,
-  runMode: RunMode,
   cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
@@ -68,7 +66,7 @@ class DocRefIdController @Inject()(
   }
 
   def deleteDocRefId(docRefId: DocRefId) = Action.async { _ =>
-    if (config.underlying.getBoolean(s"${runMode.env}.CBCId.enableTestApis")) {
+    if (config.underlying.getBoolean("Prod.CBCId.enableTestApis")) {
       repo
         .delete(docRefId)
         .map(w => if (w.getDeletedCount == 0) NotFound else Ok)

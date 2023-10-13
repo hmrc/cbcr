@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import javax.inject.{Inject, Singleton}
-
-import play.api.{Configuration, Logger}
-import play.api.mvc.Result
-import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
-
-import scala.concurrent.Future
 import configs.syntax._
+import play.api.mvc.Result
+import play.api.{Configuration, Logger}
+import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http.HeaderCarrier
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.Future
 
 trait SubscriptionHandler {
 
@@ -38,13 +37,12 @@ trait SubscriptionHandler {
 class SubscriptionHandlerImpl @Inject()(
   configuration: Configuration,
   localCBCIdGenerator: LocalSubscription,
-  remoteCBCIdGenerator: RemoteSubscription,
-  runMode: RunMode)
+  remoteCBCIdGenerator: RemoteSubscription)
     extends SubscriptionHandler {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  val useDESApi: Boolean = configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.useDESApi").valueOr(_ => false)
+  val useDESApi: Boolean = configuration.underlying.get[Boolean]("Prod.CBCId.useDESApi").valueOr(_ => false)
   logger.info(s"useDESApi set to: $useDESApi")
 
   val handler: SubscriptionHandler = if (useDESApi) remoteCBCIdGenerator else localCBCIdGenerator

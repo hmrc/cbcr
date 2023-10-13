@@ -25,7 +25,6 @@ import uk.gov.hmrc.play.audit.model.Audit
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import uk.gov.hmrc.http._
 import configs.syntax._
-import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -36,7 +35,6 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   implicit val ec: ExecutionContext
   implicit val configuration: Configuration
-  implicit val runMode: RunMode
 
   def serviceUrl: String
 
@@ -70,10 +68,10 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   )
 
   val stubMigration: Boolean =
-    configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.stubMigration").valueOr(_ => false)
+    configuration.underlying.get[Boolean]("Prod.CBCId.stubMigration").valueOr(_ => false)
 
   val delayMigration: Int = 1000 * configuration.underlying
-    .get[Int](s"${runMode.env}.CBCId.delayMigration")
+    .get[Int]("Prod.CBCId.delayMigration")
     .valueOr(_ => 60)
 
   private def createHeaderCarrier: HeaderCarrier = HeaderCarrier()
@@ -153,7 +151,6 @@ class DESConnectorImpl @Inject()(
   val ec: ExecutionContext,
   val auditConnector: AuditConnector,
   val configuration: Configuration,
-  val runMode: RunMode,
   val httpClient: HttpClient,
   val servicesConfig: ServicesConfig)
     extends DESConnector {

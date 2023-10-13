@@ -33,19 +33,18 @@ import scala.util.{Failure, Success}
 class AuditSubscriptionService @Inject()(
   repo: SubscriptionDataRepository,
   configuration: Configuration,
-  runMode: RunMode,
   audit: AuditConnector)(implicit ex: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  val auditSubscriptions: Boolean =
-    configuration.getOptional[Boolean](s"${runMode.env}.audit.subscriptions").getOrElse(false)
+  private val auditSubscriptions: Boolean =
+    configuration.getOptional[Boolean]("Prod.audit.subscriptions").getOrElse(false)
   logger.info(s"auditSubscriptions set to: $auditSubscriptions")
 
   if (auditSubscriptions) {
     val cbcIds: List[CBCId] =
       configuration
-        .getOptional[String](s"${runMode.env}.audit.cbcIds")
+        .getOptional[String]("Prod.audit.cbcIds")
         .getOrElse("")
         .split("_")
         .toList
