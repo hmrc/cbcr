@@ -19,6 +19,7 @@ package uk.gov.hmrc.cbcr.services
 import configs.syntax._
 import play.api.mvc.Result
 import play.api.{Configuration, Logger}
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -35,14 +36,14 @@ trait SubscriptionHandler {
 
 @Singleton
 class SubscriptionHandlerImpl @Inject()(
-  configuration: Configuration,
+  configuration: ApplicationConfig,
   localCBCIdGenerator: LocalSubscription,
   remoteCBCIdGenerator: RemoteSubscription)
     extends SubscriptionHandler {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  val useDESApi: Boolean = configuration.underlying.get[Boolean]("Prod.CBCId.useDESApi").valueOr(_ => false)
+  val useDESApi: Boolean = configuration.useDESApi
   logger.info(s"useDESApi set to: $useDESApi")
 
   val handler: SubscriptionHandler = if (useDESApi) remoteCBCIdGenerator else localCBCIdGenerator

@@ -19,9 +19,9 @@ package uk.gov.hmrc.cbcr.services
 import javax.inject.{Inject, Singleton}
 import cats.instances.all._
 import cats.syntax.all._
-import configs.syntax._
 import play.api.libs.json.Json
-import play.api.{Configuration, Logger}
+import play.api.Logger
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.DocRefId
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
@@ -35,19 +35,14 @@ import scala.util.chaining.scalaUtilChainingOps
 class DocRefIdClearService @Inject()(
   docRefIdRepo: DocRefIdRepository,
   reportingEntityDataRepo: ReportingEntityDataRepo,
-  configuration: Configuration,
+  configuration: ApplicationConfig,
   audit: AuditConnector)(implicit ec: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
   private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
 
-  val docRefIds: List[DocRefId] = configuration.underlying
-    .get[String]("Prod.DocRefId.clear")
-    .valueOr(_ => "")
-    .split("_")
-    .toList
-    .map(DocRefId.apply)
+  val docRefIds: List[DocRefId] = configuration.docRefIdsToClear.split("_").toList.map(DocRefId.apply)
 
   if (docRefIds.nonEmpty) {
     logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")

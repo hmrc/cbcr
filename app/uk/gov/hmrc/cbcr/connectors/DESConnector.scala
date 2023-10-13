@@ -18,13 +18,14 @@ package uk.gov.hmrc.cbcr.connectors
 
 import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
-import play.api.{Configuration, Logger}
+import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, MigrationRequest, SubscriptionRequest}
 import uk.gov.hmrc.play.audit.model.Audit
+
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import uk.gov.hmrc.http._
-import configs.syntax._
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -34,7 +35,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   lazy val logger: Logger = Logger(this.getClass)
 
   implicit val ec: ExecutionContext
-  implicit val configuration: Configuration
+  implicit val configuration: ApplicationConfig
 
   def serviceUrl: String
 
@@ -67,12 +68,8 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     "isAnAgent"         -> false
   )
 
-  val stubMigration: Boolean =
-    configuration.underlying.get[Boolean]("Prod.CBCId.stubMigration").valueOr(_ => false)
-
-  val delayMigration: Int = 1000 * configuration.underlying
-    .get[Int]("Prod.CBCId.delayMigration")
-    .valueOr(_ => 60)
+  val stubMigration: Boolean = configuration.stubMigration
+  val delayMigration: Int = 1000 * configuration.delayMigration
 
   private def createHeaderCarrier: HeaderCarrier = HeaderCarrier()
 
@@ -150,16 +147,14 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 class DESConnectorImpl @Inject()(
   val ec: ExecutionContext,
   val auditConnector: AuditConnector,
-  val configuration: Configuration,
-  val httpClient: HttpClient,
-  val servicesConfig: ServicesConfig)
+  val configuration: ApplicationConfig,
+  val httpClient: HttpClient)
     extends DESConnector {
-  lazy val serviceUrl: String = servicesConfig.baseUrl("etmp-hod")
+  lazy val serviceUrl: String = configuration.etmpHod
   lazy val orgLookupURI: String = "registration/organisation"
   lazy val cbcSubscribeURI: String = "country-by-country/subscription"
-  lazy val urlHeaderEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
-  lazy val urlHeaderAuthorization: String =
-    s"Bearer ${servicesConfig.getConfString("etmp-hod.authorization-token", "")}"
+  lazy val urlHeaderEnvironment: String = configuration.etmpHodEnvironment
+  lazy val urlHeaderAuthorization: String = s"Bearer ${configuration.etmpHodAuthorizationToken}"
   val audit = new Audit("known-fact-checking", auditConnector)
   val http = httpClient
 }

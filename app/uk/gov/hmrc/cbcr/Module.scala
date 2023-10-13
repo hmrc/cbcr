@@ -24,6 +24,7 @@ import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
@@ -32,9 +33,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  val graphiteConfig: Configuration = configuration
-    .getOptional[Configuration]("microservice.metrics.graphite")
-    .getOrElse(throw new Exception("No configuration for microservice.metrics.graphite found"))
+  val graphiteConfig: Configuration = configuration.load[Configuration]("microservice.metrics.graphite")
 
   val metricsPluginEnabled: Boolean = configuration.getOptional[Boolean]("metrics.enabled").getOrElse(false)
 

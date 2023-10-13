@@ -19,8 +19,9 @@ package uk.gov.hmrc.cbcr.services
 import org.mongodb.scala.model.Filters
 
 import javax.inject.Inject
-import play.api.{Configuration, Logger}
+import play.api.Logger
 import play.api.libs.json.{JsString, Json}
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.{CBCId, SubscriptionDetails}
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
@@ -32,23 +33,12 @@ import scala.util.{Failure, Success}
 
 class AuditSubscriptionService @Inject()(
   repo: SubscriptionDataRepository,
-  configuration: Configuration,
+  configuration: ApplicationConfig,
   audit: AuditConnector)(implicit ex: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
-
-  private val auditSubscriptions: Boolean =
-    configuration.getOptional[Boolean]("Prod.audit.subscriptions").getOrElse(false)
-  logger.info(s"auditSubscriptions set to: $auditSubscriptions")
-
-  if (auditSubscriptions) {
-    val cbcIds: List[CBCId] =
-      configuration
-        .getOptional[String]("Prod.audit.cbcIds")
-        .getOrElse("")
-        .split("_")
-        .toList
-        .flatMap(CBCId.apply)
+  if (configuration.auditSubscriptions) {
+    val cbcIds: List[CBCId] = configuration.auditCbcIds.split("_").toList.flatMap(CBCId.apply)
 
     Await.result(
       repo

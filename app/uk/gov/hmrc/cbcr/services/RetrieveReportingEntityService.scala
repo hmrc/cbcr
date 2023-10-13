@@ -20,20 +20,17 @@ import javax.inject.Inject
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import play.api.{Configuration, Logger}
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
+
 import scala.concurrent.ExecutionContext
 
-class RetrieveReportingEntityService @Inject()(repo: ReportingEntityDataRepo, configuration: Configuration)(
+class RetrieveReportingEntityService @Inject()(repo: ReportingEntityDataRepo, configuration: ApplicationConfig)(
   implicit ex: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  val retrieveReportingEntity: Boolean =
-    configuration.getOptional[Boolean]("Prod.retrieve.ReportingEntity").getOrElse(false)
-
-  logger.info(s"retrieveReportingEntity set to: $retrieveReportingEntity")
-
-  if (retrieveReportingEntity) {
-    val docRefId: String = configuration.getOptional[String]("Prod.retrieve.docRefId").getOrElse("")
+  if (configuration.retrieveReportingEntity) {
+    val docRefId: String = configuration.retrieveDocRefId
     logger.info(s"docRefId to retireve = $docRefId")
 
     repo
