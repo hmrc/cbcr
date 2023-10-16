@@ -38,8 +38,6 @@ class EmailService @Inject()(
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY = configuration.emailAlertLogString
-
   def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[Result] =
     emailConnector
       .sendEmail(email)
@@ -54,7 +52,7 @@ class EmailService @Inject()(
       })
       .recover {
         case _ =>
-          logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
+          logger.error("Failed to send e-mail")
           audit(email, CBCREmailFailure)
           BadRequest
       }
