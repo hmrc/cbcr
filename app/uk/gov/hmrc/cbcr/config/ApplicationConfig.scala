@@ -1,6 +1,7 @@
 package uk.gov.hmrc.cbcr.config
 
 import play.api.{ConfigLoader, Configuration, PlayException}
+import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
@@ -17,8 +18,6 @@ object ConfigurationOps {
 @Singleton
 class ApplicationConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig) {
   import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
-  val stubMigration: Boolean = configuration.getOptional[Boolean]("Prod.CBCId.stubMigration").getOrElse(false)
-  val delayMigration: Int = 1000 * configuration.getOptional[Int]("Prod.CBCId.delayMigration").getOrElse(60)
   val etmpHod: String = servicesConfig.baseUrl("etmp-hod")
   val etmpHodEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
   val etmpHodAuthorizationToken: String = servicesConfig.getConfString("etmp-hod.authorization-token", "")

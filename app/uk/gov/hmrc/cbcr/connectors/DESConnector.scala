@@ -16,18 +16,17 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
 import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
-import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, MigrationRequest, SubscriptionRequest}
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
+import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.Audit
 
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import uk.gov.hmrc.http._
-import uk.gov.hmrc.cbcr.config.ApplicationConfig
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DESConnectorImpl])
 trait DESConnector extends RawResponseReads with HttpErrorFunctions {
@@ -68,9 +67,6 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     "isAnAgent"         -> false
   )
 
-  val stubMigration: Boolean = configuration.stubMigration
-  val delayMigration: Int = 1000 * configuration.delayMigration
-
   private def createHeaderCarrier: HeaderCarrier = HeaderCarrier()
 
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
@@ -92,36 +88,6 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders).recover {
       case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
     }
-  }
-
-  def createMigration(mig: MigrationRequest): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
-    implicit val writes = MigrationRequest.migrationWriter
-    logger.info(s"Migration Request sent to DES")
-
-    logger.warn(s"stubMigration set to: $stubMigration")
-    val res = Promise[HttpResponse]()
-    Future {
-      if (!stubMigration) {
-        logger.info("calling ETMP for migration")
-        Thread.sleep(delayMigration)
-        http
-          .POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig, desHeaders)
-          .recover {
-            case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
-          }
-          .map(r => {
-            logger.info(s"Migration Status for safeId: ${mig.safeId} and cBCId: ${mig.cBCId} ${r.status}")
-            res.success(r)
-          })
-      } else {
-        logger.info("in migration stub")
-
-        Thread.sleep(delayMigration)
-        res.success(HttpResponse(status = 200, body = s"migrated ${mig.cBCId}"))
-      }
-    }
-    res.future
   }
 
   def updateSubscription(safeId: String, cor: CorrespondenceDetails): Future[HttpResponse] = {
