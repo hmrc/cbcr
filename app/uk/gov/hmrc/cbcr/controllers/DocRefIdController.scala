@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import javax.inject.{Inject, Singleton}
-import play.api.Configuration
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
@@ -25,14 +23,12 @@ import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import scala.concurrent.{ExecutionContext, Future}
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
 
 @Singleton
-class DocRefIdController @Inject()(
-  repo: DocRefIdRepository,
-  config: Configuration,
-  auth: CBCRAuth,
-  cc: ControllerComponents)(implicit ec: ExecutionContext)
+class DocRefIdController @Inject()(repo: DocRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def query(docRefId: DocRefId) = auth.authCBCR { _ =>
@@ -64,15 +60,4 @@ class DocRefIdController @Inject()(
 
     }
   }
-
-  def deleteDocRefId(docRefId: DocRefId) = Action.async { _ =>
-    if (config.underlying.getBoolean("Prod.CBCId.enableTestApis")) {
-      repo
-        .delete(docRefId)
-        .map(w => if (w.getDeletedCount == 0) NotFound else Ok)
-    } else {
-      Future.successful(NotImplemented)
-    }
-  }
-
 }
