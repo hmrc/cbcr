@@ -16,20 +16,11 @@
 
 package uk.gov.hmrc.cbcr.config
 
-import play.api.{ConfigLoader, Configuration, PlayException}
+import play.api.Configuration
 import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import javax.inject.{Inject, Singleton}
-
-object ConfigurationOps {
-  implicit class ConfigurationOps(self: Configuration) {
-    def load[A](path: String)(implicit loader: ConfigLoader[A]): A =
-      self
-        .getOptional[A](path)
-        .getOrElse(throw new PlayException("Configuration error", s"Missing configuration key: $path", null))
-  }
-}
 
 @Singleton
 class ApplicationConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig) {
