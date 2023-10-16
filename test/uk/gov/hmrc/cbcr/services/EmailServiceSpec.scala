@@ -41,7 +41,7 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
   val config = app.injector.instanceOf[Configuration]
 
   val emailService = new EmailService(mockEmailConnector, mockAuditConnector, config)
-  val paramsSub = Map("f_name" → "Tyrion", "s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
+  val paramsSub = Map("f_name" -> "Tyrion", "s_name" -> "Lannister", "cbcrId" -> "XGCBC0000000001")
   val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
   implicit val hc = HeaderCarrier()
 
