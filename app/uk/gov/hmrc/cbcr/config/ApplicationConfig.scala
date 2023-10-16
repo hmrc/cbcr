@@ -21,7 +21,7 @@ class ApplicationConfig @Inject()(configuration: Configuration, servicesConfig: 
   val etmpHod: String = servicesConfig.baseUrl("etmp-hod")
   val etmpHodEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
   val etmpHodAuthorizationToken: String = servicesConfig.getConfString("etmp-hod.authorization-token", "")
-  val useDESApi: Boolean = configuration.getOptional[Boolean]("Prod.CBCId.useDESApi").getOrElse(false)
+  val useDESApi: Boolean = configuration.load[Boolean]("Prod.CBCId.useDESApi")
   val docRefIdsToClear: String = configuration.getOptional[String]("Prod.DocRefId.clear").getOrElse("")
   val retrieveReportingEntity: Boolean =
     configuration.getOptional[Boolean]("Prod.retrieve.ReportingEntity").getOrElse(false)
