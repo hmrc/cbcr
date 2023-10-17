@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.cbcr
 
-import java.net.InetSocketAddress
-import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
 import com.codahale.metrics.graphite.{Graphite, GraphiteReporter}
 import com.codahale.metrics.{MetricFilter, SharedMetricRegistries}
 import com.google.inject.AbstractModule
@@ -29,29 +27,30 @@ import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
+import java.net.InetSocketAddress
+import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
+
 class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
   lazy val logger: Logger = Logger(this.getClass)
 
   val graphiteConfig: Configuration = configuration.load[Configuration]("microservice.metrics.graphite")
 
-  val metricsPluginEnabled: Boolean = configuration.getOptional[Boolean]("metrics.enabled").getOrElse(false)
+  val metricsPluginEnabled: Boolean = configuration.load[Boolean]("metrics.enabled")
 
-  val graphitePublisherEnabled: Boolean = graphiteConfig.getOptional[Boolean]("enabled").getOrElse(false)
+  val graphitePublisherEnabled: Boolean = graphiteConfig.load[Boolean]("enabled")
 
   val graphiteEnabled: Boolean = metricsPluginEnabled && graphitePublisherEnabled
 
-  val registryName: String = configuration.getOptional[String]("metrics.name").getOrElse("default")
+  val registryName: String = configuration.load[String]("metrics.name")
 
   private def startGraphite(): Unit = {
     logger.info("Graphite metrics enabled, starting the reporter")
 
     val graphite = new Graphite(
-      new InetSocketAddress(
-        graphiteConfig.getOptional[String]("host").getOrElse("graphite"),
-        graphiteConfig.getOptional[Int]("port").getOrElse(2003)))
+      new InetSocketAddress(graphiteConfig.load[String]("host"), graphiteConfig.load[Int]("port")))
 
-    val prefix = graphiteConfig.getOptional[String]("prefix").getOrElse("play.cbcr")
+    val prefix = graphiteConfig.load[String]("prefix")
 
     val reporter = GraphiteReporter
       .forRegistry(SharedMetricRegistries.getOrCreate(registryName))
@@ -61,7 +60,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
       .filter(MetricFilter.ALL)
       .build(graphite)
 
-    reporter.start(graphiteConfig.getOptional[Long]("interval").getOrElse(10L), SECONDS)
+    reporter.start(graphiteConfig.load[Long]("interval"), SECONDS)
   }
 
   override def configure(): Unit = {
