@@ -67,13 +67,11 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   override def configure(): Unit = {
     logger.info(s"CONFIGURE RUNNING - graphiteEnabled: $graphiteEnabled")
     lazy val appName = configuration.getOptional[String]("appName").get
-    lazy val loggerDateFormat: Option[String] = configuration.getOptional[String]("logger.json.dateformat")
 
     if (graphiteEnabled) startGraphite()
 
     bind(classOf[HttpClient]).to(classOf[DefaultHttpClient])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
     MDC.put("appName", appName)
-    loggerDateFormat.foreach(str => MDC.put("logger.json.dateformat", str))
   }
 }
