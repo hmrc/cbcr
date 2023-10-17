@@ -46,7 +46,7 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
 
   val repo = mock[DocRefIdRepository]
 
-  val controller = new DocRefIdController(repo, config, cBCRAuth, cc)
+  val controller = new DocRefIdController(repo, cBCRAuth, cc)
 
   "The DocRefIdController" should {
     "be able to save a DocRefID and" should {
@@ -128,39 +128,6 @@ class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with Scal
           fakePutRequest.withJsonBody(JsString("DocRefid")))
         status(result) shouldBe Status.INTERNAL_SERVER_ERROR
       }
-    }
-    "be able to delete a DocRefId" when {
-      val controller =
-        new DocRefIdController(
-          repo,
-          Configuration("Prod.CBCId.enableTestApis" -> true).withFallback(config),
-          cBCRAuth,
-          cc)
-
-      "it exists and return a 200" in {
-        when(repo.delete(any()))
-          .thenReturn(Future.successful(DeleteResult.acknowledged(1L)))
-        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
-        status(result) shouldBe Status.OK
-      }
-
-      "it doesn't exist and return a 404" in {
-        when(repo.delete(any()))
-          .thenReturn(Future.successful(DeleteResult.acknowledged(0L)))
-        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
-        status(result) shouldBe Status.NOT_FOUND
-      }
-
-      "return NOT_IMPLEMENTED if enableTestApis = false" in {
-        val controller = new DocRefIdController(
-          repo,
-          config.withFallback(Configuration("Prod.CBCId.enableTestApis" -> false)),
-          cBCRAuth,
-          cc)
-        val result = controller.deleteDocRefId(DocRefId("stuff"))(fakeDeleteRequest)
-        status(result) shouldBe Status.NOT_IMPLEMENTED
-      }
-
     }
   }
 }

@@ -21,15 +21,14 @@ import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
+import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.{Disabled, Failure, Success}
-import uk.gov.hmrc.cbcr.util.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -38,9 +37,8 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
   val mockEmailConnector = mock[EmailConnectorImpl]
   val mockAuditConnector = mock[AuditConnector]
-  val config = app.injector.instanceOf[Configuration]
 
-  val emailService = new EmailService(mockEmailConnector, mockAuditConnector, config)
+  val emailService = new EmailService(mockEmailConnector, mockAuditConnector)
   val paramsSub = Map("f_name" -> "Tyrion", "s_name" -> "Lannister", "cbcrId" -> "XGCBC0000000001")
   val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
   implicit val hc = HeaderCarrier()

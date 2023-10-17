@@ -22,6 +22,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -80,7 +81,7 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
     val httpMock: HttpClient = mock[HttpClient]
     val servicesConfig = mock[ServicesConfig]
 
-    val config = app.injector.instanceOf[Configuration]
+    val config = mock[ApplicationConfig]
 
     val cd = CorrespondenceDetails(
       EtmpAddress("line1", None, None, None, None, "GB"),
@@ -89,7 +90,7 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
     )
 
     val connector =
-      new DESConnectorImpl(executionContext, mockAuditConnector, config, httpMock, servicesConfig)
+      new DESConnectorImpl(executionContext, mockAuditConnector, config, httpMock)
 
   }
 

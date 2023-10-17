@@ -33,6 +33,7 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -58,13 +59,12 @@ class LocalSubscriptionSpec
 """.stripMargin)
       )) with UnitSpec with Matchers with ScalaFutures with GuiceOneAppPerSuite with MockitoSugar {
 
-  val config = system.settings.config
   implicit val as = app.injector.instanceOf[ActorSystem]
   implicit val ec = app.injector.instanceOf[ExecutionContext]
   val repo = mock[SubscriptionDataRepository]
   val cbcdIdGenerator = new CBCIdGenerator
 
-  val localGen = new LocalSubscription(Configuration(config), repo, cbcdIdGenerator)
+  val localGen = new LocalSubscription(repo, cbcdIdGenerator)
 
   val bpr = BusinessPartnerRecord(
     "MySafeID",

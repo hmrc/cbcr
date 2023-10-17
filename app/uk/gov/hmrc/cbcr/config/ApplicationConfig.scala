@@ -25,9 +25,9 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class ApplicationConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig) {
   import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
-  val etmpHod: String = servicesConfig.baseUrl("etmp-hod")
-  val etmpHodEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
-  val etmpHodAuthorizationToken: String = servicesConfig.getConfString("etmp-hod.authorization-token", "")
-  val useDESApi: Boolean = configuration.load[Boolean]("Prod.CBCId.useDESApi")
-  val docRefIdsToClear: String = configuration.getOptional[String]("Prod.DocRefId.clear").getOrElse("")
+  def etmpHod: String = servicesConfig.baseUrl("etmp-hod")
+  def etmpHodEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
+  def etmpHodAuthorizationToken: String = servicesConfig.getConfString("etmp-hod.authorization-token", "")
+  def useDESApi: Boolean = configuration.load[Boolean]("Prod.CBCId.useDESApi")
+  def docRefIdsToClear: String = configuration.getOptional[String]("Prod.DocRefId.clear").getOrElse("")
 }
