@@ -2,9 +2,11 @@ import play.sbt.PlayImport.ws
 import sbt._
 
 object AppDependencies {
+  val bootstrapVersion = "7.11.0"
+
   val compile = Seq(
     ws,
-    "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % "7.11.0",
+    "uk.gov.hmrc"       %% "bootstrap-backend-play-28"  % bootstrapVersion,
     "uk.gov.hmrc"       %% "domain"                     % "8.1.0-play-28",
     "org.typelevel"     %% "cats-core"                       % "2.0.0" exclude("org.scalacheck","scalacheck_2.12"),
     "com.github.kxbmap" %% "configs"                    % "0.6.0",
@@ -17,6 +19,7 @@ object AppDependencies {
   )
 
   def test(scope: String = "test,it") = Seq(
+    "uk.gov.hmrc"             %% "bootstrap-test-play-28"  % bootstrapVersion % scope,
     "com.typesafe.akka"       %% "akka-testkit"            % "2.6.20"    % scope,
     "org.scalatest"           %% "scalatest"               % "3.0.9"     % scope,
     "com.vladsch.flexmark"    %  "flexmark-all"            % "0.35.10"   % scope,
