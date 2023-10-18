@@ -26,7 +26,7 @@ object AppDependencies {
     "org.mockito"             %  "mockito-core"            % "3.11.2"    % scope,
     "org.scalacheck"          %% "scalacheck"              % "1.15.0"    % scope,
     "com.github.tomakehurst"  %  "wiremock-standalone"     % "2.25.0"    % scope,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.74.0",
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28" % "0.74.0"    % scope,
     "org.scalatestplus"       %% "scalatestplus-mockito"   % "1.0.0-M2"  % Test,
   )
 
