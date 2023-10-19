@@ -17,42 +17,38 @@
 package uk.gov.hmrc.cbcr.services
 
 import com.mongodb.client.result.DeleteResult
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{times, verify, when}
-import org.mockito.Mockito._
-import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.libs.json.Json
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with Eventually {
 
-  val config = app.injector.instanceOf[Configuration]
+  val config = mock[ApplicationConfig]
+  when(config.docRefIdsToClear).thenReturn("docRefId1_docRefId2_docRefId3_docRefId4")
   implicit val ec = app.injector.instanceOf[ExecutionContext]
 
-  val runMode = mock[RunMode]
   val docRefIdRepo = mock[DocRefIdRepository]
   val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
   val mockAudit = mock[AuditConnector]
 
-  val testConfig: Configuration = Configuration("Dev.DocRefId.clear" -> "docRefId1_docRefId2_docRefId3_docRefId4")
   val writeResult: DeleteResult = DeleteResult.acknowledged(1)
 
-  when(runMode.env) thenReturn "Dev"
   when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
   when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(writeResult)
 
   // This is now being called and it wasn't bruv
   when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
 
-  new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config.withFallback(testConfig), runMode, mockAudit)
+  new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
 
   "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
 
@@ -79,12 +75,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
       when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
 
-      new DocRefIdClearService(
-        docRefIdRepo,
-        reportingEntityDataRepo,
-        config.withFallback(testConfig),
-        runMode,
-        mockAudit)
+      new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())
       verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }
@@ -96,12 +87,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
         AuditResult.Failure("Audit Failure", None))
 
-      new DocRefIdClearService(
-        docRefIdRepo,
-        reportingEntityDataRepo,
-        config.withFallback(testConfig),
-        runMode,
-        mockAudit)
+      new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())
       verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }
@@ -112,12 +98,7 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
       when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
 
-      new DocRefIdClearService(
-        docRefIdRepo,
-        reportingEntityDataRepo,
-        config.withFallback(testConfig),
-        runMode,
-        mockAudit)
+      new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())
       verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
     }

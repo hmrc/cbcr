@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.cbcr.services
+package uk.gov.hmrc.cbcr.config
 
-import javax.inject.{Inject, Singleton}
+import play.api.{ConfigLoader, Configuration, PlayException}
 
-import play.api.{Configuration, Logger}
-import configs.syntax._
-
-@Singleton
-class RunMode @Inject()(configuration: Configuration) {
-
-  lazy val logger: Logger = Logger(this.getClass)
-
-  private val APP_RUNNING_LOCALY: String = "Dev"
-
-  val env: String = configuration.underlying.get[String]("run.mode").valueOr(_ => APP_RUNNING_LOCALY)
-  logger.info(s"Current environment run.mode: $env")
+object ConfigurationOps {
+  implicit class ConfigurationOps(self: Configuration) {
+    def load[A](path: String)(implicit loader: ConfigLoader[A]): A =
+      self
+        .getOptional[A](path)
+        .getOrElse(throw new PlayException("Configuration error", s"Missing configuration key: $path", null))
+  }
 }

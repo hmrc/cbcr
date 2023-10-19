@@ -15,41 +15,29 @@
  */
 
 package uk.gov.hmrc.cbcr.services
-import java.time.LocalDateTime
-import javax.inject._
-import play.api.Configuration
+import cats.data.Validated.{Invalid, Valid}
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results._
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 import uk.gov.hmrc.http.HeaderCarrier
 
+import java.time.LocalDateTime
+import javax.inject._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.chaining.scalaUtilChainingOps
+
 @Singleton
-class LocalSubscription @Inject()(
-  config: Configuration,
-  repo: SubscriptionDataRepository,
-  cbcIdGenerator: CBCIdGenerator)(implicit ec: ExecutionContext)
+class LocalSubscription @Inject()(repo: SubscriptionDataRepository, cbcIdGenerator: CBCIdGenerator)(
+  implicit ec: ExecutionContext)
     extends SubscriptionHandler {
 
-  def createCBCId: Future[CBCId] =
-    cbcIdGenerator
-      .generateCbcId()
-      .fold(
-        (error: Throwable) => throw error,
-        (id: CBCId) => Future.successful(id)
-      )
-
   override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[Result] =
-    createCBCId
-      .map { id: CBCId =>
-        Ok(Json.obj("cbc-id" -> id.value))
-      }
-      .recover {
-        case NonFatal(e) => InternalServerError(e.getMessage)
-      }
+    (cbcIdGenerator.generateCbcId() match {
+      case Invalid(e) => InternalServerError(e.getMessage)
+      case Valid(id)  => Ok(Json.obj("cbc-id" -> id.value))
+    }).pipe(Future.successful)
 
   override def updateSubscription(safeId: String, details: CorrespondenceDetails)(
     implicit hc: HeaderCarrier): Future[Result] =

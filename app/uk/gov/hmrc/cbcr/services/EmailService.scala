@@ -17,28 +17,23 @@
 package uk.gov.hmrc.cbcr.services
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Configuration, Logger}
+import play.api.{Logger}
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.connectors.EmailConnectorImpl
 import uk.gov.hmrc.cbcr.models.Email
 import play.api.mvc.Results._
+
 import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 
 @Singleton
-class EmailService @Inject()(
-  emailConnector: EmailConnectorImpl,
-  auditConnector: AuditConnector,
-  configuration: Configuration,
-  runMode: RunMode)(implicit val ec: ExecutionContext) {
+class EmailService @Inject()(emailConnector: EmailConnectorImpl, auditConnector: AuditConnector)(
+  implicit val ec: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
-
-  private val ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY =
-    configuration.getOptional[String](s"${runMode.env}.emailAlertLogString").getOrElse("CBCR_EMAIL_FAILURE")
 
   def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[Result] =
     emailConnector
@@ -54,7 +49,7 @@ class EmailService @Inject()(
       })
       .recover {
         case _ =>
-          logger.error(ALERT_GENERATION_STRING_TO_CREATE_PAGER_DUTY)
+          logger.error("Failed to send e-mail")
           audit(email, CBCREmailFailure)
           BadRequest
       }

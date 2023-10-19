@@ -22,9 +22,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http._
@@ -78,11 +78,10 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val executionContext: ExecutionContext = ExecutionContext.Implicits.global
     val mockAuditConnector = mock[AuditConnector]
-    val runMode = mock[RunMode]
     val httpMock: HttpClient = mock[HttpClient]
     val servicesConfig = mock[ServicesConfig]
 
-    val config = app.injector.instanceOf[Configuration]
+    val config = mock[ApplicationConfig]
 
     val cd = CorrespondenceDetails(
       EtmpAddress("line1", None, None, None, None, "GB"),
@@ -91,7 +90,7 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
     )
 
     val connector =
-      new DESConnectorImpl(executionContext, mockAuditConnector, config, runMode, httpMock, servicesConfig)
+      new DESConnectorImpl(executionContext, mockAuditConnector, config, httpMock)
 
   }
 

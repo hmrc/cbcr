@@ -16,18 +16,17 @@
 
 package uk.gov.hmrc.cbcr.connectors
 
-import javax.inject.{Inject, Singleton}
 import com.google.inject.ImplementedBy
-import play.api.{Configuration, Logger}
+import play.api.Logger
 import play.api.libs.json.{JsObject, JsValue, Json}
-import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, MigrationRequest, SubscriptionRequest}
-import uk.gov.hmrc.play.audit.model.Audit
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import uk.gov.hmrc.cbcr.config.ApplicationConfig
+import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http._
-import configs.syntax._
-import uk.gov.hmrc.cbcr.services.RunMode
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+import uk.gov.hmrc.play.audit.model.Audit
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DESConnectorImpl])
 trait DESConnector extends RawResponseReads with HttpErrorFunctions {
@@ -35,8 +34,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   lazy val logger: Logger = Logger(this.getClass)
 
   implicit val ec: ExecutionContext
-  implicit val configuration: Configuration
-  implicit val runMode: RunMode
+  implicit val configuration: ApplicationConfig
 
   def serviceUrl: String
 
@@ -69,13 +67,6 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     "isAnAgent"         -> false
   )
 
-  val stubMigration: Boolean =
-    configuration.underlying.get[Boolean](s"${runMode.env}.CBCId.stubMigration").valueOr(_ => false)
-
-  val delayMigration: Int = 1000 * configuration.underlying
-    .get[Int](s"${runMode.env}.CBCId.delayMigration")
-    .valueOr(_ => 60)
-
   private def createHeaderCarrier: HeaderCarrier = HeaderCarrier()
 
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
@@ -97,36 +88,6 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders).recover {
       case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
     }
-  }
-
-  def createMigration(mig: MigrationRequest): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
-    implicit val writes = MigrationRequest.migrationWriter
-    logger.info(s"Migration Request sent to DES")
-
-    logger.warn(s"stubMigration set to: $stubMigration")
-    val res = Promise[HttpResponse]()
-    Future {
-      if (!stubMigration) {
-        logger.info("calling ETMP for migration")
-        Thread.sleep(delayMigration)
-        http
-          .POST[MigrationRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", mig, desHeaders)
-          .recover {
-            case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
-          }
-          .map(r => {
-            logger.info(s"Migration Status for safeId: ${mig.safeId} and cBCId: ${mig.cBCId} ${r.status}")
-            res.success(r)
-          })
-      } else {
-        logger.info("in migration stub")
-
-        Thread.sleep(delayMigration)
-        res.success(HttpResponse(status = 200, body = s"migrated ${mig.cBCId}"))
-      }
-    }
-    res.future
   }
 
   def updateSubscription(safeId: String, cor: CorrespondenceDetails): Future[HttpResponse] = {
@@ -152,17 +113,14 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 class DESConnectorImpl @Inject()(
   val ec: ExecutionContext,
   val auditConnector: AuditConnector,
-  val configuration: Configuration,
-  val runMode: RunMode,
-  val httpClient: HttpClient,
-  val servicesConfig: ServicesConfig)
+  val configuration: ApplicationConfig,
+  val httpClient: HttpClient)
     extends DESConnector {
-  lazy val serviceUrl: String = servicesConfig.baseUrl("etmp-hod")
+  lazy val serviceUrl: String = configuration.etmpHod
   lazy val orgLookupURI: String = "registration/organisation"
   lazy val cbcSubscribeURI: String = "country-by-country/subscription"
-  lazy val urlHeaderEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
-  lazy val urlHeaderAuthorization: String =
-    s"Bearer ${servicesConfig.getConfString("etmp-hod.authorization-token", "")}"
+  lazy val urlHeaderEnvironment: String = configuration.etmpHodEnvironment
+  lazy val urlHeaderAuthorization: String = s"Bearer ${configuration.etmpHodAuthorizationToken}"
   val audit = new Audit("known-fact-checking", auditConnector)
   val http = httpClient
 }
