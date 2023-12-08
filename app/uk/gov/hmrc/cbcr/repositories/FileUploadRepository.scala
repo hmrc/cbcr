@@ -38,6 +38,6 @@ class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: Exe
   def get(envelopeId: String): Future[Option[FileUploadResponse]] =
     for {
       responses <- collection.find(equal("envelopeId", envelopeId)).toFuture()
-    } yield responses.findLast(_.status != "QUARANTINED").orElse(responses.lastOption)
+    } yield responses.lastOption
 
 }

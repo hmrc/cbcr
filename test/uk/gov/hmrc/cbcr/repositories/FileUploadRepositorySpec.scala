@@ -48,11 +48,6 @@ class FileUploadRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPe
       await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "AVAILABLE"))
 
     }
-    "ignore QUARANTINED when it arrives after available" in {
-      await(fileUploadRepository.save2(fur.copy(status = "AVAILABLE")))
-      await(fileUploadRepository.save2(fur.copy(status = "QUARANTINED")))
-      await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "AVAILABLE"))
-    }
     "return QUARANTINED if we only inserted quarantined" in {
       await(fileUploadRepository.save2(fur.copy(status = "QUARANTINED")))
       await(fileUploadRepository.get(fur.envelopeId)) shouldEqual Some(fur.copy(status = "QUARANTINED"))
