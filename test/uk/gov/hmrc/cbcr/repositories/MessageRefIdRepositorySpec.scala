@@ -17,20 +17,15 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class MessageRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
-  val config = app.injector.instanceOf[Configuration]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
-  implicit val hc = HeaderCarrier()
-  val messageRefIdRepository = app.injector.instanceOf[MessageRefIdRepository]
+  private val messageRefIdRepository = app.injector.instanceOf[MessageRefIdRepository]
 
   "Calls to Save  MessageRefId" should {
     "successfully save that MessageRefId" in {

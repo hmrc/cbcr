@@ -39,46 +39,47 @@ import scala.concurrent.Future
 
 class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
-  val store = mock[SubscriptionDataRepository]
+  private val store = mock[SubscriptionDataRepository]
 
-  val config = app.injector.instanceOf[Configuration]
+  private val config = app.injector.instanceOf[Configuration]
 
-  val bpr = BusinessPartnerRecord(
+  private val bpr = BusinessPartnerRecord(
     "MySafeID",
     Some(OrganisationResponse("Dave Corp")),
     EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
-  val exampleSubscriptionData = SubscriptionDetails(
+  private val exampleSubscriptionData = SubscriptionDetails(
     bpr,
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
     CBCId("XGCBC0000000001"),
     Utr("utr"))
-  val exampleSubscriberContact =
+  private val exampleSubscriberContact =
     SubscriberContact(None, "firstName", "lastName", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
 
-  val desConnector = mock[DESConnector]
+  private val desConnector = mock[DESConnector]
   when(store.getSubscriptions(any())).thenReturn(Future.successful(List()))
   val controller = new SubscriptionDataController(store, desConnector, cBCRAuth, config, cc)
 
-  val fakePostRequest: FakeRequest[JsValue] =
+  private val fakePostRequest: FakeRequest[JsValue] =
     FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 
-  val BadFakePostRequest: FakeRequest[JsValue] =
+  private val BadFakePostRequest: FakeRequest[JsValue] =
     FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(Json.obj("bad" -> "request"))
 
-  val fakePutRequest =
+  private val fakePutRequest =
     FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(toJson(exampleSubscriberContact))
 
-  val badFakePutRequest =
+  private val badFakePutRequest =
     FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(Json.obj("bad" -> "request"))
 
-  val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveSubscriptionData")
+  private val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] =
+    FakeRequest(Helpers.GET, "/retrieveSubscriptionData")
 
-  val fakeDeleteRequest = FakeRequest(Helpers.DELETE, "subscription-data")
+  private val fakeDeleteRequest = FakeRequest(Helpers.DELETE, "subscription-data")
 
-  implicit val as = ActorSystem()
+  private implicit val as: ActorSystem = ActorSystem()
 
-  val cbcId = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
-  val utr = Utr("7000000002")
+  private val cbcId = CBCId.create(1).getOrElse(fail("Couldn't generate cbcid"))
+  private val utr = Utr("7000000002")
 
   "The SubscriptionDataController" should {
     "respond with a 200 when asked to store SubscriptionData" in {

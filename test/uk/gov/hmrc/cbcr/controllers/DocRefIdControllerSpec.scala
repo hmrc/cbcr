@@ -17,12 +17,10 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
-import com.mongodb.client.result.DeleteResult
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.JsString
 import play.api.test.{FakeRequest, Helpers}
@@ -30,21 +28,18 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class DocRefIdControllerSpec extends UnitSpec with GuiceOneAppPerSuite with ScalaFutures with MockAuth {
 
-  val fakePutRequest = FakeRequest(Helpers.PUT, "/DocRefId/myRefIDxx")
+  private val fakePutRequest = FakeRequest(Helpers.PUT, "/DocRefId/myRefIDxx")
 
-  val fakeDeleteRequest = FakeRequest(Helpers.DELETE, "doc-ref-id/mydocref")
+  private val fakeGetRequest = FakeRequest(Helpers.GET, "/DocRefId/myRefIDxx")
 
-  val fakeGetRequest = FakeRequest(Helpers.GET, "/DocRefId/myRefIDxx")
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val as: ActorSystem = ActorSystem()
 
-  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
-  implicit val as = ActorSystem()
-  val config = app.injector.instanceOf[Configuration]
-
-  val repo = mock[DocRefIdRepository]
+  private val repo = mock[DocRefIdRepository]
 
   val controller = new DocRefIdController(repo, cBCRAuth, cc)
 

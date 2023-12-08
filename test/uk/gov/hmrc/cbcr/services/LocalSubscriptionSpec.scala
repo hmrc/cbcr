@@ -18,25 +18,21 @@ package uk.gov.hmrc.cbcr.services
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
-import cats.data.OptionT
-import cats.instances.future._
 import com.typesafe.config.ConfigFactory
 import org.mockito.Mockito._
-import org.scalatest.Matchers
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import org.scalatestplus.mockito.MockitoSugar
-import uk.gov.hmrc.cbcr.config.ApplicationConfig
+import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.HeaderCarrier
 
 class LocalSubscriptionSpec
     extends TestKit(
@@ -59,32 +55,32 @@ class LocalSubscriptionSpec
 """.stripMargin)
       )) with UnitSpec with Matchers with ScalaFutures with GuiceOneAppPerSuite with MockitoSugar {
 
-  implicit val as = app.injector.instanceOf[ActorSystem]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
-  val repo = mock[SubscriptionDataRepository]
-  val cbcdIdGenerator = new CBCIdGenerator
+  private implicit val as: ActorSystem = app.injector.instanceOf[ActorSystem]
+  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  private val repo = mock[SubscriptionDataRepository]
+  private val cbcdIdGenerator = new CBCIdGenerator
 
-  val localGen = new LocalSubscription(repo, cbcdIdGenerator)
+  private val localGen = new LocalSubscription(repo, cbcdIdGenerator)
 
-  val bpr = BusinessPartnerRecord(
+  private val bpr = BusinessPartnerRecord(
     "MySafeID",
     Some(OrganisationResponse("Dave Corp")),
     EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
-  val exampleSubscriptionData = SubscriptionDetails(
+  private val exampleSubscriptionData = SubscriptionDetails(
     bpr,
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
     CBCId("XGCBC0000000001"),
     Utr("utr"))
 
-  val cd = CorrespondenceDetails(
+  private val cd = CorrespondenceDetails(
     EtmpAddress("line1", None, None, None, None, "GB"),
     ContactDetails(EmailAddress("test@test.com"), PhoneNumber("9876543").get),
     ContactName("FirstName", "Surname")
   )
 
-  val sub = SubscriptionRequest("safeid", false, cd)
+  private val sub = SubscriptionRequest("safeid", isMigrationRecord = false, cd)
 
-  implicit val hc = HeaderCarrier()
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "The LocalCBCIdGenerator" should {
     "be able to create a new subscription and" when {

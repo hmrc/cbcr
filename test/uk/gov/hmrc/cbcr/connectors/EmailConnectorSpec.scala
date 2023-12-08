@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.connectors
 
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{when, _}
+import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
@@ -43,7 +43,7 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with G
       await(result).status shouldBe 202
 
       // and
-      val expectedResponseBody = Email(List("tyrion.lannister@gmail.com"), templateId, paramsSub)
+      val expectedResponseBody: Email = Email(List("tyrion.lannister@gmail.com"), templateId, paramsSub)
       verify(httpMock).POST(any(), body = eqTo(expectedResponseBody), any())(any(), any(), any(), any())
     }
   }
@@ -54,10 +54,11 @@ class EmailConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with G
     val httpMock: HttpClient = mock[HttpClient]
     val templateId = "cbcr_subscription"
     val recipient = "user@example.com"
-    val paramsSub = Map("f_name" → "Tyrion", "s_name" → "Lannister", "cbcrId" -> "XGCBC0000000001")
+    val paramsSub: Map[String, String] =
+      Map("f_name" -> "Tyrion", "s_name" -> "Lannister", "cbcrId" -> "XGCBC0000000001")
     val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
 
-    val config = app.injector.instanceOf[Configuration]
+    val config: Configuration = app.injector.instanceOf[Configuration]
 
     val connector = new EmailConnectorImpl(config, httpMock)
 

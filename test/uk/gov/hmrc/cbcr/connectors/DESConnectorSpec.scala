@@ -20,7 +20,6 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.controllers.MockAuth

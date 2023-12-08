@@ -18,23 +18,18 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
+import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models.{CorrDocRefId, DocRefId}
-import uk.gov.hmrc.cbcr.models.DocRefIdResponses.{AlreadyExists, DocRefIdQueryResponse, DocRefIdSaveResponse, DoesNotExist, Invalid, Ok, Valid}
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class DocRefIdRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with BeforeAndAfterAll {
 
-  val config = app.injector.instanceOf[Configuration]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
-  implicit val hc = HeaderCarrier()
-  val docRefId = DocRefId("docRefId-SaveTest")
-  val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val docRefIdRepository = app.injector.instanceOf[DocRefIdRepository]
+  private val docRefId = DocRefId("docRefId-SaveTest")
+  private val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
+  private val docRefIdRepository = app.injector.instanceOf[DocRefIdRepository]
 
   "Calls to edit a DocRefId" should {
     "should successfully edit that docRefId" in {

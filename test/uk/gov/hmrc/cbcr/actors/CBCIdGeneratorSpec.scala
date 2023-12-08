@@ -17,11 +17,12 @@
 package uk.gov.hmrc.cbcr.actors
 
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{Matchers, WordSpecLike}
 import uk.gov.hmrc.cbcr.models.CBCId
 import uk.gov.hmrc.cbcr.services.CBCIdGenerator
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class CBCIdGeneratorSpec extends WordSpecLike with Matchers with Eventually {
+class CBCIdGeneratorSpec extends AnyWordSpecLike with Matchers with Eventually {
 
   val generator = new CBCIdGenerator
 

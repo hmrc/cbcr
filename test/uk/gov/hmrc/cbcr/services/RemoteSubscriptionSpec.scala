@@ -36,36 +36,36 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite with ScalaFutures {
 
-  val desConnector = mock[DESConnector]
+  private val desConnector = mock[DESConnector]
 
-  implicit val as = app.injector.instanceOf[ActorSystem]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
+  private implicit val as: ActorSystem = app.injector.instanceOf[ActorSystem]
+  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  val headers = Map("example" -> Seq("header"))
-  val generator = new RemoteSubscription(desConnector)
+  private val headers: Map[String, Seq[String]] = Map("example" -> Seq("header"))
+  private val generator = new RemoteSubscription(desConnector)
 
-  val cd = CorrespondenceDetails(
+  private val cd = CorrespondenceDetails(
     EtmpAddress("line1", None, None, None, None, "GB"),
     ContactDetails(EmailAddress("test@test.com"), PhoneNumber("9876543").get),
     ContactName("FirstName", "Surname")
   )
 
-  val srb = SubscriptionRequest(
+  private val srb = SubscriptionRequest(
     "safeId",
-    false,
+    isMigrationRecord = false,
     cd
   )
-  val bpr = BusinessPartnerRecord(
+  private val bpr = BusinessPartnerRecord(
     "MySafeID",
     Some(OrganisationResponse("Dave Corp")),
     EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
-  val exampleSubscriptionData = SubscriptionDetails(
+  private val exampleSubscriptionData = SubscriptionDetails(
     bpr,
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
     CBCId("XGCBC0000000001"),
     Utr("utr"))
 
-  val getResponse = GetResponse(
+  private val getResponse = GetResponse(
     bpr.safeId,
     ContactName(
       exampleSubscriptionData.subscriberContact.firstName,
@@ -82,9 +82,10 @@ class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with GuiceOneApp
       |"cbcSubscriptionID":"XHCBC1000000037"}
     """.stripMargin
 
-  implicit val hc = new HeaderCarrier()
+  private implicit val hc: HeaderCarrier = new HeaderCarrier()
 
-  val srr = SubscriptionResponse(LocalDateTime.now(), CBCId.create(1).getOrElse(fail("Could not generate CBCID")))
+  private val srr =
+    SubscriptionResponse(LocalDateTime.now(), CBCId.create(1).getOrElse(fail("Could not generate CBCID")))
   "The remoteCBCIdGenerator" should {
     "be able to subscribe a user" which {
 
