@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import akka.actor.ActorSystem
 import com.mongodb.client.result.InsertOneResult
 import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
@@ -28,18 +27,16 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
-  val fakePutRequest = FakeRequest(Helpers.PUT, "/messageRefId/myRefIDxx")
+  private val fakePutRequest = FakeRequest(Helpers.PUT, "/messageRefId/myRefIDxx")
 
-  val fakeGetRequest = FakeRequest(Helpers.GET, "/messageRefId/myRefIDxx")
-  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  private val fakeGetRequest = FakeRequest(Helpers.GET, "/messageRefId/myRefIDxx")
+  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  implicit val as = ActorSystem()
-
-  val repo = mock[MessageRefIdRepository]
+  private val repo = mock[MessageRefIdRepository]
 
   val controller = new MessageRefIdController(repo, cBCRAuth, cc)
 

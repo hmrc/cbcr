@@ -19,10 +19,10 @@ package uk.gov.hmrc.cbcr.controllers
 import akka.actor.ActorSystem
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterEach, Matchers}
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.mvc.Results._
@@ -39,13 +39,13 @@ import scala.concurrent.Future
 class CBCIdControllerSpec
     extends UnitSpec with Matchers with ScalaFutures with BeforeAndAfterEach with GuiceOneAppPerSuite with MockAuth {
 
-  val localGen = mock[LocalSubscription]
-  val remoteGen = mock[RemoteSubscription]
+  private val localGen = mock[LocalSubscription]
+  private val remoteGen = mock[RemoteSubscription]
 
-  implicit val as = app.injector.instanceOf[ActorSystem]
-  val config = mock[ApplicationConfig]
+  implicit val as: ActorSystem = app.injector.instanceOf[ActorSystem]
+  val config: ApplicationConfig = mock[ApplicationConfig]
 
-  val srb = SubscriptionDetails(
+  private val srb = SubscriptionDetails(
     BusinessPartnerRecord(
       "SafeID",
       Some(OrganisationResponse("Name")),
@@ -54,13 +54,13 @@ class CBCIdControllerSpec
     None,
     Utr("7000000002")
   )
-  val crb = CorrespondenceDetails(
+  private val crb = CorrespondenceDetails(
     EtmpAddress("Some ave", None, None, None, None, "GB"),
     ContactDetails(EmailAddress("bob@bob.com"), PhoneNumber("123456789").get),
     ContactName("Bob", "Bobbet"))
 
-  val id = CBCId.create(1).getOrElse(fail("Can not generate CBCId"))
-  implicit val hc = HeaderCarrier()
+  private val id = CBCId.create(1).getOrElse(fail("Can not generate CBCId"))
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   override def afterEach(): Unit = {
     super.afterEach()

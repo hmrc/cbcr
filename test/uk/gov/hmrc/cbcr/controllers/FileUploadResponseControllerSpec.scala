@@ -17,13 +17,12 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import akka.actor.ActorSystem
-import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.cbcr.models._

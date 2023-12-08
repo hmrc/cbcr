@@ -35,13 +35,13 @@ import scala.concurrent.Future
 
 class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite with ScalaFutures {
 
-  val mockEmailConnector = mock[EmailConnectorImpl]
-  val mockAuditConnector = mock[AuditConnector]
+  private val mockEmailConnector = mock[EmailConnectorImpl]
+  private val mockAuditConnector = mock[AuditConnector]
 
-  val emailService = new EmailService(mockEmailConnector, mockAuditConnector)
-  val paramsSub = Map("f_name" -> "Tyrion", "s_name" -> "Lannister", "cbcrId" -> "XGCBC0000000001")
-  val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
-  implicit val hc = HeaderCarrier()
+  private val emailService = new EmailService(mockEmailConnector, mockAuditConnector)
+  private val paramsSub = Map("f_name" -> "Tyrion", "s_name" -> "Lannister", "cbcrId" -> "XGCBC0000000001")
+  private val correctEmail: Email = Email(List("tyrion.lannister@gmail.com"), "cbcr_subscription", paramsSub)
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   "the email service" should {
     "return 202 when everything is ok" in {

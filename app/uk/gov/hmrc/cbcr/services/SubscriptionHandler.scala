@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import configs.syntax._
+import play.api.Logger
 import play.api.mvc.Result
-import play.api.{Configuration, Logger}
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http.HeaderCarrier

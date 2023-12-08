@@ -31,13 +31,13 @@ import uk.gov.hmrc.cbcr.models.{CBC701, _}
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.util.{LogCapturing, UnitSpec}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with MockAuth with LogCapturing {
 
-  val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
+  private val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
 
-  val red = ReportingEntityData(
+  private val red = ReportingEntityData(
     NonEmptyList(docRefId, Nil),
     List(docRefId),
     docRefId,
@@ -50,7 +50,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     None
   )
 
-  val pred = PartialReportingEntityData(
+  private val pred = PartialReportingEntityData(
     List(DocRefIdPair(docRefId, None)),
     List(DocRefIdPair(docRefId, None)),
     DocRefIdPair(docRefId, None),
@@ -63,7 +63,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     Some(EntityReportingPeriod(LocalDate.now(), LocalDate.now()))
   )
 
-  val redm = ReportingEntityDataModel(
+  private val redm = ReportingEntityDataModel(
     NonEmptyList(docRefId, Nil),
     Right(List(docRefId)),
     docRefId,
@@ -90,15 +90,15 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
   val badFakePutRequest: FakeRequest[JsValue] =
     FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
 
-  val fakeGetRequest = FakeRequest(Helpers.GET, "/reporting-entity/myDocRefId")
+  private val fakeGetRequest = FakeRequest(Helpers.GET, "/reporting-entity/myDocRefId")
 
-  implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  val cbcId = CBCId.create(56).toOption
+  private val cbcId = CBCId.create(56).toOption
 
-  implicit val as = ActorSystem()
+  implicit val as: ActorSystem = ActorSystem()
 
-  val repo = mock[ReportingEntityDataRepo]
+  private val repo = mock[ReportingEntityDataRepo]
 
   val controller = new ReportingEntityDataController(repo, cBCRAuth, cc)
 

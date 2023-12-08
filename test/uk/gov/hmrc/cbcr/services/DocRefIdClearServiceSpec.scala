@@ -21,7 +21,6 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.concurrent.Eventually
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
@@ -32,13 +31,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with Eventually {
 
-  val config = mock[ApplicationConfig]
+  private val config = mock[ApplicationConfig]
   when(config.docRefIdsToClear).thenReturn("docRefId1_docRefId2_docRefId3_docRefId4")
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
+  private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
-  val docRefIdRepo = mock[DocRefIdRepository]
-  val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
-  val mockAudit = mock[AuditConnector]
+  private val docRefIdRepo = mock[DocRefIdRepository]
+  private val reportingEntityDataRepo = mock[ReportingEntityDataRepo]
+  private val mockAudit = mock[AuditConnector]
 
   val writeResult: DeleteResult = DeleteResult.acknowledged(1)
 

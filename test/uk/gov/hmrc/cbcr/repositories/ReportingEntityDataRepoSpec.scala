@@ -16,39 +16,32 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
 import cats.data.NonEmptyList
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import scala.concurrent.Future
 
 class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
-  val config = app.injector.instanceOf[Configuration]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
-  implicit val hc = HeaderCarrier()
-  val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
-  val docRefIdForDelete = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP10")
-  val cbcId = CBCId.apply("XVCBC0000000056")
-  val corrRefId = CorrDocRefId(new DocRefId("corrRefId-SaveTest"))
-  val reportingEntityDataRepository = app.injector.instanceOf[ReportingEntityDataRepo]
+  private val docRefId = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP")
+  private val docRefIdForDelete = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP10")
+  private val cbcId = CBCId.apply("XVCBC0000000056")
+  private val reportingEntityDataRepository = app.injector.instanceOf[ReportingEntityDataRepo]
 
-  val creationDate = LocalDate.now
-  val updateForcreationDate = (LocalDate.now).plusDays(5)
-  val reportingPeriod = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+  private val creationDate = LocalDate.now
+  private val updateForcreationDate = LocalDate.now.plusDays(5)
+  private val reportingPeriod = LocalDate.parse("2019-10-01", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-  val entityReportingperiod = EntityReportingPeriod(
+  private val entityReportingperiod = EntityReportingPeriod(
     LocalDate.parse("2016-01-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")),
     LocalDate.parse("2016-03-31", DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 
-  val reportingEntityData = ReportingEntityData(
+  private val reportingEntityData = ReportingEntityData(
     NonEmptyList(docRefId, Nil),
     List(docRefId),
     docRefId,
@@ -61,7 +54,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     None
   )
 
-  val reportingEntityData1 = ReportingEntityData(
+  private val reportingEntityData1 = ReportingEntityData(
     NonEmptyList(docRefIdForDelete, Nil),
     List(docRefIdForDelete),
     docRefIdForDelete,
@@ -74,7 +67,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     Some(entityReportingperiod)
   )
 
-  def red(dri: DocRefId, reportingPeriod: LocalDate, erp: Option[EntityReportingPeriod]) =
+  private def red(dri: DocRefId, reportingPeriod: LocalDate, erp: Option[EntityReportingPeriod]) =
     ReportingEntityData(
       NonEmptyList(docRefId, Nil),
       List(docRefId),
@@ -88,22 +81,22 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       erp
     )
 
-  val doc1 = DocRefId("GB2017RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ENT1")
-  val doc2 = DocRefId("GB2017RGXVCBC0000000056CBC40120170311T100000X_7000000002OECD3ENT2")
-  val doc3 = DocRefId("GB2017RGXVCBC0000000056CBC40120170312T090000X_7000000002OECD1ENT3")
-  val doc4 = DocRefId("GB2018RGXVCBC0000000056CBC40120180312T090000X_7000000002OECD1ENT4")
-  val doc5 = DocRefId("GB2019RGXVCBC0000000056CBC40120190312T090000X_7000000002OECD1ENT5")
-  val doc6 = DocRefId("GB2019RGXVCBC0000000056CBC40120190312T090000X_7000000002OECD1ENT6")
-  val red1 = red(doc1, LocalDate.parse("2017-11-11"), None)
-  val red2 = red(doc2, LocalDate.parse("2017-11-11"), None)
-  val red3 = red(doc3, LocalDate.parse("2017-12-01"), None)
-  val red4 = red(
+  private val doc1 = DocRefId("GB2017RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ENT1")
+  private val doc2 = DocRefId("GB2017RGXVCBC0000000056CBC40120170311T100000X_7000000002OECD3ENT2")
+  private val doc3 = DocRefId("GB2017RGXVCBC0000000056CBC40120170312T090000X_7000000002OECD1ENT3")
+  private val doc4 = DocRefId("GB2018RGXVCBC0000000056CBC40120180312T090000X_7000000002OECD1ENT4")
+  private val doc5 = DocRefId("GB2019RGXVCBC0000000056CBC40120190312T090000X_7000000002OECD1ENT5")
+  private val doc6 = DocRefId("GB2019RGXVCBC0000000056CBC40120190312T090000X_7000000002OECD1ENT6")
+  private val red1 = red(doc1, LocalDate.parse("2017-11-11"), None)
+  private val red2 = red(doc2, LocalDate.parse("2017-11-11"), None)
+  private val red3 = red(doc3, LocalDate.parse("2017-12-01"), None)
+  private val red4 = red(
     doc4,
     LocalDate.parse("2018-12-01"),
     Some(
       EntityReportingPeriod(LocalDate.parse("2018-01-01"), LocalDate.parse("2018-12-01"))
     ))
-  val red5 = red(
+  private val red5 = red(
     doc5,
     LocalDate.parse("2019-12-01"),
     Some(
@@ -260,27 +253,27 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     }
   }
 
-  val docRefId1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP1")
-  val docRefId2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP2")
-  val addDocRefId1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ADD1")
-  val addDocRefId2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ADD2")
+  private val docRefId1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP1")
+  private val docRefId2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP2")
+  private val addDocRefId1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ADD1")
+  private val addDocRefId2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1ADD2")
 
-  val corr1 = CorrDocRefId(docRefId1)
-  val corr2 = CorrDocRefId(docRefId2)
-  val corr3 = CorrDocRefId(addDocRefId1)
-  val corr4 = CorrDocRefId(addDocRefId2)
+  private val corr1 = CorrDocRefId(docRefId1)
+  private val corr2 = CorrDocRefId(docRefId2)
+  private val corr3 = CorrDocRefId(addDocRefId1)
+  private val corr4 = CorrDocRefId(addDocRefId2)
 
-  val newDocRef1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP1")
-  val newDocRef2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP2")
-  val newAddInfo3 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD1")
-  val newAddInfo4 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD2")
+  private val newDocRef1 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP1")
+  private val newDocRef2 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2REP2")
+  private val newAddInfo3 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD1")
+  private val newAddInfo4 = DocRefId("GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD2ADD2")
 
-  val corrPair1 = DocRefIdPair(newDocRef1, Some(corr1))
-  val corrPair2 = DocRefIdPair(newDocRef2, Some(corr2))
-  val corrPair3 = DocRefIdPair(newAddInfo3, Some(corr3))
-  val corrPair4 = DocRefIdPair(newAddInfo4, Some(corr4))
+  private val corrPair1 = DocRefIdPair(newDocRef1, Some(corr1))
+  private val corrPair2 = DocRefIdPair(newDocRef2, Some(corr2))
+  private val corrPair3 = DocRefIdPair(newAddInfo3, Some(corr3))
+  private val corrPair4 = DocRefIdPair(newAddInfo4, Some(corr4))
 
-  def rData(reps: NonEmptyList[DocRefId], add: List[DocRefId]) = ReportingEntityDataModel(
+  private def rData(reps: NonEmptyList[DocRefId], add: List[DocRefId]) = ReportingEntityDataModel(
     reps,
     Right(add),
     docRefId,
@@ -293,7 +286,7 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     None
   )
 
-  def partialData(reps: List[DocRefIdPair], add: List[DocRefIdPair]) = PartialReportingEntityData(
+  private def partialData(reps: List[DocRefIdPair], add: List[DocRefIdPair]) = PartialReportingEntityData(
     reps,
     add,
     DocRefIdPair(docRefId1, Some(corr1)),

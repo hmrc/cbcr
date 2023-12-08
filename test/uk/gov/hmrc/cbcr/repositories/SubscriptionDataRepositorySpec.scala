@@ -18,8 +18,6 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.model.Filters
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
-import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -30,25 +28,22 @@ import scala.concurrent.ExecutionContext
 
 class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
-  val config = app.injector.instanceOf[Configuration]
-  implicit val ec = app.injector.instanceOf[ExecutionContext]
-  implicit val hc = HeaderCarrier()
-  val subscriptionDataRepository = app.injector.instanceOf[SubscriptionDataRepository]
-  val subscriberContact =
+  implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+  private val subscriptionDataRepository = app.injector.instanceOf[SubscriptionDataRepository]
+  private val subscriberContact =
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
-  val utr = Utr("7000000003")
-  val cbcId = CBCId("XGCBC0000000001")
-  val address = EtmpAddress("address1", Some("address2"), Some("address3"), Some("address4"), Some("PO1 1OP"), "UK")
-  val bpr = BusinessPartnerRecord(
+  private val utr = Utr("7000000003")
+  private val cbcId = CBCId("XGCBC0000000001")
+  private val bpr = BusinessPartnerRecord(
     "MySafeID",
     Some(OrganisationResponse("Dave Corp")),
     EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
-  val exampleSubscriptionData = SubscriptionDetails(
+  private val exampleSubscriptionData = SubscriptionDetails(
     bpr,
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
     cbcId,
     utr)
-  val jsonObct = Json.obj()
 
   "Calls to clear cbcId Details" should {
     "successfully clear  details using cbcId" in {
