@@ -38,7 +38,7 @@ import scala.concurrent.Future
   */
 class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 
-  private val fur = FileUploadResponse("id1", "fid1", "status", None)
+  private val fur = FileUploadResponse("id1", "fid1", "AVAILABLE", None)
 
   val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fur))
 
@@ -54,6 +54,11 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
   val controller = new FileUploadResponseController(repo, cBCRAuth, cc)
 
   "The FileUploadResponseController" should {
+    "respond with 200 and don't store when received status other than AVAILABLE or DELETED" in {
+      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(fur.copy(status = "QUARANTINED"))))
+      status(result) shouldBe Status.OK
+    }
+
     "respond with a 200 when asked to store an FileUploadResponse" in {
       when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(None))
       val result = controller.saveFileUploadResponse(fakePostRequest)

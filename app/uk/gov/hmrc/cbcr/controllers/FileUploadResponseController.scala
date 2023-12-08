@@ -37,7 +37,11 @@ class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: C
   def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
     request.body.validate[FileUploadResponse].asEither match {
       case Left(error)     => Future.successful(BadRequest(JsError.toJson(error)))
-      case Right(response) => repo.save2(response).map(_ => Ok)
+      case Right(response) =>
+        response.status match {
+          case "AVAILABLE" | "DELETED" => repo.save2(response).map(_ => Ok)
+          case _ => Future.successful(Ok)
+        }
     }
   }
 
