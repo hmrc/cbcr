@@ -2,7 +2,7 @@ import play.sbt.PlayImport.ws
 import sbt._
 
 object AppDependencies {
-  val bootstrapVersion = "7.11.0"
+  val bootstrapVersion = "7.23.0"
 
   val compile = Seq(
     ws,
@@ -20,7 +20,7 @@ object AppDependencies {
 
   def test(scope: String = "test,it") = Seq(
     "uk.gov.hmrc"             %% "bootstrap-test-play-28"  % bootstrapVersion % scope,
-    "com.typesafe.akka"       %% "akka-testkit"            % "2.6.20"    % scope,
+    "com.typesafe.akka"       %% "akka-testkit"            % "2.6.21"    % scope,
     "org.scalatest"           %% "scalatest"               % "3.0.9"     % scope,
     "com.vladsch.flexmark"    %  "flexmark-all"            % "0.35.10"   % scope,
     "org.pegdown"             %  "pegdown"                 % "1.6.0"     % scope,
