@@ -11,6 +11,7 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(CodeCoverageSettings.settings *)
   .settings(onLoadMessage := "")
+  .settings(scalafmtOnCompile := true)
   .settings(playDefaultPort := 9797)
   .settings(majorVersion := 1)
   .settings(
