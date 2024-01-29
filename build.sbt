@@ -15,7 +15,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(majorVersion := 1)
   .settings(
     scalaVersion := "2.13.11",
-    libraryDependencies ++= AppDependencies(),
+    libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test(),
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
   // Disable default sbt Test options (might change with new versions of bootstrap)
