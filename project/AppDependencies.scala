@@ -18,7 +18,7 @@ object AppDependencies {
     "com.sun.msv.datatype.xsd" %  "xsdlib"                     % "2013.2"
   )
 
-  def test(scope: String = "test,it") = Seq(
+  def test(scope: String = "test") = Seq(
     "uk.gov.hmrc"             %% "bootstrap-test-play-28"   % bootstrapVersion % scope,
     "com.typesafe.akka"       %% "akka-testkit"             % "2.6.21"         % scope,
     "org.scalatest"           %% "scalatest"                % "3.0.9"          % scope,
