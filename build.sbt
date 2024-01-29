@@ -9,47 +9,9 @@ import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
 
 val appName = "cbcr"
 
-lazy val excludedPackages = Seq(
-  "<empty>",
-  "Reverse*",
-  "models/.data/..*",
-  "view.*",
-  ".*standardError*.*",
-  ".*govuk_wrapper*.*",
-  ".*main_template*.*",
-  "uk.gov.hmrc.BuildInfo",
-  "app.*",
-  "prod.*",
-  "config.*",
-  "testOnlyDoNotUseInAppConf.*",
-  "testOnly.*",
-  "test",
-  "uk.gov.hmrc.cbcr.controllers.test.TestSubscriptionDataController",
-  "uk.gov.hmrc.cbcr.models.ContactDetails",
-  "uk.gov.hmrc.cbcr.models.CorrDocRefId",
-  "uk.gov.hmrc.cbcr.models.CorrespondenceDetails",
-  "uk.gov.hmrc.cbcr.models.CountryCode",
-  "uk.gov.hmrc.cbcr.models.DbOperationResult",
-  "uk.gov.hmrc.cbcr.models.InvalidState",
-  "uk.gov.hmrc.cbcr.models.MessageRefId",
-  "uk.gov.hmrc.cbcr.models.MigrationRequest",
-  "uk.gov.hmrc.cbcr.models.SubscriptionRequest",
-  "uk.gov.hmrc.cbcr.models.Utr*"
-)
-
-lazy val scoverageSettings = {
-  import scoverage._
-  Seq(
-    ScoverageKeys.coverageExcludedPackages := excludedPackages.mkString(";"),
-    ScoverageKeys.coverageMinimumStmtTotal := 80,
-    ScoverageKeys.coverageFailOnMinimum := false,
-    ScoverageKeys.coverageHighlighting := true
-  )
-}
-
 lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
-  .settings(scoverageSettings : _*)
+  .settings(CodeCoverageSettings.settings : _*)
   .settings(onLoadMessage := "")
   .settings(scalaSettings: _*)
   .settings(playDefaultPort := 9797)
