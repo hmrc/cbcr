@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.cbcr.repositories
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
+class MessageRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[MessageRefId](
       mongoComponent = mongo,
       collectionName = "MessageRefId",
@@ -36,13 +37,18 @@ class MessageRefIdRepository @Inject()(val mongo: MongoComponent)(implicit ec: E
         IndexModel(ascending("messageRefId"), IndexOptions().unique(true).name("Message Ref MessageRefId"))
       )
     ) {
-
   def save2(f: MessageRefId): Future[InsertOneResult] =
-    collection.insertOne(f).toFuture()
+    preservingMdc {
+      collection.insertOne(f).toFuture()
+    }
 
   def exists(messageRefId: String): Future[Boolean] =
-    collection.find(equal("messageRefId", messageRefId)).headOption().map(_.isDefined)
+    preservingMdc {
+      collection.find(equal("messageRefId", messageRefId)).headOption().map(_.isDefined)
+    }
 
   def delete(m: MessageRefId): Future[DeleteResult] =
-    collection.deleteOne(equal("messageRefId", m.id)).head()
+    preservingMdc {
+      collection.deleteOne(equal("messageRefId", m.id)).head()
+    }
 }

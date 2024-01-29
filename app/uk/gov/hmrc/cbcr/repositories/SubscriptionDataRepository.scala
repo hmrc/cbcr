@@ -18,19 +18,20 @@ package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertManyResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
+import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BackupSubscriptionDataRepository @Inject()(implicit mongo: MongoComponent, ec: ExecutionContext)
+class BackupSubscriptionDataRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[SubscriptionDetails](
       mongoComponent = mongo,
       collectionName = "Subscription_Data_Backup",
@@ -42,9 +43,8 @@ class BackupSubscriptionDataRepository @Inject()(implicit mongo: MongoComponent,
     ) {}
 
 @Singleton
-class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRepository)(
-  implicit mongo: MongoComponent,
-  ec: ExecutionContext)
+class SubscriptionDataRepository @Inject()(mongo: MongoComponent)(backupRepo: BackupSubscriptionDataRepository)(
+  implicit ec: ExecutionContext)
     extends PlayMongoRepository[SubscriptionDetails](
       mongoComponent = mongo,
       collectionName = "Subscription_Data",
@@ -57,51 +57,75 @@ class SubscriptionDataRepository @Inject()(backupRepo: BackupSubscriptionDataRep
         IndexModel(ascending("utr"), IndexOptions().name("Utr Index").unique(true)),
       )
     ) {
-
   def clearCBCId(cbcId: CBCId): Future[DeleteResult] =
-    collection.deleteOne(equal("cbcId", cbcId.value)).toFuture()
+    preservingMdc {
+      collection.deleteOne(equal("cbcId", cbcId.value)).toFuture()
+    }
 
-  def removeAll(): Future[DeleteResult] = collection.deleteMany(Filters.empty()).toFuture()
+  def removeAll(): Future[DeleteResult] =
+    preservingMdc {
+      collection.deleteMany(Filters.empty()).toFuture()
+    }
 
   def clear(utr: Utr): Future[DeleteResult] =
-    collection.deleteOne(equal("utr", utr.utr)).toFuture()
+    preservingMdc {
+      collection.deleteOne(equal("utr", utr.utr)).toFuture()
+    }
 
   def update(criteria: Bson, s: SubscriberContact): Future[Boolean] =
-    collection
-      .findOneAndUpdate(
-        criteria,
-        set("subscriberContact", s)
-      )
-      .headOption()
-      .map(_.isDefined)
+    preservingMdc {
+      collection
+        .findOneAndUpdate(
+          criteria,
+          set("subscriberContact", s)
+        )
+        .headOption()
+        .map(_.isDefined)
+    }
 
   def update(criteria: Bson, cc: CountryCode): Future[Boolean] =
-    collection
-      .findOneAndUpdate(
-        criteria,
-        set("businessPartnerRecord.address.countryCode", cc)
-      )
-      .headOption()
-      .map(_.isDefined)
+    preservingMdc {
+      collection
+        .findOneAndUpdate(
+          criteria,
+          set("businessPartnerRecord.address.countryCode", cc)
+        )
+        .headOption()
+        .map(_.isDefined)
+    }
 
-  def save2(s: SubscriptionDetails): Future[InsertOneResult] = collection.insertOne(s).toFuture()
+  def save2(s: SubscriptionDetails): Future[InsertOneResult] =
+    preservingMdc {
+      collection.insertOne(s).toFuture()
+    }
 
   def backup(s: List[SubscriptionDetails]): Future[InsertManyResult] =
-    backupRepo.collection.insertMany(s).toFuture()
+    preservingMdc {
+      backupRepo.collection.insertMany(s).toFuture()
+    }
 
   def get(safeId: String): Future[Option[SubscriptionDetails]] =
-    collection.find(equal("businessPartnerRecord.safeId", safeId)).headOption()
+    preservingMdc {
+      collection.find(equal("businessPartnerRecord.safeId", safeId)).headOption()
+    }
 
   def get(cbcId: CBCId): Future[Option[SubscriptionDetails]] =
-    collection.find(equal("cbcId", cbcId.value)).headOption()
+    preservingMdc {
+      collection.find(equal("cbcId", cbcId.value)).headOption()
+    }
 
   def get(utr: Utr): Future[Option[SubscriptionDetails]] =
-    collection.find(equal("utr", utr.utr)).headOption()
+    preservingMdc {
+      collection.find(equal("utr", utr.utr)).headOption()
+    }
 
   def getSubscriptions(query: Bson): Future[Seq[SubscriptionDetails]] =
-    collection.find(query).toFuture()
+    preservingMdc {
+      collection.find(query).toFuture()
+    }
 
   def checkNumberOfCbcIdForUtr(utr: String): Future[Long] =
-    collection.countDocuments(equal("utr", utr)).toFuture()
-
+    preservingMdc {
+      collection.countDocuments(equal("utr", utr)).toFuture()
+    }
 }

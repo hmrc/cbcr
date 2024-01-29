@@ -21,15 +21,19 @@ import org.mongodb.scala.model.Filters
 import uk.gov.hmrc.cbcr.models.DocRefIdRecord
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ReactiveDocRefIdRepository @Inject()(implicit mongo: MongoComponent, ec: ExecutionContext)
+class ReactiveDocRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[DocRefIdRecord](
       mongoComponent = mongo,
       collectionName = "DocRefId",
       domainFormat = DocRefIdRecord.format,
       indexes = Seq()) {
-  def findAll(): Future[Seq[DocRefIdRecord]] = collection.find(Filters.empty()).toFuture()
+  def findAll(): Future[Seq[DocRefIdRecord]] =
+    preservingMdc {
+      collection.find(Filters.empty()).toFuture()
+    }
 }
