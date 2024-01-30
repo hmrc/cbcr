@@ -35,7 +35,7 @@ class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRe
       mongoComponent = mongo,
       collectionName = "DocRefId",
       domainFormat = DocRefId.format,
-      indexes = Seq(),
+      indexes = Seq()
     ) {
   def delete(d: DocRefId): Future[DeleteResult] =
     preservingMdc {
@@ -47,7 +47,7 @@ class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRe
       collection
         .updateMany(
           equal("id", doc.id),
-          set("valid", true),
+          set("valid", true)
         )
         .toFuture()
         .map(_.getModifiedCount())
