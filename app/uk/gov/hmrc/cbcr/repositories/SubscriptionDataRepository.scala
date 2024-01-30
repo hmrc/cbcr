@@ -37,9 +37,9 @@ class BackupSubscriptionDataRepository @Inject()(mongo: MongoComponent)(implicit
       collectionName = "Subscription_Data_Backup",
       domainFormat = SubscriptionDetails.format,
       extraCodecs = Seq(
-        Codecs.playFormatCodec(SubscriberContact.formats),
+        Codecs.playFormatCodec(SubscriberContact.formats)
       ),
-      indexes = Seq(),
+      indexes = Seq()
     ) {}
 
 @Singleton
@@ -54,7 +54,7 @@ class SubscriptionDataRepository @Inject()(mongo: MongoComponent)(backupRepo: Ba
       ),
       indexes = Seq(
         IndexModel(ascending("cbcId"), IndexOptions().name("CBCId Index").unique(true)),
-        IndexModel(ascending("utr"), IndexOptions().name("Utr Index").unique(true)),
+        IndexModel(ascending("utr"), IndexOptions().name("Utr Index").unique(true))
       )
     ) {
   def clearCBCId(cbcId: CBCId): Future[DeleteResult] =

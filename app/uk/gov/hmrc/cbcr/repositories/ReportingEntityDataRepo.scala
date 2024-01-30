@@ -200,7 +200,7 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
             Filters.or(
               regex("cbcReportsDRI", ".*" + c + ".*"),
               regex("additionalInfoDRI", ".*" + c + ".*"),
-              regex("reportingEntityDRI", ".*" + c + ".*"),
+              regex("reportingEntityDRI", ".*" + c + ".*")
             ),
             equal("reportingPeriod", r.toString)
           )
