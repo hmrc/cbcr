@@ -20,24 +20,27 @@ import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: ExecutionContext)
+class FileUploadRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[FileUploadResponse](
       mongoComponent = mongo,
       collectionName = "FileUpload",
       domainFormat = FileUploadResponse.ufrFormat,
       indexes = Seq()) {
-
   def save2(f: FileUploadResponse): Future[Unit] =
-    collection.insertOne(f).toFutureOption().map(_ => ())
+    preservingMdc {
+      collection.insertOne(f).toFutureOption().map(_ => ())
+    }
 
   def get(envelopeId: String): Future[Option[FileUploadResponse]] =
-    for {
-      responses <- collection.find(equal("envelopeId", envelopeId)).toFuture()
-    } yield responses.lastOption
-
+    preservingMdc {
+      for {
+        responses <- collection.find(equal("envelopeId", envelopeId)).toFuture()
+      } yield responses.lastOption
+    }
 }

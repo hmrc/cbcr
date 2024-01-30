@@ -23,12 +23,13 @@ import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(val mongo: MongoComponent, val records: ReactiveDocRefIdRepository)(
+class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRefIdRepository)(
   implicit ec: ExecutionContext)
     extends PlayMongoRepository[DocRefId](
       mongoComponent = mongo,
@@ -36,18 +37,21 @@ class DocRefIdRepository @Inject()(val mongo: MongoComponent, val records: React
       domainFormat = DocRefId.format,
       indexes = Seq(),
     ) {
-
   def delete(d: DocRefId): Future[DeleteResult] =
-    collection.deleteOne(equal("id", d.id)).toFuture()
+    preservingMdc {
+      collection.deleteOne(equal("id", d.id)).toFuture()
+    }
 
   def edit(doc: DocRefId): Future[Long] =
-    collection
-      .updateMany(
-        equal("id", doc.id),
-        set("valid", true),
-      )
-      .toFuture()
-      .map(_.getModifiedCount())
+    preservingMdc {
+      collection
+        .updateMany(
+          equal("id", doc.id),
+          set("valid", true),
+        )
+        .toFuture()
+        .map(_.getModifiedCount())
+    }
 
   def save2(id: DocRefId): Future[DocRefIdSaveResponse] =
     records.collection
