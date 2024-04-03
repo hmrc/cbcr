@@ -18,21 +18,21 @@ object AppDependencies {
     "com.sun.msv.datatype.xsd" %  "xsdlib"                     % "2013.2"
   )
 
-  def test(scope: String = "test,it") = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-28"   % bootstrapVersion % scope,
-    "com.typesafe.akka"       %% "akka-testkit"             % "2.6.21"         % scope,
-    "org.scalatest"           %% "scalatest"                % "3.0.9"          % scope,
-    "com.vladsch.flexmark"    %  "flexmark-all"             % "0.35.10"        % scope,
-    "org.pegdown"             %  "pegdown"                  % "1.6.0"          % scope,
-    "org.scalatestplus.play"  %% "scalatestplus-play"       % "5.0.0"          % scope,
+  def test = Seq(
+    "uk.gov.hmrc"             %% "bootstrap-test-play-28"   % bootstrapVersion % Test,
+    "com.typesafe.akka"       %% "akka-testkit"             % "2.6.21"         % Test,
+    "org.scalatest"           %% "scalatest"                % "3.0.9"          % Test,
+    "com.vladsch.flexmark"    %  "flexmark-all"             % "0.35.10"        % Test,
+    "org.pegdown"             %  "pegdown"                  % "1.6.0"          % Test,
+    "org.scalatestplus.play"  %% "scalatestplus-play"       % "5.0.0"          % Test,
     "org.scalatestplus"       %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"    % Test,
-    "org.mockito"             %  "mockito-core"             % "3.11.2"         % scope,
-    "org.scalacheck"          %% "scalacheck"               % "1.15.0"         % scope,
-    "com.github.tomakehurst"  %  "wiremock-standalone"      % "2.25.0"         % scope,
-    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"  % "0.74.0"         % scope,
+    "org.mockito"             %  "mockito-core"             % "3.11.2"         % Test,
+    "org.scalacheck"          %% "scalacheck"               % "1.15.0"         % Test,
+    "com.github.tomakehurst"  %  "wiremock-standalone"      % "2.25.0"         % Test,
+    "uk.gov.hmrc.mongo"       %% "hmrc-mongo-test-play-28"  % "0.74.0"         % Test,
     "org.scalatestplus"       %% "scalatestplus-mockito"    % "1.0.0-M2"       % Test,
   )
 
 
-  def apply(): Seq[ModuleID] = compile ++ test()
+  def apply(): Seq[ModuleID] = compile ++ test
 }
