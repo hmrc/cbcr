@@ -15,7 +15,6 @@ object AppDependencies {
 
   def test(scope: String = "test"): Seq[ModuleID] = Seq(
     "uk.gov.hmrc"       %% "bootstrap-test-play-28"   % bootstrapVersion % scope,
-    "com.typesafe.akka" %% "akka-testkit"             % "2.6.21"         % scope,
     "org.scalatestplus" %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"    % scope,
     "org.mockito"       % "mockito-core"              % "3.11.2"         % scope,
     "org.scalacheck"    %% "scalacheck"               % "1.15.0"         % scope,
