@@ -36,6 +36,7 @@ class MessageRefIdRepository @Inject()(val mongo: MongoComponent)(implicit ec: E
         IndexModel(ascending("messageRefId"), IndexOptions().unique(true).name("Message Ref MessageRefId"))
       )
     ) {
+  override lazy val requiresTtlIndex: Boolean = false
 
   def save2(f: MessageRefId): Future[InsertOneResult] =
     collection.insertOne(f).toFuture()

@@ -1,4 +1,3 @@
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.sbt.PlayImport.PlayKeys.playDefaultPort
 import sbt._
 import sbt.Keys._

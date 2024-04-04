@@ -31,6 +31,7 @@ class FileUploadRepository @Inject()(val mongo: MongoComponent)(implicit ec: Exe
       collectionName = "FileUpload",
       domainFormat = FileUploadResponse.ufrFormat,
       indexes = Seq()) {
+  override lazy val requiresTtlIndex: Boolean = false
 
   def save2(f: FileUploadResponse): Future[Unit] =
     collection.insertOne(f).toFutureOption().map(_ => ())

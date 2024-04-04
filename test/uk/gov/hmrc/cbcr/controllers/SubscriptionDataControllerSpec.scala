@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.mongodb.client.result.{DeleteResult, InsertOneResult}
 import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any

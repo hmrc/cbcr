@@ -18,8 +18,8 @@ package uk.gov.hmrc.cbcr.util
 
 import java.nio.charset.Charset
 
-import akka.stream.Materializer
-import akka.util.ByteString
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
 import org.scalatest.OptionValues
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result

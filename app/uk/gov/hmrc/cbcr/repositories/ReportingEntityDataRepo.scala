@@ -42,6 +42,7 @@ class ReportingEntityDataRepo @Inject()(val mongo: MongoComponent)(implicit ec: 
         IndexModel(ascending("reportingEntityDRI"), IndexOptions().name("Reporting Entity DocRefId").unique(true))
       )
     ) {
+  override lazy val requiresTtlIndex: Boolean = false
 
   def delete(d: DocRefId): Future[DeleteResult] =
     collection
