@@ -19,7 +19,7 @@ package uk.gov.hmrc.cbcr.models
 import java.time.format.DateTimeFormatter
 import play.api.libs.json._
 import play.api.mvc.PathBindable
-import play.shaded.oauth.org.apache.commons.codec.net.URLCodec
+import org.apache.commons.codec.net.URLCodec
 
 case class DocRefId(id: String)
 object DocRefId {

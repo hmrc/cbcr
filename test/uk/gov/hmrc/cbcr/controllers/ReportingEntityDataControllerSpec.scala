@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import java.time.LocalDate
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import cats.data.NonEmptyList
 import com.mongodb.client.result.InsertOneResult
 import org.bson.BsonNull

@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.services
 
 import java.time.LocalDateTime
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.emailaddress.EmailAddress

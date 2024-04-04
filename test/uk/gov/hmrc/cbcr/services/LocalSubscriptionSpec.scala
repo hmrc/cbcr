@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import akka.actor.ActorSystem
-import akka.testkit.TestKit
-import com.typesafe.config.ConfigFactory
+import org.apache.pekko.stream.Materializer
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -35,30 +33,12 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.{ExecutionContext, Future}
 
 class LocalSubscriptionSpec
-    extends TestKit(
-      ActorSystem(
-        "CBCIdControllerSpec",
-        ConfigFactory.parseString("""
-                                    |akka {
-                                    | persistence {
-                                    |   journal.plugin = "inmemory-journal"
-                                    |   snapshot-store.plugin = "inmemory-snapshot-store"
-                                    | }
-                                    |}
-                                    |CBCId.controller {
-                                    |  timeout = 2 seconds
-                                    |  supervisor {
-                                    |    minBackoff = 3 seconds
-                                    |    maxBackoff = 10 minutes
-                                    |  }
-                                    |}
-""".stripMargin)
-      )) with UnitSpec with Matchers with ScalaFutures with GuiceOneAppPerSuite with MockitoSugar {
+    extends UnitSpec with Matchers with ScalaFutures with GuiceOneAppPerSuite with MockitoSugar {
 
-  private implicit val as: ActorSystem = app.injector.instanceOf[ActorSystem]
   private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   private val repo = mock[SubscriptionDataRepository]
   private val cbcdIdGenerator = new CBCIdGenerator
+  private implicit val mat: Materializer = app.injector.instanceOf[Materializer]
 
   private val localGen = new LocalSubscription(repo, cbcdIdGenerator)
 
@@ -113,6 +93,7 @@ class LocalSubscriptionSpec
           exampleSubscriptionData.businessPartnerRecord.address
         )
 
+        response.body
         jsonBodyOf(response).futureValue shouldEqual Json.toJson(jResponse)
 
       }

@@ -37,6 +37,9 @@ class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRe
       domainFormat = DocRefId.format,
       indexes = Seq()
     ) {
+
+  override lazy val requiresTtlIndex: Boolean = false
+
   def delete(d: DocRefId): Future[DeleteResult] =
     preservingMdc {
       collection.deleteOne(equal("id", d.id)).toFuture()
