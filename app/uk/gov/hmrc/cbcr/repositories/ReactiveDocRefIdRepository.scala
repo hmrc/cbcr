@@ -32,8 +32,7 @@ class ReactiveDocRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: E
       collectionName = "DocRefId",
       domainFormat = DocRefIdRecord.format,
       indexes = Seq()) {
-  def findAll(): Future[Seq[DocRefIdRecord]] =
-    preservingMdc {
-      collection.find(Filters.empty()).toFuture()
-    }
+  override lazy val requiresTtlIndex: Boolean = false
+
+  def findAll(): Future[Seq[DocRefIdRecord]] = collection.find(Filters.empty()).toFuture()
 }
