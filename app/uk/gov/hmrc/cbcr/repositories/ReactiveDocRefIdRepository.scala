@@ -17,13 +17,11 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import com.google.inject.{Inject, Singleton}
-import org.mongodb.scala.model.Filters
 import uk.gov.hmrc.cbcr.models.DocRefIdRecord
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class ReactiveDocRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
@@ -33,6 +31,4 @@ class ReactiveDocRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: E
       domainFormat = DocRefIdRecord.format,
       indexes = Seq()) {
   override lazy val requiresTtlIndex: Boolean = false
-
-  def findAll(): Future[Seq[DocRefIdRecord]] = collection.find(Filters.empty()).toFuture()
 }
