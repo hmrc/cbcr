@@ -22,7 +22,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector}
-import uk.gov.hmrc.cbcr.auth.CBCRAuth
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
