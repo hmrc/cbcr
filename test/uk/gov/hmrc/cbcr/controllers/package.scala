@@ -23,7 +23,6 @@ import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -33,7 +32,6 @@ package object controllers extends MockitoSugar {
 
   val cc = stubControllerComponents()
   val mockAuthConnector = mock[AuthConnector]
-  val cBCRAuth = new CBCRAuth(mockAuthConnector, cc)
   val agentAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Agent)
 
