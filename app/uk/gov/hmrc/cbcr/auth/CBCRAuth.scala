@@ -18,6 +18,7 @@ package uk.gov.hmrc.cbcr.auth
 
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.JsValue
+import play.api.mvc.Results.Unauthorized
 import play.api.mvc._
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
