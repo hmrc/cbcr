@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 @Singleton
-class RemoteSubscription @Inject()(val des: DESConnector)(implicit executionContext: ExecutionContext)
+class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext: ExecutionContext)
     extends SubscriptionHandler {
 
   lazy val logger: Logger = Logger(this.getClass)

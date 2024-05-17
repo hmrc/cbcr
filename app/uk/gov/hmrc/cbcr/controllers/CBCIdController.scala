@@ -16,18 +16,18 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import javax.inject._
 import play.api.libs.json.JsValue
 import play.api.mvc.{ControllerComponents, Request, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
+import uk.gov.hmrc.cbcr.services.SubscriptionHandler
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject._
 import scala.concurrent.Future
 
 @Singleton
-class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth, cc: ControllerComponents)
+class CBCIdController @Inject()(gen: SubscriptionHandler, auth: CBCRAuth, cc: ControllerComponents)
     extends BackendController(cc) {
 
   def subscribe =
