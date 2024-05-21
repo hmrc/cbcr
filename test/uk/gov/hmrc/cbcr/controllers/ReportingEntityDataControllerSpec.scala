@@ -80,15 +80,20 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   val reportingPeriod = "2022-02-22"
 
-  val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.toJson(red))
+  val fakePostRequest: FakeRequest[ReportingEntityData] = FakeRequest(Helpers.POST, "/reporting-entity").withBody(red)
 
   val badFakePostRequest: FakeRequest[JsValue] =
-    FakeRequest(Helpers.POST, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
+    FakeRequest(Helpers.POST, "/reporting-entity")
+      .withHeaders("Content-Type" -> "application/json")
+      .withBody(Json.obj("bad" -> "request"))
 
-  val fakePutRequest: FakeRequest[JsValue] = FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.toJson(pred))
+  val fakePutRequest: FakeRequest[PartialReportingEntityData] =
+    FakeRequest(Helpers.PUT, "/reporting-entity").withBody(pred)
 
   val badFakePutRequest: FakeRequest[JsValue] =
-    FakeRequest(Helpers.PUT, "/reporting-entity").withBody(Json.obj("bad" -> "request"))
+    FakeRequest(Helpers.PUT, "/reporting-entity")
+      .withHeaders("Content-Type" -> "application/json")
+      .withBody(Json.obj("bad" -> "request"))
 
   private val fakeGetRequest = FakeRequest(Helpers.GET, "/reporting-entity/myDocRefId")
 
@@ -100,7 +105,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
   private val repo = mock[ReportingEntityDataRepo]
 
-  val controller = new ReportingEntityDataController(repo, cBCRAuth, cc)
+  val controller = new ReportingEntityDataController(repo, auth, cc)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a ReportingEntityData" in {
@@ -110,7 +115,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
     }
 
     "respond with a 400 if ReportingEntity in request is invalid" in {
-      val result = controller.save()(badFakePostRequest)
+      val result = controller.save()(badFakePostRequest).run()
       verifyStatusCode(result, Status.BAD_REQUEST)
     }
 
@@ -165,7 +170,7 @@ class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with 
 
     "respond with a 400 if PartialReportingEntityData in request is invalid" in {
       when(repo.update(any[PartialReportingEntityData])) thenReturn Future.successful(true)
-      val result = controller.update()(badFakePutRequest)
+      val result = controller.update()(badFakePutRequest).run()
       verifyStatusCode(result, Status.BAD_REQUEST)
     }
 

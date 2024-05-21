@@ -16,64 +16,42 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import java.time.LocalDate
-import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
-import uk.gov.hmrc.cbcr.auth.CBCRAuth
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.LocalDate
 import java.time.format.DateTimeParseException
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
+class ReportingEntityDataController @Inject()(
+  repo: ReportingEntityDataRepo,
+  auth: AuthenticatedAction,
+  cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  def save() =
-    auth.authCBCRWithJson(
-      { implicit request =>
-        request.body
-          .validate[ReportingEntityData]
-          .fold(
-            error => {
-              logger.error(s"Unable to de-serialise request as a ReportingEntityData: ${error.mkString}")
-              Future.successful(BadRequest)
-            },
-            (data: ReportingEntityData) => repo.save(data).map(_ => Ok)
-          )
-      },
-      parse.json
-    )
+  def save(): Action[ReportingEntityData] = Action(parse.json[ReportingEntityData]).andThen(auth).async { request =>
+    repo.save(request.body).map(_ => Ok)
+  }
 
-  def update() =
-    auth.authCBCRWithJson(
-      { implicit request =>
-        request.body
-          .validate[PartialReportingEntityData]
-          .fold(
-            error => {
-              logger.error(s"Unable to de-serialise request as a PartialReportingEntityData: ${error.mkString}")
-              Future.successful(BadRequest)
-            },
-            (data: PartialReportingEntityData) =>
-              repo.update(data).map {
-                case true  => Ok
-                case false => NotModified
-            }
-          )
-      },
-      parse.json
-    )
+  def update(): Action[PartialReportingEntityData] =
+    Action(parse.json[PartialReportingEntityData]).andThen(auth).async { request =>
+      repo.update(request.body).map {
+        case true  => Ok
+        case false => NotModified
+      }
+    }
 
-  def queryDocRefId(d: DocRefId) = auth.authCBCR { _ =>
+  def queryDocRefId(d: DocRefId): Action[AnyContent] = Action.andThen(auth).async {
     repo
       .queryReportingEntity(d)
       .map {
@@ -88,7 +66,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def query(d: DocRefId) = auth.authCBCR { _ =>
+  def query(d: DocRefId): Action[AnyContent] = Action.andThen(auth).async {
     repo
       .query(d)
       .map {
@@ -103,7 +81,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { _ =>
+  def queryCbcId(cbcId: CBCId, reportingPeriod: String): Action[AnyContent] = Action.andThen(auth).async {
     repo
       .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
       .map {
@@ -118,7 +96,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
 
   }
 
-  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { _ =>
+  def queryTin(tin: String, reportingPeriod: String): Action[AnyContent] = Action.andThen(auth).async {
     try {
       repo
         .queryTIN(tin, LocalDate.parse(reportingPeriod))
@@ -135,7 +113,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
     }
   }
 
-  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { _ =>
+  def isOverlapping(tin: String, startDate: String, endDate: String): Action[AnyContent] = Action.andThen(auth).async {
     repo
       .queryTINDatesOverlapping(tin, EntityReportingPeriod(LocalDate.parse(startDate), LocalDate.parse(endDate)))
       .map { result =>
@@ -149,7 +127,7 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       }
   }
 
-  def queryModel(d: DocRefId) = auth.authCBCR { _ =>
+  def queryModel(d: DocRefId): Action[AnyContent] = Action.andThen(auth).async { _ =>
     repo
       .queryModel(d)
       .map {

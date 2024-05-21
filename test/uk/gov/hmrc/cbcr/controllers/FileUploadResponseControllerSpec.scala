@@ -39,10 +39,13 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   private val fur = FileUploadResponse("id1", "fid1", "AVAILABLE", None)
 
-  val fakePostRequest: FakeRequest[JsValue] = FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(toJson(fur))
+  val fakePostRequest: FakeRequest[FileUploadResponse] =
+    FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(fur)
 
   val badFakePostRequest: FakeRequest[JsValue] =
-    FakeRequest(Helpers.POST, "/saveFileUploadResponse").withBody(Json.obj("bad" -> "request"))
+    FakeRequest(Helpers.POST, "/saveFileUploadResponse")
+      .withHeaders("Content-Type" -> "application/json")
+      .withBody(Json.obj("bad" -> "request"))
 
   val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest(Helpers.GET, "/retrieveFileUploadResponse")
 
@@ -50,11 +53,11 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
 
   private val repo = mock[FileUploadRepository]
 
-  val controller = new FileUploadResponseController(repo, cBCRAuth, cc)
+  val controller = new FileUploadResponseController(repo, auth, cc)
 
   "The FileUploadResponseController" should {
     "respond with 200 and don't store when received status other than AVAILABLE or DELETED" in {
-      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(toJson(fur.copy(status = "QUARANTINED"))))
+      val result = controller.saveFileUploadResponse(fakePostRequest.withBody(fur.copy(status = "QUARANTINED")))
       status(result) shouldBe Status.OK
     }
 
@@ -67,7 +70,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
     "respond with a 400 if FileUploadResponse in request is invalid" in {
       when(repo.save2(any(classOf[FileUploadResponse])))
         .thenReturn(Future.failed(new RuntimeException()))
-      val result = controller.saveFileUploadResponse(badFakePostRequest)
+      val result = controller.saveFileUploadResponse(badFakePostRequest).run()
       status(result) shouldBe Status.BAD_REQUEST
     }
 
