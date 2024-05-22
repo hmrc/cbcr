@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import javax.inject.{Inject, Singleton}
-
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.{Json, Reads}
 import play.api.mvc.Result
 import play.api.mvc.Results._
+import uk.gov.hmrc.cbcr.LoggerOps
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext: ExecutionContext)
@@ -43,20 +44,24 @@ class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext:
             .validate[T]
             .fold[Result](
               errors => {
-                logger.error(s"Unable to de-serialise response: ${response.body}\nErrors: $errors")
+                logger.kibanaError(s"DES: Unable to de-serialise response: ${response.body}\nErrors: $errors")
                 InternalServerError
               },
               (t: T) => f(t)
             )
         } else {
+          logger.kibanaError(s"DES: Response wasn't json. Got:\n${response.body}")
           InternalServerError
         }
-      case FORBIDDEN             => Forbidden
-      case NOT_FOUND             => NotFound
-      case BAD_REQUEST           => BadRequest
-      case INTERNAL_SERVER_ERROR => InternalServerError
-      case SERVICE_UNAVAILABLE   => ServiceUnavailable
-      case _                     => InternalServerError
+      case FORBIDDEN   => Forbidden
+      case NOT_FOUND   => NotFound
+      case BAD_REQUEST => BadRequest
+      case SERVICE_UNAVAILABLE =>
+        logger.kibanaError(s"DES: Unavailable")
+        ServiceUnavailable
+      case status =>
+        logger.kibanaError(s"DES: Got unexpected status $status with body:\n${response.body}")
+        InternalServerError
     }
   }
 
