@@ -35,7 +35,7 @@ class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext:
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  def checkResponse[T: Reads](response: HttpResponse)(f: T => Result): Result = {
+  def checkResponse[T: Reads](response: HttpResponse)(f: T => Result)(implicit hc: HeaderCarrier): Result = {
     logger.info(s"Response body: ${response.body}")
     response.status match {
       case OK =>
@@ -44,7 +44,7 @@ class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext:
             .validate[T]
             .fold[Result](
               errors => {
-                logger.kibanaError(s"DES: Unable to de-serialise response: ${response.body}\nErrors: $errors")
+                logger.kibanaError(s"DES: Unable to de-serialise response:\n${response.body}\nErrors: $errors")
                 InternalServerError
               },
               (t: T) => f(t)
