@@ -16,27 +16,25 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class MessageRefIdController @Inject()(
-  repo: MessageRefIdRepository,
-  auth: AuthenticatedAction,
-  cc: ControllerComponents)(implicit ec: ExecutionContext)
+class MessageRefIdController @Inject()(repo: MessageRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def save(messageRefId: String): Action[AnyContent] = Action.andThen(auth).async {
+  def save(messageRefId: String) = auth.authCBCR { _ =>
     repo.save2(MessageRefId(messageRefId)).map(_ => Ok)
   }
 
-  def exists(messageRefId: String): Action[AnyContent] = Action.andThen(auth).async {
+  def exists(messageRefId: String) = auth.authCBCR { _ =>
     repo.exists(messageRefId).map(result => if (result) Ok else NotFound)
   }
 

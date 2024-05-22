@@ -17,48 +17,66 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import org.mongodb.scala.model.Filters.equal
+
+import javax.inject.{Inject, Singleton}
 import play.api.Configuration
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SubscriptionDataController @Inject()(
   repo: SubscriptionDataRepository,
   des: DESConnector,
-  auth: AuthenticatedAction,
+  auth: CBCRAuth,
   configuration: Configuration,
   cc: ControllerComponents)(implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def saveSubscriptionData(): Action[SubscriptionDetails] =
-    Action(parse.json[SubscriptionDetails]).andThen(auth).async { request =>
-      repo.save2(request.body).map(_ => Ok)
-    }
+  def saveSubscriptionData(): Action[JsValue] =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[SubscriptionDetails]
+          .fold(
+            error => Future.successful(BadRequest(JsError.toJson(error))),
+            response => repo.save2(response).map(_ => Ok)
+          )
+      },
+      parse.json
+    )
 
-  def updateSubscriberContactDetails(cbcId: CBCId): Action[SubscriberContact] =
-    Action(parse.json[SubscriberContact]).andThen(auth).async { request =>
-      repo.update(equal("cbcId", Codecs.toBson(cbcId)), request.body).map {
-        case true  => Ok
-        case false => InternalServerError
-      }
-    }
+  def updateSubscriberContactDetails(cbcId: CBCId) =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[SubscriberContact]
+          .fold(
+            error => Future.successful(BadRequest(JsError.toJson(error))),
+            response =>
+              repo.update(equal("cbcId", Codecs.toBson(cbcId)), response).map {
+                case true  => Ok
+                case false => InternalServerError
+            }
+          )
+      },
+      parse.json
+    )
 
-  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = Action.andThen(auth).async {
+  def clearSubscriptionData(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .clearCBCId(cbcId)
       .map(r => if (r.getDeletedCount > 0) Ok("ok") else NotFound)
   }
 
-  def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = Action.andThen(auth).async {
+  def retrieveSubscriptionDataUtr(utr: Utr): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .get(utr)
       .map {
@@ -67,7 +85,7 @@ class SubscriptionDataController @Inject()(
       }
   }
 
-  def retrieveSubscriptionDataCBCId(cbcId: CBCId): Action[AnyContent] = Action.andThen(auth).async {
+  def retrieveSubscriptionDataCBCId(cbcId: CBCId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .get(cbcId)
       .map {

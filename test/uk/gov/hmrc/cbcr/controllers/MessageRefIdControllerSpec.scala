@@ -38,7 +38,7 @@ class MessageRefIdControllerSpec extends UnitSpec with ScalaFutures with MockAut
 
   private val repo = mock[MessageRefIdRepository]
 
-  val controller = new MessageRefIdController(repo, auth, cc)
+  val controller = new MessageRefIdController(repo, cBCRAuth, cc)
 
   "The MessageRefIdController" should {
     "respond with a 200 when asked to save a MessageRefId" in {

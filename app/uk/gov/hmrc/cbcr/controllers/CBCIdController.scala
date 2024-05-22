@@ -16,29 +16,47 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import javax.inject._
+import play.api.libs.json.JsValue
+import play.api.mvc.{ControllerComponents, Request, Result}
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandlerImpl
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject._
+import scala.concurrent.Future
 
 @Singleton
-class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: AuthenticatedAction, cc: ControllerComponents)
+class CBCIdController @Inject()(gen: SubscriptionHandlerImpl, auth: CBCRAuth, cc: ControllerComponents)
     extends BackendController(cc) {
 
-  def subscribe: Action[SubscriptionDetails] =
-    Action(parse.json[SubscriptionDetails]).andThen(auth).async { implicit request =>
-      gen.createSubscription(request.body)
-    }
+  def subscribe =
+    auth.authCBCRWithJson(
+      { implicit request: Request[JsValue] =>
+        request.body
+          .validate[SubscriptionDetails]
+          .fold[Future[Result]](
+            _ => Future.successful(BadRequest),
+            srb => gen.createSubscription(srb)
+          )
+      },
+      parse.json
+    )
 
-  def updateSubscription(safeId: String): Action[CorrespondenceDetails] =
-    Action(parse.json[CorrespondenceDetails]).andThen(auth).async { implicit request =>
-      gen.updateSubscription(safeId, request.body)
-    }
+  def updateSubscription(safeId: String) =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[CorrespondenceDetails]
+          .fold[Future[Result]](
+            e => Future.successful(BadRequest(e.toString)),
+            details => gen.updateSubscription(safeId, details)
+          )
+      },
+      parse.json
+    )
 
-  def getSubscription(safeId: String): Action[AnyContent] = Action.andThen(auth).async { implicit request =>
+  def getSubscription(safeId: String) = auth.authCBCR { implicit request =>
     gen.getSubscription(safeId)
   }
 

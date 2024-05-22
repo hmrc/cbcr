@@ -21,16 +21,16 @@ import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import uk.gov.hmrc.auth.core.retrieve.Retrieval
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait MockAuth extends MockitoSugar {
   val mockAuthConnector = mock[AuthConnector]
+  val cBCRAuth = new CBCRAuth(mockAuthConnector, cc)
   val agentAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Agent)
-  val auth = new AuthenticatedAction(mockAuthConnector, cc)
 
   private def agentAuthStub(returnValue: Future[Option[AffinityGroup]]) =
     when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(), any()))

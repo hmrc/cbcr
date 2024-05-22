@@ -18,8 +18,8 @@ package uk.gov.hmrc.cbcr.controllers
 
 import play.api.Logger
 import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -28,23 +28,24 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadResponseController @Inject()(
-  repo: FileUploadRepository,
-  auth: AuthenticatedAction,
-  cc: ControllerComponents)(implicit val ec: ExecutionContext)
+class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  def saveFileUploadResponse: Action[FileUploadResponse] =
-    Action.async(parse.json[FileUploadResponse]) { implicit request =>
-      request.body.status match {
-        case "AVAILABLE" | "DELETED" | "ERROR" => repo.save2(request.body).map(_ => Ok)
-        case _                                 => Future.successful(Ok)
-      }
+  def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
+    request.body.validate[FileUploadResponse].asEither match {
+      case Left(error) => Future.successful(BadRequest(JsError.toJson(error)))
+      case Right(response) =>
+        response.status match {
+          case "AVAILABLE" | "DELETED" | "ERROR" => repo.save2(response).map(_ => Ok)
+          case _                                 => Future.successful(Ok)
+        }
     }
+  }
 
-  def retrieveFileUploadResponse(envelopeId: String): Action[AnyContent] = Action.andThen(auth).async {
+  def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { _ =>
     repo.get(envelopeId).map {
       case Some(obj) => Ok(Json.toJson(obj))
       case None      => NoContent
