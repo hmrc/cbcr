@@ -16,43 +16,18 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import play.api.Logger
+import com.google.inject.ImplementedBy
 import play.api.mvc.Result
-import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http.HeaderCarrier
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
+@ImplementedBy(classOf[RemoteSubscription])
 trait SubscriptionHandler {
 
   def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[Result]
   def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier): Future[Result]
   def getSubscription(safeId: String)(implicit hc: HeaderCarrier): Future[Result]
-
-}
-
-@Singleton
-class SubscriptionHandlerImpl @Inject()(
-  configuration: ApplicationConfig,
-  localCBCIdGenerator: LocalSubscription,
-  remoteCBCIdGenerator: RemoteSubscription)
-    extends SubscriptionHandler {
-
-  lazy val logger: Logger = Logger(this.getClass)
-
-  val useDESApi: Boolean = configuration.useDESApi
-  logger.info(s"useDESApi set to: $useDESApi")
-
-  val handler: SubscriptionHandler = if (useDESApi) remoteCBCIdGenerator else localCBCIdGenerator
-
-  override def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier) =
-    handler.createSubscription(sub)
-
-  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit hc: HeaderCarrier) =
-    handler.updateSubscription(safeId, details)
-
-  override def getSubscription(safeId: String)(implicit hc: HeaderCarrier) = handler.getSubscription(safeId)
 
 }
