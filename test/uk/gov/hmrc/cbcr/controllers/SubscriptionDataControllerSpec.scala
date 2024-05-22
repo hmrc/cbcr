@@ -57,23 +57,19 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
 
   private val desConnector = mock[DESConnector]
   when(store.getSubscriptions(any())).thenReturn(Future.successful(List()))
-  val controller = new SubscriptionDataController(store, desConnector, auth, config, cc)
+  val controller = new SubscriptionDataController(store, desConnector, cBCRAuth, config, cc)
 
-  private val fakePostRequest: FakeRequest[SubscriptionDetails] =
-    FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(exampleSubscriptionData)
+  private val fakePostRequest: FakeRequest[JsValue] =
+    FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))
 
   private val BadFakePostRequest: FakeRequest[JsValue] =
-    FakeRequest(Helpers.POST, "/saveSubscriptionData")
-      .withHeaders("Content-Type" -> "application/json")
-      .withBody(Json.obj("bad" -> "request"))
+    FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(Json.obj("bad" -> "request"))
 
   private val fakePutRequest =
-    FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(exampleSubscriberContact)
+    FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(toJson(exampleSubscriberContact))
 
   private val badFakePutRequest =
-    FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails")
-      .withHeaders("Content-Type" -> "application/json")
-      .withBody(Json.obj("bad" -> "request"))
+    FakeRequest(Helpers.PUT, "/updateSubscriberContactDetails").withBody(Json.obj("bad" -> "request"))
 
   private val fakeGetRequest: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest(Helpers.GET, "/retrieveSubscriptionData")
@@ -94,7 +90,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     }
 
     "respond with a 400 if invalid SubscriptionData passed in request" in {
-      val result = controller.saveSubscriptionData()(BadFakePostRequest).run()
+      val result = controller.saveSubscriptionData()(BadFakePostRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
@@ -111,7 +107,7 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     }
 
     "respond with a 400 if invalid SubscriberContact passed in request" in {
-      val result = controller.updateSubscriberContactDetails(cbcId)(badFakePutRequest).run()
+      val result = controller.updateSubscriberContactDetails(cbcId)(badFakePutRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 

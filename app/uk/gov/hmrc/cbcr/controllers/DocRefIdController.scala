@@ -16,21 +16,22 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import play.api.mvc.ControllerComponents
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
+import uk.gov.hmrc.http.NotFoundException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class DocRefIdController @Inject()(repo: DocRefIdRepository, auth: AuthenticatedAction, cc: ControllerComponents)(
+class DocRefIdController @Inject()(repo: DocRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(
   implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def query(docRefId: DocRefId): Action[AnyContent] = Action.andThen(auth).async {
+  def query(docRefId: DocRefId) = auth.authCBCR { _ =>
     repo.query(docRefId).map {
       case DocRefIdResponses.Valid        => Ok
       case DocRefIdResponses.Invalid      => Conflict
@@ -38,7 +39,7 @@ class DocRefIdController @Inject()(repo: DocRefIdRepository, auth: Authenticated
     }
   }
 
-  def saveDocRefId(docRefId: DocRefId): Action[AnyContent] = Action.andThen(auth).async { _ =>
+  def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { _ =>
     repo.save2(docRefId).map {
       case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
@@ -46,15 +47,17 @@ class DocRefIdController @Inject()(repo: DocRefIdRepository, auth: Authenticated
     }
   }
 
-  def saveCorrDocRefId(corrDocRefId: CorrDocRefId): Action[DocRefId] =
-    Action(parse.json[DocRefId]).andThen(auth).async { request =>
-      repo.save2(corrDocRefId, request.body).map {
-        case (DocRefIdResponses.Invalid, _)                                   => BadRequest
-        case (DocRefIdResponses.DoesNotExist, _)                              => NotFound
-        case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok))            => Ok
-        case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Failed))        => InternalServerError
-        case (DocRefIdResponses.Valid, Some(DocRefIdResponses.AlreadyExists)) => BadRequest
-        case (DocRefIdResponses.Valid, None)                                  => InternalServerError
-      }
+  def saveCorrDocRefId(corrDocRefId: CorrDocRefId) = auth.authCBCR { implicit request =>
+    val docRefId =
+      request.body.asJson.getOrElse(throw new NotFoundException("No doc ref id found in the body")).as[DocRefId]
+    repo.save2(corrDocRefId, docRefId).map {
+      case (DocRefIdResponses.Invalid, _)                                   => BadRequest
+      case (DocRefIdResponses.DoesNotExist, _)                              => NotFound
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Ok))            => Ok
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.Failed))        => InternalServerError
+      case (DocRefIdResponses.Valid, Some(DocRefIdResponses.AlreadyExists)) => BadRequest
+      case (DocRefIdResponses.Valid, None)                                  => InternalServerError
+
     }
+  }
 }

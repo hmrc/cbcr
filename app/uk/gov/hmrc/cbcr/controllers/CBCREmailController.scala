@@ -16,23 +16,30 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import play.api.libs.json.JsValue
-import play.api.mvc.{Action, ControllerComponents, Request}
-import uk.gov.hmrc.cbcr.auth.AuthenticatedAction
+import javax.inject.{Inject, Singleton}
+import play.api.mvc.{ControllerComponents, Result}
+import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.cbcr.services.EmailService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CBCREmailController @Inject()(email: EmailService, auth: AuthenticatedAction, cc: ControllerComponents)(
+class CBCREmailController @Inject()(email: EmailService, auth: CBCRAuth, cc: ControllerComponents)(
   implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
   //todo have email validation?
-  def sendEmail = Action(parse.json[Email]).andThen(auth).async { implicit request =>
-    email.sendEmail(request.body)
-  }
+  def sendEmail =
+    auth.authCBCRWithJson(
+      { implicit request =>
+        request.body
+          .validate[Email]
+          .fold[Future[Result]](
+            _ => Future.successful(BadRequest),
+            emailCBCR => email.sendEmail(emailCBCR)
+          )
+      },
+      parse.json
+    )
 }

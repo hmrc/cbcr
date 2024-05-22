@@ -73,10 +73,10 @@ class CBCIdControllerSpec
 
       when(config.useDESApi) thenReturn false
       val handler = new SubscriptionHandlerImpl(config, localGen, remoteGen)
-      val controller = new CBCIdController(handler, auth, cc)
-      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(srb)
+      val controller = new CBCIdController(handler, cBCRAuth, cc)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(localGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
-      val response = controller.subscribe(fakeRequestSubscribe)
+      val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
       jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
     }
@@ -84,10 +84,10 @@ class CBCIdControllerSpec
     "query the remoteCBCId generator when useDESApi is set to true" in {
       when(config.useDESApi) thenReturn true
       val handler = new SubscriptionHandlerImpl(config, localGen, remoteGen)
-      val controller = new CBCIdController(handler, auth, cc)
-      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(srb)
+      val controller = new CBCIdController(handler, cBCRAuth, cc)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
       when(remoteGen.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
-      val response = controller.subscribe(fakeRequestSubscribe)
+      val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
       jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
     }
@@ -96,12 +96,9 @@ class CBCIdControllerSpec
 
       when(config.useDESApi) thenReturn false
       val handler = new SubscriptionHandlerImpl(config, localGen, remoteGen)
-      val controller = new CBCIdController(handler, auth, cc)
-      val fakeRequestSubscribe =
-        FakeRequest("POST", "/cbc-id")
-          .withHeaders("Content-Type" -> "application/json")
-          .withBody(Json.obj("bad" -> "request"))
-      val response = controller.subscribe(fakeRequestSubscribe).run()
+      val controller = new CBCIdController(handler, cBCRAuth, cc)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.obj("bad" -> "request"))
+      val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.BAD_REQUEST
     }
 
@@ -109,8 +106,8 @@ class CBCIdControllerSpec
 
       when(config.useDESApi) thenReturn true
       val handler = new SubscriptionHandlerImpl(config, localGen, remoteGen)
-      val controller = new CBCIdController(handler, auth, cc)
-      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(crb)
+      val controller = new CBCIdController(handler, cBCRAuth, cc)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(crb))
       when(remoteGen.updateSubscription(any(), any())(any())) thenReturn Future.successful(
         Ok(Json.obj("cbc-id" -> id.value)))
       val response = controller.updateSubscription("safeId")(fakeRequestSubscribe)
@@ -121,12 +118,9 @@ class CBCIdControllerSpec
 
       when(config.useDESApi) thenReturn true
       val handler = new SubscriptionHandlerImpl(config, localGen, remoteGen)
-      val controller = new CBCIdController(handler, auth, cc)
-      val fakeRequestSubscribe =
-        FakeRequest("POST", "/cbc-id")
-          .withHeaders("Content-Type" -> "application/json")
-          .withJsonBody(Json.obj("bad" -> "request"))
-      val response = controller.updateSubscription("safeId")(fakeRequestSubscribe).run()
+      val controller = new CBCIdController(handler, cBCRAuth, cc)
+      val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.obj("bad" -> "request"))
+      val response = controller.updateSubscription("safeId")(fakeRequestSubscribe)
       status(response) shouldBe Status.BAD_REQUEST
     }
 
@@ -134,7 +128,7 @@ class CBCIdControllerSpec
 
       when(config.useDESApi) thenReturn false
       val handler = new SubscriptionHandlerImpl(config, localGen, remoteGen)
-      val controller = new CBCIdController(handler, auth, cc)
+      val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("GET", "/cbc-id")
       when(localGen.getSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("some" -> "thing")))
       val response = controller.getSubscription("safeId")(fakeRequestSubscribe)
