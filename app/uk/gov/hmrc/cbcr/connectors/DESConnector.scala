@@ -67,12 +67,9 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     "isAnAgent"         -> false
   )
 
-  private def createHeaderCarrier: HeaderCarrier = HeaderCarrier()
-
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
 
-  def lookup(utr: String): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
+  def lookup(utr: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.info(s"Lookup Request sent to DES")
     http
       .POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData), desHeaders)
@@ -81,8 +78,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
       }
   }
 
-  def createSubscription(sub: SubscriptionRequest): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
+  def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val writes = SubscriptionRequest.subscriptionWriter
     logger.info(s"Create Request sent to DES")
     http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders).recover {
@@ -90,8 +86,8 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     }
   }
 
-  def updateSubscription(safeId: String, cor: CorrespondenceDetails): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
+  def updateSubscription(safeId: String, cor: CorrespondenceDetails)(
+    implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val format = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
     http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders).recover {
@@ -99,8 +95,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     }
   }
 
-  def getSubscription(safeId: String): Future[HttpResponse] = {
-    implicit val hc: HeaderCarrier = createHeaderCarrier
+  def getSubscription(safeId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.info(s"Get Request sent to DES for safeID: $safeId")
     http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", headers = desHeaders).recover {
       case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
