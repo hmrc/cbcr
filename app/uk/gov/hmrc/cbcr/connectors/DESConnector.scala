@@ -69,19 +69,24 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
 
+  def withCorrelationId[T](f: HeaderCarrier => T)(implicit hc: HeaderCarrier): T =
+    f(hc.withExtraHeaders(hc.headers(Seq("X-Correlation-ID")): _*))
+
   def lookup(utr: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.info(s"Lookup Request sent to DES")
-    http
-      .POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData), desHeaders)
-      .recover {
-        case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
-      }
+    withCorrelationId { implicit hc =>
+      http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData), desHeaders)
+    } recover {
+      case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
+    }
   }
 
   def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val writes = SubscriptionRequest.subscriptionWriter
     logger.info(s"Create Request sent to DES")
-    http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders).recover {
+    withCorrelationId { implicit hc =>
+      http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders)
+    } recover {
       case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
     }
   }
@@ -90,14 +95,18 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     implicit hc: HeaderCarrier): Future[HttpResponse] = {
     implicit val format = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
-    http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders).recover {
+    withCorrelationId { implicit hc =>
+      http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders)
+    } recover {
       case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
     }
   }
 
   def getSubscription(safeId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.info(s"Get Request sent to DES for safeID: $safeId")
-    http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", headers = desHeaders).recover {
+    withCorrelationId { implicit hc =>
+      http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", headers = desHeaders)
+    } recover {
       case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
     }
   }
