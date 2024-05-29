@@ -28,7 +28,7 @@ class BusinessPartnerRecordController @Inject()(connector: DESConnector, auth: C
   implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def getBusinessPartnerRecord(utr: String) = auth.authCBCR { _ =>
+  def getBusinessPartnerRecord(utr: String) = auth.authCBCR { implicit request =>
     connector.lookup(utr).map {
       case response if response.status == OK          => Ok(response.json)
       case response if response.status == BAD_REQUEST => BadRequest(response.json)
