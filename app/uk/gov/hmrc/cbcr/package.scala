@@ -18,8 +18,11 @@ package uk.gov.hmrc
 
 import _root_.play.api.libs.json.Json._
 import _root_.play.api.libs.json._
+import _root_.play.api.Logger
 import cats.data.{EitherT, OptionT}
 import uk.gov.hmrc.cbcr.models.InvalidState
+import uk.gov.hmrc.http.HeaderCarrier
+
 import scala.concurrent.{ExecutionContext, Future}
 
 package object cbcr {
@@ -51,4 +54,11 @@ package object cbcr {
     l.map(t => t._1 -> toJsFieldJsValueWrapper(t._2))
   implicit def listJsWrapper[T: Writes](l: List[T]): List[JsValueWrapper] = l.map(toJsFieldJsValueWrapper[T])
 
+  implicit class LoggerOps(logger: Logger) {
+    def kibanaError(message: String)(implicit hc: HeaderCarrier): Unit = {
+      val correlationId = hc.otherHeaders.find(_._2 == "X-Correlation-ID").getOrElse("")
+      val msg = s"$message\nCorrelationID: $correlationId"
+      logger.error(msg, new Exception(msg))
+    }
+  }
 }
