@@ -70,7 +70,10 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
 
   def withCorrelationId[T](f: HeaderCarrier => T)(implicit hc: HeaderCarrier): T =
-    f(hc.withExtraHeaders(hc.headers(Seq("X-Correlation-ID")): _*))
+    f(hc.requestId match {
+      case Some(requestId) => hc.withExtraHeaders("X-Correlation-ID" -> requestId.value)
+      case None            => hc
+    })
 
   def lookup(utr: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.info(s"Lookup Request sent to DES")
