@@ -162,7 +162,8 @@ object GetResponse {
     (JsPath \ "address" \ "postalCode").readNullable[String] and
     (JsPath \ "address" \ "countryCode")
       .read[String])((safeId, names, contact, line1, line2, line3, line4, postalCode, countryCode) =>
-    GetResponse(safeId, names, contact, EtmpAddress(line1, line2, line3, line4, postalCode, countryCode)))
+    GetResponse(safeId, names, contact, EtmpAddress(line1, line2, line3, line4, postalCode, countryCode))
+  )
 
   implicit val format: Format[GetResponse] = new Format[GetResponse] {
     override def writes(o: GetResponse) = Json.obj(

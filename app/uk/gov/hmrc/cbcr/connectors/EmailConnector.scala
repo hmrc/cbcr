@@ -37,7 +37,7 @@ trait EmailConnector {
 }
 
 @Singleton
-class EmailConnectorImpl @Inject()(config: Configuration, httpClient: HttpClient)(implicit ec: ExecutionContext)
+class EmailConnectorImpl @Inject() (config: Configuration, httpClient: HttpClient)(implicit ec: ExecutionContext)
     extends EmailConnector {
   val http = httpClient
   val conf: Config = config.underlying.getConfig("microservice.services.email")

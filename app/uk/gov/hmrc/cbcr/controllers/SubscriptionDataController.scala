@@ -31,30 +31,30 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SubscriptionDataController @Inject()(
+class SubscriptionDataController @Inject() (
   repo: SubscriptionDataRepository,
   des: DESConnector,
   auth: CBCRAuth,
   configuration: Configuration,
-  cc: ControllerComponents)(implicit val ec: ExecutionContext)
+  cc: ControllerComponents
+)(implicit val ec: ExecutionContext)
     extends BackendController(cc) {
 
   def saveSubscriptionData(): Action[JsValue] =
     auth.authCBCRWithJson(
-      { implicit request =>
+      implicit request =>
         request.body
           .validate[SubscriptionDetails]
           .fold(
             error => Future.successful(BadRequest(JsError.toJson(error))),
             response => repo.save2(response).map(_ => Ok)
-          )
-      },
+          ),
       parse.json
     )
 
   def updateSubscriberContactDetails(cbcId: CBCId) =
     auth.authCBCRWithJson(
-      { implicit request =>
+      implicit request =>
         request.body
           .validate[SubscriberContact]
           .fold(
@@ -63,9 +63,8 @@ class SubscriptionDataController @Inject()(
               repo.update(equal("cbcId", Codecs.toBson(cbcId)), response).map {
                 case true  => Ok
                 case false => InternalServerError
-            }
-          )
-      },
+              }
+          ),
       parse.json
     )
 

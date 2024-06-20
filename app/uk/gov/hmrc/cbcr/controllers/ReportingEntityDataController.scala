@@ -31,15 +31,15 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit ec: ExecutionContext
+) extends BackendController(cc) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
   def save() =
     auth.authCBCRWithJson(
-      { implicit request =>
+      implicit request =>
         request.body
           .validate[ReportingEntityData]
           .fold(
@@ -48,14 +48,13 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
               Future.successful(BadRequest)
             },
             (data: ReportingEntityData) => repo.save(data).map(_ => Ok)
-          )
-      },
+          ),
       parse.json
     )
 
   def update() =
     auth.authCBCRWithJson(
-      { implicit request =>
+      implicit request =>
         request.body
           .validate[PartialReportingEntityData]
           .fold(
@@ -67,9 +66,8 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
               repo.update(data).map {
                 case true  => Ok
                 case false => NotModified
-            }
-          )
-      },
+              }
+          ),
       parse.json
     )
 
@@ -80,10 +78,9 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
         case None       => NotFound
         case Some(data) => Ok(Json.toJson(data))
       }
-      .recover {
-        case NonFatal(t) =>
-          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+      .recover { case NonFatal(t) =>
+        logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+        InternalServerError
       }
 
   }
@@ -95,10 +92,9 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
         case None       => NotFound
         case Some(data) => Ok(Json.toJson(data))
       }
-      .recover {
-        case NonFatal(t) =>
-          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+      .recover { case NonFatal(t) =>
+        logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+        InternalServerError
       }
 
   }
@@ -110,27 +106,25 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
         case None       => NotFound
         case Some(data) => Ok(Json.toJson(data))
       }
-      .recover {
-        case NonFatal(t) =>
-          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+      .recover { case NonFatal(t) =>
+        logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+        InternalServerError
       }
 
   }
 
   def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { _ =>
-    try {
+    try
       repo
         .queryTIN(tin, LocalDate.parse(reportingPeriod))
         .map { reportEntityData =>
           if (reportEntityData.isEmpty) NotFound else Ok(Json.toJson(reportEntityData.head))
         }
-        .recover {
-          case NonFatal(t) =>
-            logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-            InternalServerError
+        .recover { case NonFatal(t) =>
+          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+          InternalServerError
         }
-    } catch {
+    catch {
       case e: DateTimeParseException => Future.successful(BadRequest(s"Invalid reporting period ${e.getMessage}}"))
     }
   }
@@ -141,11 +135,10 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
       .map { result =>
         if (result) Ok(Json.toJson(DatesOverlap(true))) else Ok(Json.toJson(DatesOverlap(false)))
       }
-      .recover {
-        case NonFatal(t) =>
-          logger
-            .error(s"Exception thrown trying to query for ReportingEntityData for overlapping rule: ${t.getMessage}", t)
-          InternalServerError
+      .recover { case NonFatal(t) =>
+        logger
+          .error(s"Exception thrown trying to query for ReportingEntityData for overlapping rule: ${t.getMessage}", t)
+        InternalServerError
       }
   }
 
@@ -156,10 +149,9 @@ class ReportingEntityDataController @Inject()(repo: ReportingEntityDataRepo, aut
         case None       => NotFound
         case Some(data) => Ok(Json.toJson(data))
       }
-      .recover {
-        case NonFatal(t) =>
-          logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
-          InternalServerError
+      .recover { case NonFatal(t) =>
+        logger.error(s"Exception thrown trying to query for ReportingEntityData: ${t.getMessage}", t)
+        InternalServerError
       }
 
   }

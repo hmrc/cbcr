@@ -26,7 +26,8 @@ case class SubscriberContact(
   firstName: String,
   lastName: String,
   phoneNumber: PhoneNumber,
-  email: EmailAddress)
+  email: EmailAddress
+)
 object SubscriberContact {
 
   implicit val formats: Format[SubscriberContact] = Json.format[SubscriberContact]
@@ -56,7 +57,8 @@ case class SubscriptionDetails(
   businessPartnerRecord: BusinessPartnerRecord,
   subscriberContact: SubscriberContact,
   cbcId: Option[CBCId],
-  utr: Utr)
+  utr: Utr
+)
 object SubscriptionDetails {
   implicit val format: OFormat[SubscriptionDetails] = Json.format[SubscriptionDetails]
 }

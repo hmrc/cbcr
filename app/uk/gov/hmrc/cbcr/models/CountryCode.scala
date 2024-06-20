@@ -269,7 +269,7 @@ case class CountryCode(countryCode: String) {
     "ZM",
     "ZW"
   )
-  def isValid: Boolean = (countryCode.matches(regex) & countryCodes.contains(countryCode))
+  def isValid: Boolean = countryCode.matches(regex) & countryCodes.contains(countryCode)
 }
 
 object CountryCode {

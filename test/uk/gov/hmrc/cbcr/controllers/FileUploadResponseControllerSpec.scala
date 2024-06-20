@@ -32,8 +32,7 @@ import uk.gov.hmrc.cbcr.util.UnitSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-/**
-  * Created by max on 03/04/17.
+/** Created by max on 03/04/17.
   */
 class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 

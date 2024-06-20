@@ -39,7 +39,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
 
   private val entityReportingperiod = EntityReportingPeriod(
     LocalDate.parse("2016-01-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-    LocalDate.parse("2016-03-31", DateTimeFormatter.ofPattern("yyyy-MM-dd")))
+    LocalDate.parse("2016-03-31", DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+  )
 
   private val reportingEntityData = ReportingEntityData(
     NonEmptyList(docRefId, Nil),
@@ -95,13 +96,15 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     LocalDate.parse("2018-12-01"),
     Some(
       EntityReportingPeriod(LocalDate.parse("2018-01-01"), LocalDate.parse("2018-12-01"))
-    ))
+    )
+  )
   private val red5 = red(
     doc5,
     LocalDate.parse("2019-12-01"),
     Some(
       EntityReportingPeriod(LocalDate.parse("2019-01-01"), LocalDate.parse("2019-12-01"))
-    ))
+    )
+  )
 
   "Calls to delete a DocRefId" should {
     "should delete that docRefId" in {
@@ -303,7 +306,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "partial corrections should work as expected when correcting just one report and one add info" in {
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(corrPair1), List(corrPair3)),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2))
+      )
       val res2 = reportingEntityDataRepository
         .mergeListsAddInfo(partialData(List(corrPair1), List(corrPair3)), List(addDocRefId1, addDocRefId2))
 
@@ -314,7 +318,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "correct only the reporting entity without affecting cbc reports and additional info" in {
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(), List()),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2))
+      )
       val res2 =
         reportingEntityDataRepository.mergeListsAddInfo(partialData(List(), List()), List(addDocRefId1, addDocRefId2))
       res1.equals(List(docRefId1.id, docRefId2.id)) shouldBe true
@@ -324,7 +329,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
     "correct only either one of the additional info or one of the cbc reports" in {
       val res1 = reportingEntityDataRepository.mergeListsReports(
         partialData(List(corrPair2), List()),
-        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2)))
+        rData(NonEmptyList[DocRefId](docRefId1, List(docRefId2)), List(addDocRefId1, addDocRefId2))
+      )
       val res2 = reportingEntityDataRepository
         .mergeListsAddInfo(partialData(List(), List(corrPair4)), List(addDocRefId1, addDocRefId2))
 
@@ -437,7 +443,8 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val res = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
-          EntityReportingPeriod(LocalDate.parse("2017-01-30"), LocalDate.parse("2017-11-29")))
+          EntityReportingPeriod(LocalDate.parse("2017-01-30"), LocalDate.parse("2017-11-29"))
+        )
       val finalRes = await(res)
       finalRes shouldBe false
     }
@@ -448,14 +455,16 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val res1 = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
-          EntityReportingPeriod(LocalDate.parse("2017-01-30"), LocalDate.parse("2018-01-29")))
+          EntityReportingPeriod(LocalDate.parse("2017-01-30"), LocalDate.parse("2018-01-29"))
+        )
       val finalRes1 = await(res1)
       finalRes1 shouldBe true
 
       val res2 = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
-          EntityReportingPeriod(LocalDate.parse("2017-12-30"), LocalDate.parse("2018-01-29")))
+          EntityReportingPeriod(LocalDate.parse("2017-12-30"), LocalDate.parse("2018-01-29"))
+        )
       val finalRes2 = await(res2)
       finalRes2 shouldBe false
     }
@@ -468,14 +477,16 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val res1 = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
-          EntityReportingPeriod(LocalDate.parse("2020-01-01"), LocalDate.parse("2020-11-01")))
+          EntityReportingPeriod(LocalDate.parse("2020-01-01"), LocalDate.parse("2020-11-01"))
+        )
       val finalRes1 = await(res1)
       finalRes1 shouldBe false
 
       val res2 = reportingEntityDataRepository
         .queryTINDatesOverlapping(
           "3590617086",
-          EntityReportingPeriod(LocalDate.parse("2017-12-30"), LocalDate.parse("2018-01-29")))
+          EntityReportingPeriod(LocalDate.parse("2017-12-30"), LocalDate.parse("2018-01-29"))
+        )
       val finalRes2 = await(res2)
       finalRes2 shouldBe true
 
@@ -490,13 +501,15 @@ class ReportingEntityDataRepoSpec extends UnitSpec with MockAuth with GuiceOneAp
       val result: Future[Boolean] =
         reportingEntityDataRepository.updateEntityReportingPeriod(
           doc5,
-          EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
+          EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30"))
+        )
       await(result) shouldBe true
 
       val updatedResult: Future[Option[ReportingEntityData]] =
         reportingEntityDataRepository.query(doc5.id, LocalDate.parse("2019-12-01"))
       await(updatedResult).get.entityReportingPeriod shouldBe Some(
-        EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30")))
+        EntityReportingPeriod(LocalDate.parse("2020-01-30"), LocalDate.parse("2020-12-30"))
+      )
 
     }
 

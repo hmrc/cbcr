@@ -28,8 +28,7 @@ import uk.gov.hmrc.http.HttpResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-/**
-  * Created by max on 24/04/17.
+/** Created by max on 24/04/17.
   */
 class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
@@ -50,7 +49,8 @@ class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
         "individual" -> Json.obj(
           "firstName"   -> "First Name Taxpayer 01",
           "lastName"    -> "Last Name Taxpayer 01",
-          "dateOfBirth" -> "1960-12-01"),
+          "dateOfBirth" -> "1960-12-01"
+        ),
         "address" -> Json.obj(
           "addressLine1" -> "Matheson House 1",
           "addressLine2" -> "Grange Central",

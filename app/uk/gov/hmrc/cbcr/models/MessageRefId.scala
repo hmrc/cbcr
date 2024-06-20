@@ -27,7 +27,8 @@ object MessageRefId {
       case o: JsObject =>
         val result = o.value.get("messageRefId").flatMap(_.asOpt[String])
         result.fold[JsResult[MessageRefId]](JsError(s"Unable to parse MessageRefId: $o"))(v =>
-          JsSuccess(MessageRefId(v)))
+          JsSuccess(MessageRefId(v))
+        )
       case other => JsError(s"Unable to parse MessageRefId: $other")
     }
   }
