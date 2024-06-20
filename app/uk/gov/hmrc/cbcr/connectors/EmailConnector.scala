@@ -18,12 +18,13 @@ package uk.gov.hmrc.cbcr.connectors
 
 import com.google.inject.ImplementedBy
 import com.typesafe.config.Config
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.Email
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpPost, HttpResponse}
-import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpPost, HttpResponse}
+
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[EmailConnectorImpl])
 trait EmailConnector {

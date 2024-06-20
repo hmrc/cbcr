@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import java.time.LocalDate
-import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.ControllerComponents
@@ -26,7 +24,9 @@ import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.LocalDate
 import java.time.format.DateTimeParseException
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 

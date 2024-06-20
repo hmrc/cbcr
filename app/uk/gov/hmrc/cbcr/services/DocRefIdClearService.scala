@@ -16,17 +16,17 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import javax.inject.{Inject, Singleton}
 import cats.instances.all._
 import cats.syntax.all._
-import play.api.libs.json.Json
 import play.api.Logger
+import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.DocRefId
 import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps

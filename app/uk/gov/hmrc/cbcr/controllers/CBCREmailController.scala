@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import javax.inject.{Inject, Singleton}
 import play.api.mvc.{ControllerComponents, Result}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.cbcr.services.EmailService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
