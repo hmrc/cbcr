@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import java.time.format.DateTimeFormatter
+import org.apache.commons.codec.net.URLCodec
 import play.api.libs.json._
 import play.api.mvc.PathBindable
-import org.apache.commons.codec.net.URLCodec
+
+import java.time.format.DateTimeFormatter
 
 case class DocRefId(id: String)
 object DocRefId {
