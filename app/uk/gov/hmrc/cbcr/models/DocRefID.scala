@@ -39,8 +39,8 @@ object DocRefId {
       json
         .asOpt[JsString]
         .map(v => DocRefId(v.value))
-        .fold[JsResult[DocRefId]](JsError(s"Unable to deserialise $json as a DocRefId"))(
-          (id: DocRefId) => JsSuccess(id)
+        .fold[JsResult[DocRefId]](JsError(s"Unable to deserialise $json as a DocRefId"))((id: DocRefId) =>
+          JsSuccess(id)
         )
   }
 }
@@ -64,7 +64,7 @@ object CorrDocRefId {
 
 case class DocRefIdRecord(id: DocRefId, valid: Boolean)
 object DocRefIdRecord {
-  //Keep in sync with any future frontend changes
+  // Keep in sync with any future frontend changes
   implicit val format: OFormat[DocRefIdRecord] = Json.format[DocRefIdRecord]
   val dateFmt = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
   val cbcRegex: String = CBCId.cbcRegex.init.tail // strip the ^ and $ characters from the cbcRegex

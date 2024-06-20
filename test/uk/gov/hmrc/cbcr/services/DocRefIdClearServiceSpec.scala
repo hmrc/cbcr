@@ -84,7 +84,8 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
       reset(mockAudit)
       when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
       when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
-        AuditResult.Failure("Audit Failure", None))
+        AuditResult.Failure("Audit Failure", None)
+      )
 
       new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())

@@ -38,12 +38,14 @@ class SubscriptionDataRepositorySpec extends UnitSpec with MockAuth with GuiceOn
   private val bpr = BusinessPartnerRecord(
     "MySafeID",
     Some(OrganisationResponse("Dave Corp")),
-    EtmpAddress("13 Accacia Ave", None, None, None, None, "GB"))
+    EtmpAddress("13 Accacia Ave", None, None, None, None, "GB")
+  )
   private val exampleSubscriptionData = SubscriptionDetails(
     bpr,
     SubscriberContact(name = None, "Dave", "Jones", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com")),
     cbcId,
-    utr)
+    utr
+  )
 
   "Calls to clear cbcId Details" should {
     "successfully clear  details using cbcId" in {

@@ -27,7 +27,7 @@ import javax.inject._
 import scala.concurrent.Future
 
 @Singleton
-class CBCIdController @Inject()(gen: SubscriptionHandler, auth: CBCRAuth, cc: ControllerComponents)
+class CBCIdController @Inject() (gen: SubscriptionHandler, auth: CBCRAuth, cc: ControllerComponents)
     extends BackendController(cc) {
 
   def subscribe =
@@ -45,14 +45,13 @@ class CBCIdController @Inject()(gen: SubscriptionHandler, auth: CBCRAuth, cc: Co
 
   def updateSubscription(safeId: String) =
     auth.authCBCRWithJson(
-      { implicit request =>
+      implicit request =>
         request.body
           .validate[CorrespondenceDetails]
           .fold[Future[Result]](
             e => Future.successful(BadRequest(e.toString)),
             details => gen.updateSubscription(safeId, details)
-          )
-      },
+          ),
       parse.json
     )
 
@@ -61,7 +60,8 @@ class CBCIdController @Inject()(gen: SubscriptionHandler, auth: CBCRAuth, cc: Co
   }
 
   @inline implicit private def subscriptionDetailsToSubscriptionRequestBody(
-    s: SubscriptionDetails): SubscriptionRequest =
+    s: SubscriptionDetails
+  ): SubscriptionRequest =
     SubscriptionRequest(
       s.businessPartnerRecord.safeId,
       false,

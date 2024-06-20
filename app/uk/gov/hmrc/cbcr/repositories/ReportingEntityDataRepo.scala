@@ -34,7 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
-class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[ReportingEntityDataModel](
       mongoComponent = mongo,
       collectionName = "ReportingEntityData",
@@ -81,12 +81,15 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
 
   def update(p: PartialReportingEntityData): Future[Boolean] =
     preservingMdc {
-      if (p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
-          p.cbcReportsDRI.flatMap(_.corrDocRefId).isEmpty &&
-          p.reportingEntityDRI.corrDocRefId.isEmpty) {
+      if (
+        p.additionalInfoDRI.flatMap(_.corrDocRefId).isEmpty &&
+        p.cbcReportsDRI.flatMap(_.corrDocRefId).isEmpty &&
+        p.reportingEntityDRI.corrDocRefId.isEmpty
+      ) {
         updateEntityReportingPeriod(
           p.reportingEntityDRI.docRefId,
-          p.entityReportingPeriod.getOrElse(throw new RuntimeException("EntityReportingPeriod missing")))
+          p.entityReportingPeriod.getOrElse(throw new RuntimeException("EntityReportingPeriod missing"))
+        )
       } else {
         val condition = {
           val conditions: Seq[Bson] =
@@ -98,10 +101,10 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
 
         for {
           record <- collection.find(condition).headOption().map {
-                     case Some(record) => record
-                     case _ =>
-                       throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
-                   }
+                      case Some(record) => record
+                      case _ =>
+                        throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
+                    }
           modifier = buildModifier(p, record)
           update <- collection.findOneAndUpdate(condition, combine(modifier: _*)).toFutureOption()
         } yield update.isDefined
@@ -187,7 +190,8 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
         .map(
           _.reportingEntityDRI.id
             .pipe(timestampRegex.findFirstIn(_).get)
-            .pipe(LocalDateTime.parse(_, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))))
+            .pipe(LocalDateTime.parse(_, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")))
+        )
         .max((a: LocalDateTime, b: LocalDateTime) => a.compareTo(b))
         .toString
         .filterNot(timestampSeparator.contains)
@@ -344,7 +348,8 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
 
   private def datesAreOverlapping(
     existingData: Seq[ReportingEntityData],
-    entityReportingPeriod: EntityReportingPeriod) = {
+    entityReportingPeriod: EntityReportingPeriod
+  ) = {
     val groupedData =
       existingData
         .filter(_.reportingPeriod.isDefined)
@@ -354,14 +359,14 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
     val filteredDeletionsAndSamePeriod =
       res.filter(data => filterOutDeletion(data)).filter(p => p.reportingPeriod.get != entityReportingPeriod.endDate)
 
-    //mainly for backward compatibility make sure reporting period doesn't overlap with the new submission
-    //true = no overlapping
+    // mainly for backward compatibility make sure reporting period doesn't overlap with the new submission
+    // true = no overlapping
     val firstCheck: Boolean =
       filteredDeletionsAndSamePeriod.forall(d => !checkBySingleDate(entityReportingPeriod, d.reportingPeriod.get))
 
     val secondCheckList = filteredDeletionsAndSamePeriod.filter(_.entityReportingPeriod.isDefined)
 
-    //Make sure when we have both dates that they don't overlap true = no overlapping
+    // Make sure when we have both dates that they don't overlap true = no overlapping
     val secondCheck: Boolean =
       secondCheckList.forall(d => !checkBothDates(entityReportingPeriod, d.entityReportingPeriod.get))
 
@@ -370,12 +375,13 @@ class ReportingEntityDataRepo @Inject()(mongo: MongoComponent)(implicit ec: Exec
 
   def filterOutDeletion(record: ReportingEntityData): Boolean = {
     val entDocRefId = record.reportingEntityDRI.id
-    !(entDocRefId.contains("OECD3"))
+    !entDocRefId.contains("OECD3")
   }
 
   def checkBySingleDate(entityReportingPeriod: EntityReportingPeriod, reportingPeriod: LocalDate): Boolean = {
     val check1 = reportingPeriod.isAfter(entityReportingPeriod.startDate) && reportingPeriod.isBefore(
-      entityReportingPeriod.endDate)
+      entityReportingPeriod.endDate
+    )
     val check2 = reportingPeriod.isEqual(entityReportingPeriod.startDate)
     check1 || check2
   }

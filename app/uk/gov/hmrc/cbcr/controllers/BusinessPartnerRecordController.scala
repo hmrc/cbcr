@@ -24,9 +24,9 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class BusinessPartnerRecordController @Inject()(connector: DESConnector, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit val ec: ExecutionContext)
-    extends BackendController(cc) {
+class BusinessPartnerRecordController @Inject() (connector: DESConnector, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit val ec: ExecutionContext
+) extends BackendController(cc) {
 
   def getBusinessPartnerRecord(utr: String) = auth.authCBCR { implicit request =>
     connector.lookup(utr).map {

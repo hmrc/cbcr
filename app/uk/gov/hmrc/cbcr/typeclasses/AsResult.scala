@@ -18,8 +18,7 @@ package uk.gov.hmrc.cbcr.typeclasses
 
 import play.api.mvc.Result
 
-/**
-  * Typeclass to present some type A as a [[play.api.mvc.Result]]
+/** Typeclass to present some type A as a [[play.api.mvc.Result]]
   */
 trait AsResult[A] {
   def asResult: Result

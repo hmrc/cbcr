@@ -41,8 +41,9 @@ package object cbcr {
   def fromOptA[A](oa: UnexpectedOr[A]): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](Future.successful(oa))
 
-  def fromFutureOptionA[A](fo: Future[Option[A]])(invalid: => InvalidState)(
-    implicit ec: ExecutionContext): ServiceResponse[A] = {
+  def fromFutureOptionA[A](
+    fo: Future[Option[A]]
+  )(invalid: => InvalidState)(implicit ec: ExecutionContext): ServiceResponse[A] = {
     val futureA = fo.map {
       case Some(a) => Right(a)
       case None    => Left(invalid)

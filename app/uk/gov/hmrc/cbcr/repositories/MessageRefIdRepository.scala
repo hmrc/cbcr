@@ -28,7 +28,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class MessageRefIdRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[MessageRefId](
       mongoComponent = mongo,
       collectionName = "MessageRefId",
