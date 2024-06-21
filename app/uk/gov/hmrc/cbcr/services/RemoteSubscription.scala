@@ -30,7 +30,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext: ExecutionContext)
+class RemoteSubscription @Inject() (des: DESConnector)(implicit executionContext: ExecutionContext)
     extends SubscriptionHandler {
 
   lazy val logger: Logger = Logger(this.getClass)
@@ -69,10 +69,12 @@ class RemoteSubscription @Inject()(des: DESConnector)(implicit executionContext:
     des
       .createSubscription(sub)
       .map(response =>
-        checkResponse[SubscriptionResponse](response)(r => Ok(Json.obj("cbc-id" -> r.cbcSubscriptionID.value))))
+        checkResponse[SubscriptionResponse](response)(r => Ok(Json.obj("cbc-id" -> r.cbcSubscriptionID.value)))
+      )
 
-  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(
-    implicit headerCarrier: HeaderCarrier): Future[Result] =
+  override def updateSubscription(safeId: String, details: CorrespondenceDetails)(implicit
+    headerCarrier: HeaderCarrier
+  ): Future[Result] =
     des
       .updateSubscription(safeId, details)
       .map(response => checkResponse[UpdateResponse](response)(r => Ok(UpdateResponse.format.writes(r))))

@@ -32,11 +32,12 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
-class DocRefIdClearService @Inject()(
+class DocRefIdClearService @Inject() (
   docRefIdRepo: DocRefIdRepository,
   reportingEntityDataRepo: ReportingEntityDataRepo,
   configuration: ApplicationConfig,
-  audit: AuditConnector)(implicit ec: ExecutionContext) {
+  audit: AuditConnector
+)(implicit ec: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
@@ -71,7 +72,9 @@ class DocRefIdClearService @Inject()(
             DOCREFID_AUDIT,
             detail = Json.obj(
               "docRefId" -> Json.toJson(docRefId)
-            )))
+            )
+          )
+        )
     k.map {
       case AuditResult.Success         => None
       case AuditResult.Failure(msg, _) => Some(s"failed to audit: $msg")

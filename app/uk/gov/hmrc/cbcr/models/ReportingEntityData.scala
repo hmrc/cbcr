@@ -47,7 +47,7 @@ object FormatEither {
     }
 
     override def reads(json: JsValue): JsResult[Either[L, R]] =
-      json.validate[L].map(Left(_)).orElse { json.validate[R].map(Right(_)) }
+      json.validate[L].map(Left(_)).orElse(json.validate[R].map(Right(_)))
   }
 }
 
@@ -62,8 +62,9 @@ object FormatNotEmptyList {
           NonEmptyList.fromList(l) match {
             case None    => JsError(s"Unable to serialise $json as NonEmptyList")
             case Some(a) => JsSuccess(a)
-        })
-        .orElse { json.validate[A].map(a => NonEmptyList(a, Nil)) }
+          }
+        )
+        .orElse(json.validate[A].map(a => NonEmptyList(a, Nil)))
   }
 }
 
@@ -78,7 +79,8 @@ case class ReportingEntityData(
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
   entityReportingPeriod: Option[EntityReportingPeriod],
-  oldModel: Boolean = false) {
+  oldModel: Boolean = false
+) {
   def toDataModel: ReportingEntityDataModel = ReportingEntityDataModel(
     cbcReportsDRI,
     Right(additionalInfoDRI),
@@ -127,7 +129,8 @@ case class PartialReportingEntityData(
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod])
+  entityReportingPeriod: Option[EntityReportingPeriod]
+)
 
 object PartialReportingEntityData {
   implicit val format: OFormat[PartialReportingEntityData] = Json.format[PartialReportingEntityData]
@@ -143,7 +146,8 @@ case class ReportingEntityDataModel(
   creationDate: Option[LocalDate],
   reportingPeriod: Option[LocalDate],
   currencyCode: Option[String],
-  entityReportingPeriod: Option[EntityReportingPeriod]) {
+  entityReportingPeriod: Option[EntityReportingPeriod]
+) {
 
   def toPublicModel: ReportingEntityData =
     ReportingEntityData(
@@ -175,9 +179,11 @@ object ReportingEntityDataModel {
       (JsPath \ "additionalInfoDRI")
         .read[List[DocRefId]]
         .map(Right(_).asInstanceOf[Either[Option[DocRefId], List[DocRefId]]])
-        .orElse((JsPath \ "additionalInfoDRI")
-          .readNullable[DocRefId]
-          .map(Left(_).asInstanceOf[Either[Option[DocRefId], List[DocRefId]]])) and
+        .orElse(
+          (JsPath \ "additionalInfoDRI")
+            .readNullable[DocRefId]
+            .map(Left(_).asInstanceOf[Either[Option[DocRefId], List[DocRefId]]])
+        ) and
       (JsPath \ "reportingEntityDRI").read[DocRefId] and
       (JsPath \ "tin").read[String].orElse((JsPath \ "utr").read[String]).map(TIN(_, "")) and
       (JsPath \ "ultimateParentEntity").read[UltimateParentEntity] and

@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class ApplicationConfig @Inject()(configuration: Configuration, servicesConfig: ServicesConfig) {
+class ApplicationConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
   import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
   private val etmpHod_ = servicesConfig.baseUrl("etmp-hod")
   private val docRefIdsToClear_ = configuration.load[String]("Prod.DocRefId.clear")

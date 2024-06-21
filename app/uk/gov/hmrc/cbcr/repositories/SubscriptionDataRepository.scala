@@ -31,7 +31,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BackupSubscriptionDataRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class BackupSubscriptionDataRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[SubscriptionDetails](
       mongoComponent = mongo,
       collectionName = "Subscription_Data_Backup",
@@ -43,9 +43,9 @@ class BackupSubscriptionDataRepository @Inject()(mongo: MongoComponent)(implicit
     ) {}
 
 @Singleton
-class SubscriptionDataRepository @Inject()(mongo: MongoComponent)(backupRepo: BackupSubscriptionDataRepository)(
-  implicit ec: ExecutionContext)
-    extends PlayMongoRepository[SubscriptionDetails](
+class SubscriptionDataRepository @Inject() (mongo: MongoComponent)(backupRepo: BackupSubscriptionDataRepository)(
+  implicit ec: ExecutionContext
+) extends PlayMongoRepository[SubscriptionDetails](
       mongoComponent = mongo,
       collectionName = "Subscription_Data",
       domainFormat = SubscriptionDetails.format,

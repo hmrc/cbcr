@@ -79,8 +79,8 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     logger.info(s"Lookup Request sent to DES")
     withCorrelationId { implicit hc =>
       http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData), desHeaders)
-    } recover {
-      case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
+    } recover { case e: HttpException =>
+      HttpResponse(status = e.responseCode, body = e.message)
     }
   }
 
@@ -89,19 +89,20 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     logger.info(s"Create Request sent to DES")
     withCorrelationId { implicit hc =>
       http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders)
-    } recover {
-      case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
+    } recover { case e: HttpException =>
+      HttpResponse(status = e.responseCode, body = e.message)
     }
   }
 
-  def updateSubscription(safeId: String, cor: CorrespondenceDetails)(
-    implicit hc: HeaderCarrier): Future[HttpResponse] = {
+  def updateSubscription(safeId: String, cor: CorrespondenceDetails)(implicit
+    hc: HeaderCarrier
+  ): Future[HttpResponse] = {
     implicit val format = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
     withCorrelationId { implicit hc =>
       http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders)
-    } recover {
-      case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
+    } recover { case e: HttpException =>
+      HttpResponse(status = e.responseCode, body = e.message)
     }
   }
 
@@ -109,20 +110,20 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     logger.info(s"Get Request sent to DES for safeID: $safeId")
     withCorrelationId { implicit hc =>
       http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", headers = desHeaders)
-    } recover {
-      case e: HttpException => HttpResponse(status = e.responseCode, body = e.message)
+    } recover { case e: HttpException =>
+      HttpResponse(status = e.responseCode, body = e.message)
     }
   }
 
 }
 
 @Singleton
-class DESConnectorImpl @Inject()(
+class DESConnectorImpl @Inject() (
   val ec: ExecutionContext,
   val auditConnector: AuditConnector,
   val configuration: ApplicationConfig,
-  val httpClient: HttpClient)
-    extends DESConnector {
+  val httpClient: HttpClient
+) extends DESConnector {
   lazy val serviceUrl: String = configuration.etmpHod
   lazy val orgLookupURI: String = "registration/organisation"
   lazy val cbcSubscribeURI: String = "country-by-country/subscription"
