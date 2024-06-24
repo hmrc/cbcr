@@ -29,7 +29,7 @@ import play.api.mvc.Results._
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.cbcr.services.{RemoteSubscription}
+import uk.gov.hmrc.cbcr.services.RemoteSubscription
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
@@ -48,7 +48,8 @@ class CBCIdControllerSpec
     BusinessPartnerRecord(
       "SafeID",
       Some(OrganisationResponse("Name")),
-      EtmpAddress("Some ave", None, None, None, None, "GB")),
+      EtmpAddress("Some ave", None, None, None, None, "GB")
+    ),
     SubscriberContact(name = None, "dave", "jones", PhoneNumber("123456789").get, EmailAddress("bob@bob.com")),
     None,
     Utr("7000000002")
@@ -56,7 +57,8 @@ class CBCIdControllerSpec
   private val crb = CorrespondenceDetails(
     EtmpAddress("Some ave", None, None, None, None, "GB"),
     ContactDetails(EmailAddress("bob@bob.com"), PhoneNumber("123456789").get),
-    ContactName("Bob", "Bobbet"))
+    ContactName("Bob", "Bobbet")
+  )
 
   private val id = CBCId.create(1).getOrElse(fail("Can not generate CBCId"))
   implicit val hc: HeaderCarrier = HeaderCarrier()
@@ -89,7 +91,8 @@ class CBCIdControllerSpec
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(crb))
       when(handler.updateSubscription(any(), any())(any())) thenReturn Future.successful(
-        Ok(Json.obj("cbc-id" -> id.value)))
+        Ok(Json.obj("cbc-id" -> id.value))
+      )
       val response = controller.updateSubscription("safeId")(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
     }

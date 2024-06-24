@@ -48,7 +48,8 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
     logger.info("Graphite metrics enabled, starting the reporter")
 
     val graphite = new Graphite(
-      new InetSocketAddress(graphiteConfig.load[String]("host"), graphiteConfig.load[Int]("port")))
+      new InetSocketAddress(graphiteConfig.load[String]("host"), graphiteConfig.load[Int]("port"))
+    )
 
     val prefix = graphiteConfig.load[String]("prefix")
 

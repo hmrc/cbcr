@@ -65,7 +65,8 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
       when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
       when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
-        Failure("test to designed to provoke an emotional response", None))
+        Failure("test to designed to provoke an emotional response", None)
+      )
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe BadRequest

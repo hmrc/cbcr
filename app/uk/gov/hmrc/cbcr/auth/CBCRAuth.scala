@@ -28,9 +28,9 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: ControllerComponents)(
-  implicit val ec: ExecutionContext)
-    extends BackendController(cc) with AuthorisedFunctions {
+class CBCRAuth @Inject() (val microServiceAuthConnector: AuthConnector, cc: ControllerComponents)(implicit
+  val ec: ExecutionContext
+) extends BackendController(cc) with AuthorisedFunctions {
   override def authConnector: AuthConnector = microServiceAuthConnector
 
   private val AuthProvider: AuthProviders = AuthProviders(GovernmentGateway)
@@ -55,8 +55,8 @@ class CBCRAuth @Inject()(val microServiceAuthConnector: AuthConnector, cc: Contr
         case Some(affinityG) if isAgentOrOrganisation(affinityG) => action(request)
         case _                                                   => Future.successful(Unauthorized)
       }
-      .recover[Result] {
-        case e: NoActiveSession => Unauthorized(e.reason)
+      .recover[Result] { case e: NoActiveSession =>
+        Unauthorized(e.reason)
       }
   }
 }

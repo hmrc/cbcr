@@ -28,12 +28,13 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class TestSubscriptionDataController @Inject()(
+class TestSubscriptionDataController @Inject() (
   subRepo: SubscriptionDataRepository,
   docRefRepo: DocRefIdRepository,
   messageRefIdRepository: MessageRefIdRepository,
   reportingEntityDataRepo: ReportingEntityDataRepo,
-  cc: ControllerComponents)(implicit ec: ExecutionContext)
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def insertData() = Action.async[JsValue](parse.json) { implicit request =>

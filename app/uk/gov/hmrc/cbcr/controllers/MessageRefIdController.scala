@@ -26,9 +26,9 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class MessageRefIdController @Inject()(repo: MessageRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+class MessageRefIdController @Inject() (repo: MessageRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(implicit
+  ec: ExecutionContext
+) extends BackendController(cc) {
 
   def save(messageRefId: String) = auth.authCBCR { _ =>
     repo.save2(MessageRefId(messageRefId)).map(_ => Ok)
