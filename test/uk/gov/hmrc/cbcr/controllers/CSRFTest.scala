@@ -21,7 +21,7 @@ import play.api.test.FakeRequest
 import play.filters.csrf.{CSRFConfigProvider, CSRFFilter}
 
 trait CSRFTest {
-  def addToken[T](fakeRequest: FakeRequest[T])(implicit app: Application) = {
+  def addToken[T](fakeRequest: FakeRequest[T])(implicit app: Application): FakeRequest[T] = {
     val csrfConfig = app.injector.instanceOf[CSRFConfigProvider].get
     val csrfFilter = app.injector.instanceOf[CSRFFilter]
     val token = csrfFilter.tokenProvider.generateToken

@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 trait MockAuth extends MockitoSugar {
-  val mockAuthConnector = mock[AuthConnector]
+  val mockAuthConnector: AuthConnector = mock[AuthConnector]
   val cBCRAuth = new CBCRAuth(mockAuthConnector, cc)
   val agentAffinity: Future[Option[AffinityGroup]] =
     Future successful Some(AffinityGroup.Agent)

@@ -23,7 +23,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class CBCIdSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with Matchers {
 
-  val arbBigNum = Gen.posNum[Int].map(_ + 999999)
+  val arbBigNum: Gen[Int] = Gen.posNum[Int].map(_ + 999999)
 
   "A CBCId" should {
     "provide a smart constructor that only allows the creation of CBCIds" when {

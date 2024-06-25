@@ -22,7 +22,5 @@ import uk.gov.hmrc.domain.SimpleObjectWrites
 case class TIN(value: String, issuedBy: String)
 object TIN {
   implicit val utrFormat: Writes[TIN] = new SimpleObjectWrites[TIN](_.value)
-  implicit val utrRead: Reads[TIN] = new Reads[TIN] {
-    override def reads(json: JsValue) = json.validate[String].map(TIN(_, ""))
-  }
+  implicit val utrRead: Reads[TIN] = (json: JsValue) => json.validate[String].map(TIN(_, ""))
 }

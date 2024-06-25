@@ -56,7 +56,7 @@ class EmailService @Inject() (emailConnector: EmailConnectorImpl, auditConnector
         BadRequest
       }
 
-  def audit(email: Email, auditType: AuditType)(implicit hc: HeaderCarrier) =
+  def audit(email: Email, auditType: AuditType)(implicit hc: HeaderCarrier): Future[Unit] =
     auditConnector
       .sendExtendedEvent(
         ExtendedDataEvent(

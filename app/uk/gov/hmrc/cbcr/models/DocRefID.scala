@@ -22,6 +22,9 @@ import play.api.mvc.PathBindable
 
 import java.time.format.DateTimeFormatter
 
+import scala.annotation.unused
+import scala.util.matching.Regex
+
 case class DocRefId(id: String)
 object DocRefId {
 
@@ -67,11 +70,13 @@ case class DocRefIdRecord(id: DocRefId, valid: Boolean)
 object DocRefIdRecord {
   // Keep in sync with any future frontend changes
   implicit val format: OFormat[DocRefIdRecord] = Json.format[DocRefIdRecord]
-  val dateFmt = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
+  @unused
+  val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
   val cbcRegex: String = CBCId.cbcRegex.init.tail // strip the ^ and $ characters from the cbcRegex
-  val dateRegex = """\d{8}T\d{6}"""
-  val messageRefIDRegex = ("""GB(\d{4})(\w{2})(""" + cbcRegex + """)(CBC40[1,2])(""" + dateRegex + """)(\w{1,56})""").r
-  val docRefIdRegex = s"""($messageRefIDRegex)_(.{1,30})(OECD[0123])(ENT|REP|ADD)(.{0,25})""".r
+  private val dateRegex = """\d{8}T\d{6}"""
+  private val messageRefIDRegex: Regex =
+    ("""GB(\d{4})(\w{2})(""" + cbcRegex + """)(CBC40[1,2])(""" + dateRegex + """)(\w{1,56})""").r
+  private val docRefIdRegex: Regex = s"""($messageRefIDRegex)_(.{1,30})(OECD[0123])(ENT|REP|ADD)(.{0,25})""".r
 
   def extractDocTypeIndicator(docRefId: String): Option[String] = docRefId match {
     case docRefIdRegex(_, _, _, _, _, _, _, _, docType, _, _) => Some(docType)

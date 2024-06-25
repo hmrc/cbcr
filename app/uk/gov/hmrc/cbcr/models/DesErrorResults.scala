@@ -18,8 +18,12 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json.{Json, Reads}
 
+import scala.annotation.unused
+
+@unused
 object DesErrorResults {
 
+  @unused
   case class DesErrorBody(code: String, reason: String)
 
   implicit val errorBodyWrites: Reads[DesErrorBody] = Json.reads[DesErrorBody]

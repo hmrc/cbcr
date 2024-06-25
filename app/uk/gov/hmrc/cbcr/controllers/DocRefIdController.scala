@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.DocRefIdRepository
@@ -31,7 +31,7 @@ class DocRefIdController @Inject() (repo: DocRefIdRepository, auth: CBCRAuth, cc
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def query(docRefId: DocRefId) = auth.authCBCR { _ =>
+  def query(docRefId: DocRefId): Action[AnyContent] = auth.authCBCR { _ =>
     repo.query(docRefId).map {
       case DocRefIdResponses.Valid        => Ok
       case DocRefIdResponses.Invalid      => Conflict
@@ -39,7 +39,7 @@ class DocRefIdController @Inject() (repo: DocRefIdRepository, auth: CBCRAuth, cc
     }
   }
 
-  def saveDocRefId(docRefId: DocRefId) = auth.authCBCR { _ =>
+  def saveDocRefId(docRefId: DocRefId): Action[AnyContent] = auth.authCBCR { _ =>
     repo.save2(docRefId).map {
       case DocRefIdResponses.Ok            => Ok
       case DocRefIdResponses.AlreadyExists => Conflict
@@ -47,7 +47,7 @@ class DocRefIdController @Inject() (repo: DocRefIdRepository, auth: CBCRAuth, cc
     }
   }
 
-  def saveCorrDocRefId(corrDocRefId: CorrDocRefId) = auth.authCBCR { implicit request =>
+  def saveCorrDocRefId(corrDocRefId: CorrDocRefId): Action[AnyContent] = auth.authCBCR { implicit request =>
     val docRefId =
       request.body.asJson.getOrElse(throw new NotFoundException("No doc ref id found in the body")).as[DocRefId]
     repo.save2(corrDocRefId, docRefId).map {

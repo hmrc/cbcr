@@ -17,8 +17,8 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import play.api.Logger
-import play.api.libs.json.Json
-import play.api.mvc.ControllerComponents
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
@@ -37,7 +37,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  def save() =
+  def save(): Action[JsValue] =
     auth.authCBCRWithJson(
       implicit request =>
         request.body
@@ -52,7 +52,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
       parse.json
     )
 
-  def update() =
+  def update(): Action[JsValue] =
     auth.authCBCRWithJson(
       implicit request =>
         request.body
@@ -71,7 +71,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
       parse.json
     )
 
-  def queryDocRefId(d: DocRefId) = auth.authCBCR { _ =>
+  def queryDocRefId(d: DocRefId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .queryReportingEntity(d)
       .map {
@@ -85,7 +85,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
 
   }
 
-  def query(d: DocRefId) = auth.authCBCR { _ =>
+  def query(d: DocRefId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .query(d)
       .map {
@@ -99,7 +99,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
 
   }
 
-  def queryCbcId(cbcId: CBCId, reportingPeriod: String) = auth.authCBCR { _ =>
+  def queryCbcId(cbcId: CBCId, reportingPeriod: String): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .queryCbcId(cbcId, LocalDate.parse(reportingPeriod))
       .map {
@@ -113,7 +113,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
 
   }
 
-  def queryTin(tin: String, reportingPeriod: String) = auth.authCBCR { _ =>
+  def queryTin(tin: String, reportingPeriod: String): Action[AnyContent] = auth.authCBCR { _ =>
     try
       repo
         .queryTIN(tin, LocalDate.parse(reportingPeriod))
@@ -129,7 +129,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
     }
   }
 
-  def isOverlapping(tin: String, startDate: String, endDate: String) = auth.authCBCR { _ =>
+  def isOverlapping(tin: String, startDate: String, endDate: String): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .queryTINDatesOverlapping(tin, EntityReportingPeriod(LocalDate.parse(startDate), LocalDate.parse(endDate)))
       .map { result =>
@@ -142,7 +142,7 @@ class ReportingEntityDataController @Inject() (repo: ReportingEntityDataRepo, au
       }
   }
 
-  def queryModel(d: DocRefId) = auth.authCBCR { _ =>
+  def queryModel(d: DocRefId): Action[AnyContent] = auth.authCBCR { _ =>
     repo
       .queryModel(d)
       .map {
