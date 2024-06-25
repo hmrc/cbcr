@@ -17,7 +17,9 @@
 package uk.gov.hmrc.cbcr.models
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import play.api.libs.functional.syntax._ // Combinator syntax
+import play.api.libs.functional.syntax._
+
+import scala.annotation.unused // Combinator syntax
 
 case class EtmpAddress(
   addressLine1: String,
@@ -31,8 +33,9 @@ case class EtmpAddress(
 object EtmpAddress {
   implicit val formats: OFormat[EtmpAddress] = Json.format[EtmpAddress]
 
-  val subscriptionFormat = new Format[EtmpAddress] {
-    override def writes(o: EtmpAddress) = Json.obj(
+  @unused
+  val subscriptionFormat: Format[EtmpAddress] = new Format[EtmpAddress] {
+    override def writes(o: EtmpAddress): JsValue = Json.obj(
       "line1"       -> o.addressLine1,
       "line2"       -> o.addressLine1,
       "line3"       -> o.addressLine1,
@@ -49,7 +52,7 @@ object EtmpAddress {
         (JsPath \ "postalCode").readNullable[String] and
         (JsPath \ "countryCode").read[String])(EtmpAddress.apply _)
 
-    override def reads(json: JsValue) = etmpAddressReads.reads(json)
+    override def reads(json: JsValue): JsResult[EtmpAddress] = etmpAddressReads.reads(json)
   }
 
 }

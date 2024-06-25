@@ -29,14 +29,15 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import scala.annotation.unused
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SubscriptionDataController @Inject() (
   repo: SubscriptionDataRepository,
-  des: DESConnector,
+  @unused des: DESConnector,
   auth: CBCRAuth,
-  configuration: Configuration,
+  @unused configuration: Configuration,
   cc: ControllerComponents
 )(implicit val ec: ExecutionContext)
     extends BackendController(cc) {
@@ -53,7 +54,7 @@ class SubscriptionDataController @Inject() (
       parse.json
     )
 
-  def updateSubscriberContactDetails(cbcId: CBCId) =
+  def updateSubscriberContactDetails(cbcId: CBCId): Action[JsValue] =
     auth.authCBCRWithJson(
       implicit request =>
         request.body

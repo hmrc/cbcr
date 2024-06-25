@@ -19,7 +19,9 @@ package uk.gov.hmrc.cbcr.models
 import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
-import play.api.libs.functional.syntax._ // Combinator syntax
+import play.api.libs.functional.syntax._
+
+import scala.annotation.unused // Combinator syntax
 
 case class SubscriberContact(
   name: Option[String],
@@ -32,8 +34,9 @@ object SubscriberContact {
 
   implicit val formats: Format[SubscriberContact] = Json.format[SubscriberContact]
 
-  val subscriberContactFormat = new Format[SubscriberContact] {
-    override def writes(o: SubscriberContact) = Json.obj(
+  @unused
+  val subscriberContactFormat: Format[SubscriberContact] = new Format[SubscriberContact] {
+    override def writes(o: SubscriberContact): JsValue = Json.obj(
       "name"        -> o.name,
       "firstName"   -> o.firstName,
       "lastName"    -> o.lastName,
@@ -48,7 +51,7 @@ object SubscriberContact {
         (JsPath \ "phoneNumber").read[PhoneNumber] and
         (JsPath \ "email").read[EmailAddress])(SubscriberContact.apply _)
 
-    override def reads(json: JsValue) = subscriberContactReads.reads(json)
+    override def reads(json: JsValue): JsResult[SubscriberContact] = subscriberContactReads.reads(json)
   }
 
 }

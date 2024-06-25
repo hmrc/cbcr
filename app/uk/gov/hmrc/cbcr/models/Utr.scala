@@ -25,7 +25,7 @@ case class Utr(utr: String) extends TaxIdentifier {
 
   def isValid: Boolean = CheckUTR.isValid(utr)
 
-  object CheckUTR extends Modulus11Check {
+  private object CheckUTR extends Modulus11Check {
     def isValid(utr: String): Boolean = utr match {
       case Utr.utrPattern(_*) =>
         val suffix: String = utr.substring(1)

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
@@ -30,11 +30,11 @@ class MessageRefIdController @Inject() (repo: MessageRefIdRepository, auth: CBCR
   ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def save(messageRefId: String) = auth.authCBCR { _ =>
+  def save(messageRefId: String): Action[AnyContent] = auth.authCBCR { _ =>
     repo.save2(MessageRefId(messageRefId)).map(_ => Ok)
   }
 
-  def exists(messageRefId: String) = auth.authCBCR { _ =>
+  def exists(messageRefId: String): Action[AnyContent] = auth.authCBCR { _ =>
     repo.exists(messageRefId).map(result => if (result) Ok else NotFound)
   }
 

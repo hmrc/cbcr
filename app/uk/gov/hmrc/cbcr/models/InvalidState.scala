@@ -21,6 +21,8 @@ import play.api.mvc.Result
 import play.api.mvc.Results.Ok
 import uk.gov.hmrc.cbcr.typeclasses.AsResult
 
+import scala.language.implicitConversions
+
 final case class InvalidState(errorMsg: String, json: Option[JsValue] = None)
 
 object InvalidState {
