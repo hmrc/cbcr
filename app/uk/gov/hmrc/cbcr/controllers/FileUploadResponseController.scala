@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.controllers
 
 import play.api.Logger
 import play.api.libs.json._
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.repositories.FileUploadRepository
@@ -34,7 +34,7 @@ class FileUploadResponseController @Inject() (repo: FileUploadRepository, auth: 
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  def saveFileUploadResponse = Action.async(parse.json) { implicit request =>
+  def saveFileUploadResponse: Action[JsValue] = Action.async(parse.json) { implicit request =>
     request.body.validate[FileUploadResponse].asEither match {
       case Left(error) => Future.successful(BadRequest(JsError.toJson(error)))
       case Right(response) =>
@@ -45,7 +45,7 @@ class FileUploadResponseController @Inject() (repo: FileUploadRepository, auth: 
     }
   }
 
-  def retrieveFileUploadResponse(envelopeId: String) = auth.authCBCR { _ =>
+  def retrieveFileUploadResponse(envelopeId: String): Action[AnyContent] = auth.authCBCR { _ =>
     repo.get(envelopeId).map {
       case Some(obj) => Ok(Json.toJson(obj))
       case None      => NoContent

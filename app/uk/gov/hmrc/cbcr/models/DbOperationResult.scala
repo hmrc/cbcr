@@ -19,10 +19,14 @@ package uk.gov.hmrc.cbcr.models
 import play.api.mvc.{Result, Results}
 import uk.gov.hmrc.cbcr.typeclasses.AsResult
 
+import scala.annotation.unused
+import scala.language.implicitConversions
+
 sealed trait DbOperationResult
 case object UpdateSuccess extends DbOperationResult
 case object UpdateFailed extends DbOperationResult
 
+@unused
 object DbOperationResult {
   implicit def dbResult(dbOR: DbOperationResult): AsResult[DbOperationResult] = new AsResult[DbOperationResult] {
     override def asResult: Result = dbOR match {

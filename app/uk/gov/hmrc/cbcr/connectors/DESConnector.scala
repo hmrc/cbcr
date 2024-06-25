@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.connectors
 
 import com.google.inject.ImplementedBy
 import play.api.Logger
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsObject, JsValue, Json, Writes}
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http._
@@ -26,6 +26,7 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.Audit
 
 import javax.inject.{Inject, Singleton}
+import scala.annotation.unused
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DESConnectorImpl])
@@ -50,7 +51,11 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   val audit: Audit
 
-  private[connectors] def customDESRead(http: String, url: String, response: HttpResponse): HttpResponse =
+  private[connectors] def customDESRead(
+    @unused http: String,
+    @unused url: String,
+    response: HttpResponse
+  ): HttpResponse =
     response.status match {
       case 429 =>
         logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
@@ -61,7 +66,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   implicit val httpRds: HttpReads[HttpResponse] = (http: String, url: String, res: HttpResponse) =>
     customDESRead(http, url, res)
 
-  val lookupData: JsObject = Json.obj(
+  private val lookupData: JsObject = Json.obj(
     "regime"            -> "ITSA",
     "requiresNameMatch" -> false,
     "isAnAgent"         -> false
@@ -69,7 +74,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   private def desHeaders = Seq("Environment" -> urlHeaderEnvironment, "Authorization" -> urlHeaderAuthorization)
 
-  def withCorrelationId[T](f: HeaderCarrier => T)(implicit hc: HeaderCarrier): T =
+  private def withCorrelationId[T](f: HeaderCarrier => T)(implicit hc: HeaderCarrier): T =
     f(hc.requestId match {
       case Some(requestId) => hc.withExtraHeaders("X-Correlation-ID" -> requestId.value)
       case None            => hc
@@ -85,7 +90,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   }
 
   def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    implicit val writes = SubscriptionRequest.subscriptionWriter
+    implicit val writes: Writes[SubscriptionRequest] = SubscriptionRequest.subscriptionWriter
     logger.info(s"Create Request sent to DES")
     withCorrelationId { implicit hc =>
       http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders)
@@ -97,7 +102,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def updateSubscription(safeId: String, cor: CorrespondenceDetails)(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
-    implicit val format = CorrespondenceDetails.updateWriter
+    implicit val format: Writes[CorrespondenceDetails] = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
     withCorrelationId { implicit hc =>
       http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders)
@@ -130,5 +135,5 @@ class DESConnectorImpl @Inject() (
   lazy val urlHeaderEnvironment: String = configuration.etmpHodEnvironment
   lazy val urlHeaderAuthorization: String = s"Bearer ${configuration.etmpHodAuthorizationToken}"
   val audit = new Audit("known-fact-checking", auditConnector)
-  val http = httpClient
+  val http: HttpPost with HttpGet with HttpPut = httpClient
 }

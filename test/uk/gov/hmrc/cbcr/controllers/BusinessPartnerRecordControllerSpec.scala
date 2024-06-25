@@ -32,8 +32,8 @@ import scala.concurrent.Future
   */
 class BusinessPartnerRecordControllerSpec extends UnitSpec with MockAuth {
 
-  val dc = mock[DESConnector]
-  val headers = Map("example" -> Seq("headers"))
+  val dc: DESConnector = mock[DESConnector]
+  val headers: Map[String, Seq[String]] = Map("example" -> Seq("headers"))
   passAuthMock()
   val controller = new BusinessPartnerRecordController(dc, cBCRAuth, cc)
 

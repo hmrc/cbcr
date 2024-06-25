@@ -249,7 +249,7 @@ class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: Exe
       p.entityReportingPeriod.map(erp => set("entityReportingPeriod", Codecs.toBson(erp)))
     ).flatten
 
-  def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]) = {
+  def mergeListsAddInfo(p: PartialReportingEntityData, additionalInfoDRI: List[DocRefId]): List[String] = {
     val databaseRefIds = additionalInfoDRI.map(_.id)
     val corrDocRefIds = p.additionalInfoDRI.filter(_.corrDocRefId.isDefined).map(_.corrDocRefId.get.cid.id)
     val notModifiedDocRefIds = databaseRefIds.diff(corrDocRefIds)
@@ -257,7 +257,7 @@ class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: Exe
     updatedDocRefIds ++ notModifiedDocRefIds
   }
 
-  def mergeListsReports(p: PartialReportingEntityData, r: ReportingEntityDataModel) = {
+  def mergeListsReports(p: PartialReportingEntityData, r: ReportingEntityDataModel): List[String] = {
     val databaseRefIds = r.cbcReportsDRI.map(_.id).toList
     val corrDocRefIds = p.cbcReportsDRI.filter(_.corrDocRefId.isDefined).map(_.corrDocRefId.get.cid.id)
     val notModifiedDocRefIds = databaseRefIds.diff(corrDocRefIds)

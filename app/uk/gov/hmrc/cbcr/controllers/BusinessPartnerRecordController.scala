@@ -17,10 +17,11 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+
 import scala.concurrent.ExecutionContext
 
 @Singleton
@@ -28,7 +29,7 @@ class BusinessPartnerRecordController @Inject() (connector: DESConnector, auth: 
   implicit val ec: ExecutionContext
 ) extends BackendController(cc) {
 
-  def getBusinessPartnerRecord(utr: String) = auth.authCBCR { implicit request =>
+  def getBusinessPartnerRecord(utr: String): Action[AnyContent] = auth.authCBCR { implicit request =>
     connector.lookup(utr).map {
       case response if response.status == OK          => Ok(response.json)
       case response if response.status == BAD_REQUEST => BadRequest(response.json)

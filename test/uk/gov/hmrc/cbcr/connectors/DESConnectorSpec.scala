@@ -47,8 +47,9 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
 
   "customDesRead" should {
     "successfully convert 429 from DES to 503" in new Setup {
-      val httpResponse = HttpResponse(429, "429")
-      val ex = intercept[UpstreamErrorResponse](connector.customDESRead("test", "testUrl", httpResponse))
+      val httpResponse: HttpResponse = HttpResponse(429, "429")
+      val ex: UpstreamErrorResponse =
+        intercept[UpstreamErrorResponse](connector.customDESRead("test", "testUrl", httpResponse))
       ex shouldBe UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
     }
   }
@@ -56,7 +57,7 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
   "createSubscription" should {
 
     "submit request to createSubscription and get successful response status" in new Setup {
-      val sub = SubscriptionRequest("safeid", false, cd)
+      val sub: SubscriptionRequest = SubscriptionRequest("safeid", isMigrationRecord = false, cd)
       when(httpMock.POST[SubscriptionRequest, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
         .thenReturn(Future.successful(HttpResponse(202, "202")))
       val result: Future[HttpResponse] = connector.createSubscription(sub)
@@ -76,13 +77,13 @@ class DESConnectorSpec extends UnitSpec with MockAuth with ScalaFutures with Gui
   sealed trait Setup {
     implicit val hc: HeaderCarrier = HeaderCarrier()
     implicit val executionContext: ExecutionContext = ExecutionContext.Implicits.global
-    val mockAuditConnector = mock[AuditConnector]
+    val mockAuditConnector: AuditConnector = mock[AuditConnector]
     val httpMock: HttpClient = mock[HttpClient]
-    val servicesConfig = mock[ServicesConfig]
+    val servicesConfig: ServicesConfig = mock[ServicesConfig]
 
-    val config = mock[ApplicationConfig]
+    val config: ApplicationConfig = mock[ApplicationConfig]
 
-    val cd = CorrespondenceDetails(
+    val cd: CorrespondenceDetails = CorrespondenceDetails(
       EtmpAddress("line1", None, None, None, None, "GB"),
       ContactDetails(EmailAddress("test@test.com"), PhoneNumber("9876543").get),
       ContactName("FirstName", "Surname")
