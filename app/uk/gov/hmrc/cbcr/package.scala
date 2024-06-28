@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc
 
+import _root_.play.api.Logger
 import _root_.play.api.libs.json.Json._
 import _root_.play.api.libs.json._
-import _root_.play.api.Logger
 import cats.data.{EitherT, OptionT}
 import uk.gov.hmrc.cbcr.models.InvalidState
 import uk.gov.hmrc.http.HeaderCarrier

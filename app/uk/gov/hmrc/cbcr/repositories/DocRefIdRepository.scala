@@ -17,7 +17,9 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.DeleteResult
 import uk.gov.hmrc.cbcr.models.DocRefIdResponses._
 import uk.gov.hmrc.cbcr.models._
@@ -35,7 +37,9 @@ class DocRefIdRepository @Inject() (mongo: MongoComponent, records: ReactiveDocR
       mongoComponent = mongo,
       collectionName = "DocRefId",
       domainFormat = DocRefId.format,
-      indexes = Seq()
+      indexes = Seq(
+        IndexModel(ascending("id"), IndexOptions().name("id"))
+      )
     ) {
 
   override lazy val requiresTtlIndex: Boolean = false

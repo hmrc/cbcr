@@ -15,9 +15,9 @@
  */
 
 package uk.gov.hmrc.cbcr.models
-import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._ // Combinator syntax
+import play.api.libs.json.Reads._
+import play.api.libs.json._
 
 case class EtmpAddress(
   addressLine1: String,

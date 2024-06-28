@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.cbcr.models
 
+import play.api.libs.functional.syntax._ // Combinator syntax
 import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
-import play.api.libs.functional.syntax._ // Combinator syntax
 
 case class SubscriberContact(
   name: Option[String],

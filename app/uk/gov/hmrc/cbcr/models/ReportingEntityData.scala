@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import java.time.LocalDate
 import cats.data.NonEmptyList
-import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
+
+import java.time.LocalDate
 
 case class EntityReportingPeriod(startDate: LocalDate, endDate: LocalDate)
 object EntityReportingPeriod {

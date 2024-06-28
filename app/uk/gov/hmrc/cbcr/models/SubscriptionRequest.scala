@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import play.api.libs.json.Reads._ // Custom validation helpers
 import play.api.libs.functional.syntax._ // Combinator syntax
-
+import play.api.libs.json.Reads._ // Custom validation helpers
 import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
+
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class PhoneNumber private (val number: String)
 

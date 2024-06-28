@@ -17,8 +17,6 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import org.mongodb.scala.model.Filters.equal
-
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
@@ -29,6 +27,7 @@ import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.mongo.play.json.Codecs
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
