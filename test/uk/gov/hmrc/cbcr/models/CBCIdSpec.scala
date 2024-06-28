@@ -62,9 +62,8 @@ class CBCIdSpec extends AnyWordSpec with ScalaCheckDrivenPropertyChecks with Mat
       }
     }
     "allow the creation of valid CBCIds over the whole possible range" in {
-      for (i <- 1 until 1000000) {
+      for (i <- 1 until 1000000)
         CBCId.create(i).isValid shouldBe true
-      }
     }
     "not allow creating CBCIds outside of the valid range of 1-999999" in {
       forAll(Gen.negNum[Int]) { n =>

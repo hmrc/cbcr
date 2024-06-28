@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.services
 
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
@@ -30,8 +31,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EmailService @Inject()(emailConnector: EmailConnectorImpl, auditConnector: AuditConnector)(
-  implicit val ec: ExecutionContext) {
+class EmailService @Inject() (emailConnector: EmailConnectorImpl, auditConnector: AuditConnector)(implicit
+  val ec: ExecutionContext
+) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
@@ -46,12 +48,12 @@ class EmailService @Inject()(emailConnector: EmailConnectorImpl, auditConnector:
             Accepted
           case _ =>
             throw new RuntimeException("Unexpected status")
-      })
-      .recover {
-        case _ =>
-          logger.error("Failed to send e-mail")
-          audit(email, CBCREmailFailure)
-          BadRequest
+        }
+      )
+      .recover { case _ =>
+        logger.error("Failed to send e-mail")
+        audit(email, CBCREmailFailure)
+        BadRequest
       }
 
   def audit(email: Email, auditType: AuditType)(implicit hc: HeaderCarrier) =
@@ -63,7 +65,9 @@ class EmailService @Inject()(emailConnector: EmailConnectorImpl, auditConnector:
           detail = Json.obj(
             "email" -> Json.toJson(email),
             "path"  -> JsString(emailConnector.serviceUrl)
-          )))
+          )
+        )
+      )
       .map {
         case AuditResult.Success         => logger.info(s"Successfully audited ${auditType.toString}")
         case AuditResult.Failure(msg, _) => logger.warn(s"Unable to audit ${auditType.toString} $msg")

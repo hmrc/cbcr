@@ -31,9 +31,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRefIdRepository)(
-  implicit ec: ExecutionContext)
-    extends PlayMongoRepository[DocRefId](
+class DocRefIdRepository @Inject() (mongo: MongoComponent, records: ReactiveDocRefIdRepository)(implicit
+  ec: ExecutionContext
+) extends PlayMongoRepository[DocRefId](
       mongoComponent = mongo,
       collectionName = "DocRefId",
       domainFormat = DocRefId.format,
@@ -66,7 +66,7 @@ class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRe
       .headOption()
       .flatMap {
         case Some(entry) if entry.valid => Future.successful(AlreadyExists)
-        case _                          => records.collection.insertOne(DocRefIdRecord(id, valid = true)).toFuture().map(_ => Ok)
+        case _ => records.collection.insertOne(DocRefIdRecord(id, valid = true)).toFuture().map(_ => Ok)
       }
 
   def save2(c: CorrDocRefId, d: DocRefId): Future[(DocRefIdQueryResponse, Option[DocRefIdSaveResponse])] =
@@ -77,17 +77,17 @@ class DocRefIdRepository @Inject()(mongo: MongoComponent, records: ReactiveDocRe
       case (Valid, DoesNotExist) =>
         for {
           doc <- records.collection
-                  .findOneAndUpdate(and(equal("id", c.cid.id), equal("valid", true)), set("valid", false))
-                  .toFutureOption()
+                   .findOneAndUpdate(and(equal("id", c.cid.id), equal("valid", true)), set("valid", false))
+                   .toFutureOption()
           x <- if (doc.isDefined) {
-                val valid = DocRefIdRecord.docRefIdValidity(d.id)
-                records.collection
-                  .insertOne(DocRefIdRecord(d, valid))
-                  .toFuture()
-                  .map(_ => Ok)
-              } else {
-                Future.successful(Failed)
-              }
+                 val valid = DocRefIdRecord.docRefIdValidity(d.id)
+                 records.collection
+                   .insertOne(DocRefIdRecord(d, valid))
+                   .toFuture()
+                   .map(_ => Ok)
+               } else {
+                 Future.successful(Failed)
+               }
         } yield (Valid, Some(x))
     }
 

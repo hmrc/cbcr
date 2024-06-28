@@ -27,9 +27,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class DocRefIdController @Inject()(repo: DocRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+class DocRefIdController @Inject() (repo: DocRefIdRepository, auth: CBCRAuth, cc: ControllerComponents)(implicit
+  ec: ExecutionContext
+) extends BackendController(cc) {
 
   def query(docRefId: DocRefId) = auth.authCBCR { _ =>
     repo.query(docRefId).map {

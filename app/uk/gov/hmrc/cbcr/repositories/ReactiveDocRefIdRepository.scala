@@ -24,11 +24,12 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ReactiveDocRefIdRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class ReactiveDocRefIdRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[DocRefIdRecord](
       mongoComponent = mongo,
       collectionName = "DocRefId",
       domainFormat = DocRefIdRecord.format,
-      indexes = Seq()) {
+      indexes = Seq()
+    ) {
   override lazy val requiresTtlIndex: Boolean = false
 }

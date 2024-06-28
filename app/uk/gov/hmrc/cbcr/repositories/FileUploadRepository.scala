@@ -26,12 +26,13 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadRepository @Inject()(mongo: MongoComponent)(implicit ec: ExecutionContext)
+class FileUploadRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[FileUploadResponse](
       mongoComponent = mongo,
       collectionName = "FileUpload",
       domainFormat = FileUploadResponse.ufrFormat,
-      indexes = Seq()) {
+      indexes = Seq()
+    ) {
   override lazy val requiresTtlIndex: Boolean = false
 
   def save2(f: FileUploadResponse): Future[Unit] =

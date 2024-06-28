@@ -28,9 +28,9 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class FileUploadResponseController @Inject()(repo: FileUploadRepository, auth: CBCRAuth, cc: ControllerComponents)(
-  implicit val ec: ExecutionContext)
-    extends BackendController(cc) {
+class FileUploadResponseController @Inject() (repo: FileUploadRepository, auth: CBCRAuth, cc: ControllerComponents)(
+  implicit val ec: ExecutionContext
+) extends BackendController(cc) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
