@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import play.api.libs.json.JsValue
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Request, Result}
+import play.api.mvc._
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandler

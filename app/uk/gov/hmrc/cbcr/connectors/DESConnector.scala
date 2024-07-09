@@ -26,7 +26,6 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.Audit
 
 import javax.inject.{Inject, Singleton}
-import scala.annotation.unused
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DESConnectorImpl])
@@ -52,8 +51,8 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   val audit: Audit
 
   private[connectors] def customDESRead(
-    @unused http: String,
-    @unused url: String,
+    http: String,
+    url: String,
     response: HttpResponse
   ): HttpResponse =
     response.status match {

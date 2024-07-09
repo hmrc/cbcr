@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.cbcr.models
 
+import org.scalatest.Suite
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import org.scalatest.Suite
 
 class ReportingEntityDataSpec extends UnitSpec with Suite {
 

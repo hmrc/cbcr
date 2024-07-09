@@ -23,31 +23,26 @@ import cats.data.{EitherT, OptionT}
 import uk.gov.hmrc.cbcr.models.InvalidState
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.annotation.unused
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
 
 package object cbcr {
 
   private type ServiceResponse[A] = EitherT[Future, InvalidState, A]
-  @unused
+
   type ServiceResponseOpt[A] = OptionT[Future, A]
 
   private type UnexpectedOr[A] = Either[InvalidState, A]
 
-  @unused
   def fromFutureOptA[A](fa: Future[UnexpectedOr[A]]): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](fa)
 
-  @unused
   def fromFutureA[A](fa: Future[A])(implicit ec: ExecutionContext): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](fa.map(Right(_)))
 
-  @unused
   def fromOptA[A](oa: UnexpectedOr[A]): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](Future.successful(oa))
 
-  @unused
   def fromFutureOptionA[A](
     fo: Future[Option[A]]
   )(invalid: => InvalidState)(implicit ec: ExecutionContext): ServiceResponse[A] = {

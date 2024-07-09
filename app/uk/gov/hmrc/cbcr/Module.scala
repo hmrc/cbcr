@@ -29,10 +29,8 @@ import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
-import scala.annotation.unused
 
-@unused
-class Module(@unused environment: Environment, @unused configuration: Configuration) extends AbstractModule {
+class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
 
   lazy val logger: Logger = Logger(this.getClass)
 
@@ -46,7 +44,6 @@ class Module(@unused environment: Environment, @unused configuration: Configurat
 
   private val registryName: String = configuration.load[String]("metrics.name")
 
-  @unused
   private def startGraphite(): Unit = {
     logger.info("Graphite metrics enabled, starting the reporter")
 

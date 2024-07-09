@@ -22,7 +22,6 @@ import play.api.mvc.PathBindable
 
 import java.time.format.DateTimeFormatter
 
-import scala.annotation.unused
 import scala.util.matching.Regex
 
 case class DocRefId(id: String)
@@ -70,7 +69,7 @@ case class DocRefIdRecord(id: DocRefId, valid: Boolean)
 object DocRefIdRecord {
   // Keep in sync with any future frontend changes
   implicit val format: OFormat[DocRefIdRecord] = Json.format[DocRefIdRecord]
-  @unused
+
   val dateFmt: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")
   val cbcRegex: String = CBCId.cbcRegex.init.tail // strip the ^ and $ characters from the cbcRegex
   private val dateRegex = """\d{8}T\d{6}"""

@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import java.time.LocalDate
-import org.apache.pekko.actor.ActorSystem
 import cats.data.NonEmptyList
 import com.mongodb.client.result.InsertOneResult
+import org.apache.pekko.actor.ActorSystem
 import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
@@ -27,10 +26,11 @@ import org.scalatest.concurrent.ScalaFutures
 import play.api.http.Status
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.cbcr.models.{CBC701, _}
+import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.ReportingEntityDataRepo
 import uk.gov.hmrc.cbcr.util.{LogCapturing, UnitSpec}
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 class ReportingEntityDataControllerSpec extends UnitSpec with ScalaFutures with MockAuth with LogCapturing {

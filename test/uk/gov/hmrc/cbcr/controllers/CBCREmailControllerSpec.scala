@@ -19,15 +19,16 @@ package uk.gov.hmrc.cbcr.controllers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
+import play.api.http.Status
 import play.api.libs.json.Json
+import play.api.mvc.Results.Accepted
 import play.api.test.FakeRequest
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.EmailService
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import play.api.http.Status
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import play.api.mvc.Results.Accepted
 
 class CBCREmailControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
 

@@ -18,11 +18,8 @@ package uk.gov.hmrc.cbcr.models
 
 import play.api.libs.json.{Json, Writes}
 
-import scala.annotation.unused
-
 case class Migration(safeId: String, cBCId: String, correspondenceDetails: CorrespondenceDetails)
 
-@unused
 object Migration {
   implicit val migrationWriter: Writes[Migration] = (o: Migration) =>
     Json.obj(

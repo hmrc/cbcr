@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.cbcr.util
 
-import java.nio.charset.Charset
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatest.{Assertion, OptionValues}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.models.{DatesOverlap, ReportingEntityData, ReportingEntityDataModel}
 
-import scala.language.postfixOps
+import java.nio.charset.Charset
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.implicitConversions
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import scala.language.{implicitConversions, postfixOps}
 
 trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues {
 
