@@ -17,7 +17,7 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import play.api.libs.json.JsValue
-import play.api.mvc.{ControllerComponents, Request, Result}
+import play.api.mvc._
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.SubscriptionHandler
@@ -25,12 +25,13 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import javax.inject._
 import scala.concurrent.Future
+import scala.language.implicitConversions
 
 @Singleton
 class CBCIdController @Inject() (gen: SubscriptionHandler, auth: CBCRAuth, cc: ControllerComponents)
     extends BackendController(cc) {
 
-  def subscribe =
+  def subscribe: Action[JsValue] =
     auth.authCBCRWithJson(
       { implicit request: Request[JsValue] =>
         request.body
@@ -43,7 +44,7 @@ class CBCIdController @Inject() (gen: SubscriptionHandler, auth: CBCRAuth, cc: C
       parse.json
     )
 
-  def updateSubscription(safeId: String) =
+  def updateSubscription(safeId: String): Action[JsValue] =
     auth.authCBCRWithJson(
       implicit request =>
         request.body
@@ -55,7 +56,7 @@ class CBCIdController @Inject() (gen: SubscriptionHandler, auth: CBCRAuth, cc: C
       parse.json
     )
 
-  def getSubscription(safeId: String) = auth.authCBCR { implicit request =>
+  def getSubscription(safeId: String): Action[AnyContent] = auth.authCBCR { implicit request =>
     gen.getSubscription(safeId)
   }
 
@@ -64,7 +65,7 @@ class CBCIdController @Inject() (gen: SubscriptionHandler, auth: CBCRAuth, cc: C
   ): SubscriptionRequest =
     SubscriptionRequest(
       s.businessPartnerRecord.safeId,
-      false,
+      isMigrationRecord = false,
       CorrespondenceDetails(
         s.businessPartnerRecord.address,
         ContactDetails(s.subscriberContact.email, s.subscriberContact.phoneNumber),

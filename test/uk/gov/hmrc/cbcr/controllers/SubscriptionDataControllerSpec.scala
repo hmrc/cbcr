@@ -16,23 +16,23 @@
 
 package uk.gov.hmrc.cbcr.controllers
 
-import org.apache.pekko.actor.ActorSystem
 import com.mongodb.client.result.{DeleteResult, InsertOneResult}
+import org.apache.pekko.actor.ActorSystem
 import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
 import play.api.http.Status
-import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json._
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
-import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.cbcr.util.UnitSpec
+import uk.gov.hmrc.emailaddress.EmailAddress
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

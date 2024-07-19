@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.cbcr.models
 
+import org.scalatest.Suite
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import org.scalatest.Suite
 
 class ReportingEntityDataSpec extends UnitSpec with Suite {
 
-  val additionalInfoList =
+  val additionalInfoList: String =
     s"""
        |{
        |  "cbcReportsDRI": ["GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP"],
@@ -36,7 +36,7 @@ class ReportingEntityDataSpec extends UnitSpec with Suite {
        |}
      """.stripMargin
 
-  val additionalInfoDocRefId =
+  val additionalInfoDocRefId: String =
     s"""
        |{
        |  "cbcReportsDRI": ["GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP"],
@@ -50,7 +50,7 @@ class ReportingEntityDataSpec extends UnitSpec with Suite {
        |}
      """.stripMargin
 
-  val noAdditionalInfo =
+  val noAdditionalInfo: String =
     s"""
        |{
        |  "cbcReportsDRI": ["GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP"],
@@ -63,7 +63,7 @@ class ReportingEntityDataSpec extends UnitSpec with Suite {
        |}
      """.stripMargin
 
-  val additionalInfoInvalid =
+  val additionalInfoInvalid: String =
     s"""
        |{
        |  "cbcReportsDRI": ["GB2016RGXVCBC0000000056CBC40120170311T090000X_7000000002OECD1REP"],

@@ -22,7 +22,7 @@ import com.google.inject.AbstractModule
 import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.cbcr.config.ConfigurationOps.ConfigurationOps
+import uk.gov.hmrc.cbcr.config.ConfigurationOpts.ConfigurationOps
 import uk.gov.hmrc.http.HttpClient
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
@@ -34,15 +34,15 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  val graphiteConfig: Configuration = configuration.load[Configuration]("microservice.metrics.graphite")
+  private val graphiteConfig: Configuration = configuration.load[Configuration]("microservice.metrics.graphite")
 
-  val metricsPluginEnabled: Boolean = configuration.load[Boolean]("metrics.enabled")
+  private val metricsPluginEnabled: Boolean = configuration.load[Boolean]("metrics.enabled")
 
-  val graphitePublisherEnabled: Boolean = graphiteConfig.load[Boolean]("enabled")
+  private val graphitePublisherEnabled: Boolean = graphiteConfig.load[Boolean]("enabled")
 
-  val graphiteEnabled: Boolean = metricsPluginEnabled && graphitePublisherEnabled
+  private val graphiteEnabled: Boolean = metricsPluginEnabled && graphitePublisherEnabled
 
-  val registryName: String = configuration.load[String]("metrics.name")
+  private val registryName: String = configuration.load[String]("metrics.name")
 
   private def startGraphite(): Unit = {
     logger.info("Graphite metrics enabled, starting the reporter")

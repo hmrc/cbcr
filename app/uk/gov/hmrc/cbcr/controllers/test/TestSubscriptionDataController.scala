@@ -36,7 +36,7 @@ class TestSubscriptionDataController @Inject() (
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def insertData() = Action.async[JsValue](parse.json) { implicit request =>
+  def insertData(): Action[JsValue] = Action.async[JsValue](parse.json) { implicit request =>
     withJsonBody[SubscriptionDetails] {
       subRepo.save2(_).map(_ => Ok("data submitted successfully"))
     }
@@ -54,7 +54,7 @@ class TestSubscriptionDataController @Inject() (
     messageRefIdRepository.delete(MessageRefId(messageRefIds)).map(_ => Ok)
   }
 
-  def deleteReportingEntityData(docRefId: DocRefId) = Action.async {
+  def deleteReportingEntityData(docRefId: DocRefId): Action[AnyContent] = Action.async {
     reportingEntityDataRepo.delete(docRefId).map(wr => if (wr.getDeletedCount == 0) NotFound else Ok)
   }
 
@@ -62,7 +62,7 @@ class TestSubscriptionDataController @Inject() (
     reportingEntityDataRepo.removeAllDocs().map(_ => Ok("Successfully drop reporting entity data collection"))
   }
 
-  def updateReportingEntityCreationDate(creationDate: String, docRefId: DocRefId) = Action.async {
+  def updateReportingEntityCreationDate(creationDate: String, docRefId: DocRefId): Action[AnyContent] = Action.async {
     val cd = LocalDate.parse(creationDate)
     reportingEntityDataRepo.updateCreationDate(docRefId, cd).map {
       case n if n > 0 => Ok
@@ -70,14 +70,14 @@ class TestSubscriptionDataController @Inject() (
     }
   }
 
-  def deleteReportingEntityCreationDate(docRefId: DocRefId) = Action.async {
+  def deleteReportingEntityCreationDate(docRefId: DocRefId): Action[AnyContent] = Action.async {
     reportingEntityDataRepo.deleteCreationDate(docRefId).map {
       case n if n > 0 => Ok
       case _          => NotModified
     }
   }
 
-  def confirmReportingEntityCreationDate(creationDate: String, docRefId: DocRefId) = Action.async {
+  def confirmReportingEntityCreationDate(creationDate: String, docRefId: DocRefId): Action[AnyContent] = Action.async {
     val cd = LocalDate.parse(creationDate)
 
     reportingEntityDataRepo.confirmCreationDate(docRefId, cd).map {
@@ -86,14 +86,14 @@ class TestSubscriptionDataController @Inject() (
     }
   }
 
-  def deleteReportingEntityReportingPeriod(docRefId: DocRefId) = Action.async {
+  def deleteReportingEntityReportingPeriod(docRefId: DocRefId): Action[AnyContent] = Action.async {
     reportingEntityDataRepo.deleteReportingPeriod(docRefId).map {
       case n if n > 0 => Ok
       case _          => NotModified
     }
   }
 
-  def deleteReportingPeriodByRepEntDocRefId(docRefId: DocRefId) = Action.async {
+  def deleteReportingPeriodByRepEntDocRefId(docRefId: DocRefId): Action[AnyContent] = Action.async {
     reportingEntityDataRepo.deleteReportingPeriodByRepEntDocRefId(docRefId).map {
       case n if n > 0 => Ok
       case _          => NotModified
@@ -107,14 +107,14 @@ class TestSubscriptionDataController @Inject() (
     }
   }
 
-  def updateReportingEntityAdditionalInfoDRI(docRefId: DocRefId) = Action.async {
+  def updateReportingEntityAdditionalInfoDRI(docRefId: DocRefId): Action[AnyContent] = Action.async {
     reportingEntityDataRepo.updateAdditionalInfoDRI(docRefId).map {
       case n if n > 0 => Ok
       case _          => NotModified
     }
   }
 
-  def dropSubscriptionDataCollection() = Action.async {
+  def dropSubscriptionDataCollection(): Action[AnyContent] = Action.async {
     subRepo.removeAll().map(_ => Ok("Successfully drop subscription data collection"))
   }
 

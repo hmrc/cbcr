@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.Result
@@ -56,7 +55,7 @@ class EmailService @Inject() (emailConnector: EmailConnectorImpl, auditConnector
         BadRequest
       }
 
-  def audit(email: Email, auditType: AuditType)(implicit hc: HeaderCarrier) =
+  def audit(email: Email, auditType: AuditType)(implicit hc: HeaderCarrier): Future[Unit] =
     auditConnector
       .sendExtendedEvent(
         ExtendedDataEvent(

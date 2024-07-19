@@ -16,23 +16,22 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import java.time.LocalDateTime
-
 import org.apache.pekko.actor.ActorSystem
-import uk.gov.hmrc.cbcr.connectors.DESConnector
-import uk.gov.hmrc.cbcr.models._
-import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.cbcr.util.UnitSpec
-import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status._
 import play.api.libs.json.{JsError, Json}
-
-import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.cbcr.connectors.DESConnector
+import uk.gov.hmrc.cbcr.models._
+import uk.gov.hmrc.cbcr.util.UnitSpec
+import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+
+import java.time.LocalDateTime
+import scala.concurrent.{ExecutionContext, Future}
 
 class RemoteSubscriptionSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSuite with ScalaFutures {
 

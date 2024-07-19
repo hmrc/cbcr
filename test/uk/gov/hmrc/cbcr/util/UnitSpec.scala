@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.cbcr.util
 
-import java.nio.charset.Charset
-
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.util.ByteString
-import org.scalatest.OptionValues
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.{Assertion, OptionValues}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.cbcr.models.{DatesOverlap, ReportingEntityData, ReportingEntityDataModel}
-import scala.language.postfixOps
+
+import java.nio.charset.Charset
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.implicitConversions
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import scala.language.{implicitConversions, postfixOps}
 
 trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues {
 
@@ -59,17 +58,17 @@ trait UnitSpec extends AnyWordSpecLike with Matchers with OptionValues {
   def bodyOf(resultF: Future[Result])(implicit mat: Materializer): Future[String] =
     resultF.map(bodyOf)
 
-  def verifyResult(result: Future[Result], red: ReportingEntityData)(implicit mat: Materializer) =
+  def verifyResult(result: Future[Result], red: ReportingEntityData)(implicit mat: Materializer): Assertion =
     Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
 
-  def verifyResult(result: Future[Result], red: ReportingEntityDataModel)(implicit mat: Materializer) =
+  def verifyResult(result: Future[Result], red: ReportingEntityDataModel)(implicit mat: Materializer): Assertion =
     Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(red)
 
-  def verifyResult(result: Future[Result], datesOverlap: DatesOverlap)(implicit mat: Materializer) =
+  def verifyResult(result: Future[Result], datesOverlap: DatesOverlap)(implicit mat: Materializer): Assertion =
     Await.result(jsonBodyOf(result), 2.seconds) shouldEqual Json.toJson(datesOverlap)
 
-  def verifyStatusCode(result: Future[Result], statusCode: Int) = status(result) shouldBe statusCode
+  def verifyStatusCode(result: Future[Result], statusCode: Int): Assertion = status(result) shouldBe statusCode
 
-  def verifyStatusCode[A](result: Future[Result], expected: A) = status(result) shouldBe expected
+  def verifyStatusCode[A](result: Future[Result], expected: A): Assertion = status(result) shouldBe expected
 
 }

@@ -18,7 +18,7 @@ package uk.gov.hmrc.cbcr.config
 
 import play.api.{ConfigLoader, Configuration, PlayException}
 
-object ConfigurationOps {
+object ConfigurationOpts {
   implicit class ConfigurationOps(self: Configuration) {
     def load[A](path: String)(implicit loader: ConfigLoader[A]): A =
       self

@@ -24,13 +24,15 @@ import uk.gov.hmrc.cbcr.models.InvalidState
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.implicitConversions
 
 package object cbcr {
 
-  type ServiceResponse[A] = EitherT[Future, InvalidState, A]
+  private type ServiceResponse[A] = EitherT[Future, InvalidState, A]
+
   type ServiceResponseOpt[A] = OptionT[Future, A]
 
-  type UnexpectedOr[A] = Either[InvalidState, A]
+  private type UnexpectedOr[A] = Either[InvalidState, A]
 
   def fromFutureOptA[A](fa: Future[UnexpectedOr[A]]): ServiceResponse[A] =
     EitherT[Future, InvalidState, A](fa)

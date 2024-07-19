@@ -22,20 +22,20 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.Status
 import play.api.mvc.Results.{Ok, Unauthorized}
-import play.api.mvc.{AnyContent, Request, Result}
+import play.api.mvc.{AnyContent, ControllerComponents, Request, Result}
 import play.api.test.FakeRequest
-import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, MissingBearerToken}
-import uk.gov.hmrc.auth.core.retrieve.Retrieval
-import uk.gov.hmrc.cbcr.util.UnitSpec
 import play.api.test.Helpers.stubControllerComponents
+import uk.gov.hmrc.auth.core.retrieve.Retrieval
+import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, MissingBearerToken}
+import uk.gov.hmrc.cbcr.util.UnitSpec
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class CBCRAuthSpec extends UnitSpec with MockitoSugar with BeforeAndAfterEach {
 
-  val cc = stubControllerComponents()
-  val mockMicroServiceAuthConnector = mock[AuthConnector]
+  val cc: ControllerComponents = stubControllerComponents()
+  val mockMicroServiceAuthConnector: AuthConnector = mock[AuthConnector]
   val cBCRAuth = new CBCRAuth(mockMicroServiceAuthConnector, cc)
   private type AuthAction = Request[AnyContent] => Future[Result]
 
