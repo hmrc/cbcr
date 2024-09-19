@@ -89,7 +89,6 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   }
 
   def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
-    implicit val writes: Writes[SubscriptionRequest] = SubscriptionRequest.subscriptionWriter
     logger.info(s"Create Request sent to DES")
     withCorrelationId { implicit hc =>
       http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders)

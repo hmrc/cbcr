@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.cbcr.models
 
-import play.api.libs.functional.syntax._ // Combinator syntax
-import play.api.libs.json.Reads._ // Custom validation helpers
+import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
 import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.emailaddress.PlayJsonFormats._
@@ -100,7 +100,7 @@ object CorrespondenceDetails {
 case class SubscriptionRequest(safeId: String, isMigrationRecord: Boolean, correspondenceDetails: CorrespondenceDetails)
 
 object SubscriptionRequest {
-  val subscriptionWriter = new Writes[SubscriptionRequest] {
+  implicit val subscriptionWriter: Writes[SubscriptionRequest] = new Writes[SubscriptionRequest] {
     override def writes(o: SubscriptionRequest) = Json.obj(
       "safeId"            -> o.safeId,
       "isMigrationRecord" -> o.isMigrationRecord,
@@ -115,7 +115,6 @@ object SubscriptionRequest {
     )
 
   }
-  implicit val format: Format[SubscriptionRequest] = Json.format[SubscriptionRequest]
 }
 
 case class SubscriptionResponse(processingDate: LocalDateTime, cbcSubscriptionID: CBCId)
