@@ -21,10 +21,13 @@ import com.typesafe.config.Config
 import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.Email
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpPost, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.libs.json.Json
+import uk.gov.hmrc.http._
 
 @ImplementedBy(classOf[EmailConnectorImpl])
 trait EmailConnector {
@@ -33,13 +36,11 @@ trait EmailConnector {
   val host: String
   val protocol: String
 
-  def http: HttpPost
 }
 
 @Singleton
-class EmailConnectorImpl @Inject() (config: Configuration, httpClient: HttpClient)(implicit ec: ExecutionContext)
+class EmailConnectorImpl @Inject() (config: Configuration, httpClient: HttpClientV2)(implicit ec: ExecutionContext)
     extends EmailConnector {
-  val http: HttpPost = httpClient
   private val conf: Config = config.underlying.getConfig("microservice.services.email")
   val host: String = conf.getString("host")
   val port: String = conf.getInt("port").toString
@@ -47,5 +48,5 @@ class EmailConnectorImpl @Inject() (config: Configuration, httpClient: HttpClien
   val serviceUrl = s"$protocol://$host:$port/hmrc"
 
   def sendEmail(email: Email)(implicit hc: HeaderCarrier): Future[HttpResponse] =
-    http.POST[Email, HttpResponse](s"$serviceUrl/email/", email)
+    httpClient.post(url"$serviceUrl/email/").withBody(Json.toJson(email)).execute[HttpResponse]
 }
