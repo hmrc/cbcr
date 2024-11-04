@@ -23,9 +23,9 @@ import org.slf4j.MDC
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.cbcr.config.ConfigurationOpts.ConfigurationOps
-import uk.gov.hmrc.http.HttpClient
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
-import uk.gov.hmrc.play.bootstrap.http.DefaultHttpClient
+import uk.gov.hmrc.play.bootstrap.http.HttpClientV2Provider
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
@@ -70,7 +70,7 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
 
     if (graphiteEnabled) startGraphite()
 
-    bind(classOf[HttpClient]).to(classOf[DefaultHttpClient])
+    bind(classOf[HttpClientV2]).toProvider(classOf[HttpClientV2Provider])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
     MDC.put("appName", appName)
   }

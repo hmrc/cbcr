@@ -18,10 +18,11 @@ package uk.gov.hmrc.cbcr.connectors
 
 import com.google.inject.ImplementedBy
 import play.api.Logger
-import play.api.libs.json.{JsObject, JsValue, Json, Writes}
+import play.api.libs.json.{JsObject, Json, Writes}
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models.{CorrespondenceDetails, SubscriptionRequest}
 import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.model.Audit
 
@@ -46,7 +47,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   def urlHeaderAuthorization: String
 
-  def http: HttpPost with HttpGet with HttpPut
+  def http: HttpClientV2
 
   val audit: Audit
 
@@ -80,18 +81,28 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     })
 
   def lookup(utr: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val request = s"$serviceUrl/$orgLookupURI/utr/$utr"
     logger.info(s"Lookup Request sent to DES")
     withCorrelationId { implicit hc =>
-      http.POST[JsValue, HttpResponse](s"$serviceUrl/$orgLookupURI/utr/$utr", Json.toJson(lookupData), desHeaders)
+    http
+        .post(url"$request")
+        .withBody(Json.toJson(lookupData))
+        .setHeader(desHeaders:_*)
+        .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
     }
   }
 
   def createSubscription(sub: SubscriptionRequest)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
+    val request = s"$serviceUrl/$cbcSubscribeURI"
     logger.info(s"Create Request sent to DES")
     withCorrelationId { implicit hc =>
-      http.POST[SubscriptionRequest, HttpResponse](s"$serviceUrl/$cbcSubscribeURI", sub, desHeaders)
+      http
+        .post(url"$request")
+        .withBody(Json.toJson(sub))
+        .setHeader(desHeaders: _*)
+        .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
     }
@@ -100,10 +111,15 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def updateSubscription(safeId: String, cor: CorrespondenceDetails)(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
+    val request =s"$serviceUrl/$cbcSubscribeURI/$safeId"
     implicit val format: Writes[CorrespondenceDetails] = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
     withCorrelationId { implicit hc =>
-      http.PUT[CorrespondenceDetails, HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", cor, desHeaders)
+      http
+        .put(url"$request")
+        .withBody(Json.toJson(cor))
+        .setHeader(desHeaders: _*)
+        .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
     }
@@ -111,8 +127,12 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
 
   def getSubscription(safeId: String)(implicit hc: HeaderCarrier): Future[HttpResponse] = {
     logger.info(s"Get Request sent to DES for safeID: $safeId")
+    val request = s"$serviceUrl/$cbcSubscribeURI/$safeId"
     withCorrelationId { implicit hc =>
-      http.GET[HttpResponse](s"$serviceUrl/$cbcSubscribeURI/$safeId", headers = desHeaders)
+      http
+        .get(url"$request")
+        .setHeader(desHeaders: _*)
+        .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
     }
@@ -125,7 +145,7 @@ class DESConnectorImpl @Inject() (
   val ec: ExecutionContext,
   val auditConnector: AuditConnector,
   val configuration: ApplicationConfig,
-  val httpClient: HttpClient
+  val http: HttpClientV2
 ) extends DESConnector {
   lazy val serviceUrl: String = configuration.etmpHod
   lazy val orgLookupURI: String = "registration/organisation"
@@ -133,5 +153,5 @@ class DESConnectorImpl @Inject() (
   lazy val urlHeaderEnvironment: String = configuration.etmpHodEnvironment
   lazy val urlHeaderAuthorization: String = s"Bearer ${configuration.etmpHodAuthorizationToken}"
   val audit = new Audit("known-fact-checking", auditConnector)
-  val http: HttpPost with HttpGet with HttpPut = httpClient
+
 }
