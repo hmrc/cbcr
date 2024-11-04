@@ -5,7 +5,8 @@ object AppDependencies {
   val hmrc = "uk.gov.hmrc"
   val playVersion = "play-30"
   val mongoVersion = "1.7.0"
-  var bootstrapVersion = "8.4.0"
+  var bootstrapVersion = "8.6.0"
+  val mockitoScalaVersion = "1.17.37"
 
   val compile: Seq[ModuleID] = Seq(
     ws,
@@ -18,9 +19,10 @@ object AppDependencies {
   )
 
   def test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"          %% s"bootstrap-test-$playVersion"  % bootstrapVersion % Test,
-    "uk.gov.hmrc.mongo"    %% s"hmrc-mongo-test-$playVersion" % mongoVersion     % Test,
-    "org.scalatestplus"    %% "scalacheck-1-17"               % "3.2.18.0"       % Test,
+    "uk.gov.hmrc"          %% s"bootstrap-test-$playVersion"  % bootstrapVersion    % Test,
+    "uk.gov.hmrc.mongo"    %% s"hmrc-mongo-test-$playVersion" % mongoVersion        % Test,
+    "org.mockito"          %% "mockito-scala"                 % mockitoScalaVersion % Test,
+    "org.scalatestplus"    %% "scalacheck-1-17"               % "3.2.18.0"          % Test,
   )
 
   def apply(): Seq[ModuleID] = compile ++ test
