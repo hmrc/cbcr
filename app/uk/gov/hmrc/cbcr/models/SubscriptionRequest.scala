@@ -15,13 +15,10 @@
  */
 
 package uk.gov.hmrc.cbcr.models
-
+import uk.gov.hmrc.cbcr.util.EmailAddress
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.emailaddress.PlayJsonFormats._
-
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
