@@ -31,7 +31,7 @@ import uk.gov.hmrc.cbcr.config.ApplicationConfig
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.services.RemoteSubscription
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.cbcr.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future

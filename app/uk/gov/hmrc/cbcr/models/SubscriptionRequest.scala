@@ -19,8 +19,8 @@ package uk.gov.hmrc.cbcr.models
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.emailaddress.PlayJsonFormats._
+import uk.gov.hmrc.cbcr.emailaddress.EmailAddress
+import uk.gov.hmrc.cbcr.emailaddress.PlayJsonFormats._
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -41,9 +41,9 @@ object PhoneNumber {
     }
 
   implicit val format: Format[PhoneNumber] = new Format[PhoneNumber] {
-    override def writes(o: PhoneNumber) = JsString(o.number)
+    override def writes(o: PhoneNumber): JsString = JsString(o.number)
 
-    override def reads(json: JsValue) = json match {
+    override def reads(json: JsValue): JsResult[PhoneNumber] = json match {
       case JsString(v) =>
         PhoneNumber(v).fold[JsResult[PhoneNumber]](
           JsError(s"Unable to serialise $json as a PhoneNumber")
@@ -57,10 +57,10 @@ case class ContactDetails(email: EmailAddress, phoneNumber: PhoneNumber)
 
 object ContactDetails {
 
-  val emailFormat = new Format[EmailAddress] {
-    override def writes(o: EmailAddress) = Json.obj("emailAddress" -> o.value)
+  val emailFormat: Format[EmailAddress] = new Format[EmailAddress] {
+    override def writes(o: EmailAddress): JsObject = Json.obj("emailAddress" -> o.value)
 
-    override def reads(json: JsValue) = json match {
+    override def reads(json: JsValue): JsResult[EmailAddress] = json match {
       case JsObject(m) =>
         m.get("emailAddress")
           .flatMap(_.asOpt[String].map(EmailAddress(_)))
@@ -83,8 +83,8 @@ case class CorrespondenceDetails(contactAddress: EtmpAddress, contactDetails: Co
 
 object CorrespondenceDetails {
   implicit val format: OFormat[CorrespondenceDetails] = Json.format[CorrespondenceDetails]
-  implicit val updateWriter: Writes[CorrespondenceDetails] = new Writes[CorrespondenceDetails] {
-    override def writes(o: CorrespondenceDetails) = Json.obj(
+  implicit val updateWriter: Writes[CorrespondenceDetails] = (o: CorrespondenceDetails) =>
+    Json.obj(
       "correspondenceDetails" -> Json.obj(
         "contactAddress" -> EtmpAddress.formats.writes(o.contactAddress),
         "contactDetails" -> Json.obj(
@@ -94,14 +94,13 @@ object CorrespondenceDetails {
         "contactName" -> ContactName.format.writes(o.contactName)
       )
     )
-  }
 }
 
 case class SubscriptionRequest(safeId: String, isMigrationRecord: Boolean, correspondenceDetails: CorrespondenceDetails)
 
 object SubscriptionRequest {
-  implicit val subscriptionWriter: Writes[SubscriptionRequest] = new Writes[SubscriptionRequest] {
-    override def writes(o: SubscriptionRequest) = Json.obj(
+  implicit val subscriptionWriter: Writes[SubscriptionRequest] = (o: SubscriptionRequest) =>
+    Json.obj(
       "safeId"            -> o.safeId,
       "isMigrationRecord" -> o.isMigrationRecord,
       "correspondenceDetails" -> Json.obj(
@@ -113,20 +112,17 @@ object SubscriptionRequest {
         "contactName" -> ContactName.format.writes(o.correspondenceDetails.contactName)
       )
     )
-
-  }
 }
 
 case class SubscriptionResponse(processingDate: LocalDateTime, cbcSubscriptionID: CBCId)
 
 object SubscriptionResponse {
-  val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
-  implicit val format: Writes[SubscriptionResponse] = new Writes[SubscriptionResponse] {
-    override def writes(o: SubscriptionResponse) = Json.obj(
+  private val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+  implicit val format: Writes[SubscriptionResponse] = (o: SubscriptionResponse) =>
+    Json.obj(
       "processingDate"    -> o.processingDate.format(formatter),
       "cbcSubscriptionID" -> o.cbcSubscriptionID
     )
-  }
 
   implicit val reads: Reads[SubscriptionResponse] =
     ((JsPath \ "processingDate").read[LocalDateTime] and
@@ -135,12 +131,11 @@ object SubscriptionResponse {
 }
 case class UpdateResponse(processingDate: LocalDateTime)
 object UpdateResponse {
-  val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
-  implicit val format: Writes[UpdateResponse] = new Writes[UpdateResponse] {
-    override def writes(o: UpdateResponse) = Json.obj(
+  private val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+  implicit val format: Writes[UpdateResponse] = (o: UpdateResponse) =>
+    Json.obj(
       "processingDate" -> o.processingDate.format(formatter)
     )
-  }
 
   implicit val reads: Reads[UpdateResponse] = (JsPath \ "processingDate").read[LocalDateTime].map(UpdateResponse(_))
 }
@@ -165,7 +160,7 @@ object GetResponse {
   )
 
   implicit val format: Format[GetResponse] = new Format[GetResponse] {
-    override def writes(o: GetResponse) = Json.obj(
+    override def writes(o: GetResponse): JsObject = Json.obj(
       "safeId"  -> o.safeId,
       "names"   -> ContactName.format.writes(o.names),
       "contact" -> ContactDetails.format.writes(o.contact),
