@@ -27,7 +27,7 @@ import play.api.libs.json.{JsError, Json}
 import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.cbcr.emailaddress.EmailAddress
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 
 import java.time.LocalDateTime

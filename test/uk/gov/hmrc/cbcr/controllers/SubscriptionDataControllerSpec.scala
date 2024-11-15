@@ -32,7 +32,7 @@ import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.cbcr.emailaddress.EmailAddress
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

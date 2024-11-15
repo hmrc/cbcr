@@ -84,10 +84,10 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     val request = s"$serviceUrl/$orgLookupURI/utr/$utr"
     logger.info(s"Lookup Request sent to DES")
     withCorrelationId { implicit hc =>
-    http
+      http
         .post(url"$request")
         .withBody(Json.toJson(lookupData))
-        .setHeader(desHeaders:_*)
+        .setHeader(desHeaders: _*)
         .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
@@ -111,7 +111,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   def updateSubscription(safeId: String, cor: CorrespondenceDetails)(implicit
     hc: HeaderCarrier
   ): Future[HttpResponse] = {
-    val request =s"$serviceUrl/$cbcSubscribeURI/$safeId"
+    val request = s"$serviceUrl/$cbcSubscribeURI/$safeId"
     implicit val format: Writes[CorrespondenceDetails] = CorrespondenceDetails.updateWriter
     logger.info(s"Update Request sent to DES")
     withCorrelationId { implicit hc =>

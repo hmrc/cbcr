@@ -26,7 +26,7 @@ import play.api.{Application, Configuration}
 import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.util.{UnitSpec, WireMockMethods}
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.cbcr.emailaddress.EmailAddress
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -132,6 +132,6 @@ class DESConnectorSpec
     implicit val executionContext: ExecutionContext = ExecutionContext.Implicits.global
     val mockAuditConnector: AuditConnector = mock[AuditConnector]
     val servicesConfig: ServicesConfig = mock[ServicesConfig]
-    val connector = app.injector.instanceOf[DESConnectorImpl]
+    val connector: DESConnectorImpl = app.injector.instanceOf[DESConnectorImpl]
   }
 }
