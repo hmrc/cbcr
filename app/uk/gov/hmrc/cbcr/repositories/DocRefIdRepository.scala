@@ -27,6 +27,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,8 +39,9 @@ class DocRefIdRepository @Inject() (mongo: MongoComponent, records: ReactiveDocR
       collectionName = "DocRefId",
       domainFormat = DocRefId.format,
       indexes = Seq(
-        IndexModel(ascending("id"), IndexOptions().name("id"))
-      )
+        IndexModel(ascending("id"), IndexOptions().name("id").expireAfter(3600, TimeUnit.SECONDS))
+      ),
+      replaceIndexes = true
     ) {
 
   override lazy val requiresTtlIndex: Boolean = false
