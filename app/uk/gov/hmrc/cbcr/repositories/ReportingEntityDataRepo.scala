@@ -22,6 +22,7 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.{combine, set, unset}
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
+import play.api.Configuration
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
@@ -29,19 +30,31 @@ import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
 import java.time._
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
-class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
+class ReportingEntityDataRepo @Inject() (mongo: MongoComponent, config: Configuration)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[ReportingEntityDataModel](
       mongoComponent = mongo,
       collectionName = "ReportingEntityData",
       domainFormat = ReportingEntityDataModel.format,
       indexes = Seq(
-        IndexModel(ascending("reportingEntityDRI"), IndexOptions().name("Reporting Entity DocRefId").unique(true))
-      )
+        IndexModel(
+          ascending("reportingEntityDRI"),
+          IndexOptions()
+            .name("Reporting Entity DocRefId")
+            .unique(true)
+            .expireAfter(
+              config.get[FiniteDuration]("mongodb.reporting-entity-data-repo-cache-ttl.expiry-time").toSeconds,
+              TimeUnit.HOURS
+            )
+        )
+      ),
+      replaceIndexes = true
     ) {
   override lazy val requiresTtlIndex: Boolean = false
 

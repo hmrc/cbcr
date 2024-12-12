@@ -19,23 +19,36 @@ import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.{IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
+import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.MessageRefId
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class MessageRefIdRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
+class MessageRefIdRepository @Inject() (mongo: MongoComponent, config: Configuration)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[MessageRefId](
       mongoComponent = mongo,
       collectionName = "MessageRefId",
       domainFormat = MessageRefId.format,
       indexes = Seq(
-        IndexModel(ascending("messageRefId"), IndexOptions().unique(true).name("Message Ref MessageRefId"))
-      )
+        IndexModel(
+          ascending("messageRefId"),
+          IndexOptions()
+            .unique(true)
+            .name("Message Ref MessageRefId")
+            .expireAfter(
+              config.get[FiniteDuration]("mongodb.message-ref-id-repo-cache-ttl.expiry-time").toSeconds,
+              TimeUnit.HOURS
+            )
+        )
+      ),
+      replaceIndexes = true
     ) {
   override lazy val requiresTtlIndex: Boolean = false
 

@@ -22,12 +22,15 @@ import org.mongodb.scala.model.Indexes.ascending
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{Filters, IndexModel, IndexOptions}
 import org.mongodb.scala.result.{DeleteResult, InsertManyResult, InsertOneResult}
+import play.api.Configuration
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
 
+import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -43,8 +46,10 @@ class BackupSubscriptionDataRepository @Inject() (mongo: MongoComponent)(implici
     ) {}
 
 @Singleton
-class SubscriptionDataRepository @Inject() (mongo: MongoComponent)(backupRepo: BackupSubscriptionDataRepository)(
-  implicit ec: ExecutionContext
+class SubscriptionDataRepository @Inject() (mongo: MongoComponent, config: Configuration)(
+  backupRepo: BackupSubscriptionDataRepository
+)(implicit
+  ec: ExecutionContext
 ) extends PlayMongoRepository[SubscriptionDetails](
       mongoComponent = mongo,
       collectionName = "Subscription_Data",
@@ -53,9 +58,28 @@ class SubscriptionDataRepository @Inject() (mongo: MongoComponent)(backupRepo: B
         Codecs.playFormatCodec(SubscriberContact.formats)
       ),
       indexes = Seq(
-        IndexModel(ascending("cbcId"), IndexOptions().name("CBCId Index").unique(true)),
-        IndexModel(ascending("utr"), IndexOptions().name("Utr Index").unique(true))
-      )
+        IndexModel(
+          ascending("cbcId"),
+          IndexOptions()
+            .name("CBCId Index")
+            .unique(true)
+            .expireAfter(
+              config.get[FiniteDuration]("mongodb.subscription-data-repo-cache-ttl.expiry-time").toSeconds,
+              TimeUnit.HOURS
+            )
+        ),
+        IndexModel(
+          ascending("utr"),
+          IndexOptions()
+            .name("Utr Index")
+            .unique(true)
+            .expireAfter(
+              config.get[FiniteDuration]("mongodb.subscription-data-repo-cache-ttl.expiry-time").toSeconds,
+              TimeUnit.HOURS
+            )
+        )
+      ),
+      replaceIndexes = true
     ) {
   def clearCBCId(cbcId: CBCId): Future[DeleteResult] =
     preservingMdc {
