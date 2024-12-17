@@ -46,7 +46,7 @@ class DocRefIdRepository @Inject() (mongo: MongoComponent, records: ReactiveDocR
           IndexOptions()
             .name("id")
             .expireAfter(
-              config.get[FiniteDuration]("mongodb.doc-ref-id-repo-cache-ttl.expiry-time").toSeconds,
+              config.get[FiniteDuration]("mongodb.cache-ttl.expiry-time").toSeconds,
               TimeUnit.SECONDS
             )
         )

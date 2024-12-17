@@ -49,8 +49,8 @@ class ReportingEntityDataRepo @Inject() (mongo: MongoComponent, config: Configur
             .name("Reporting Entity DocRefId")
             .unique(true)
             .expireAfter(
-              config.get[FiniteDuration]("mongodb.reporting-entity-data-repo-cache-ttl.expiry-time").toSeconds,
-              TimeUnit.HOURS
+              config.get[FiniteDuration]("mongodb.cache-ttl.expiry-time").toSeconds,
+              TimeUnit.SECONDS
             )
         )
       ),

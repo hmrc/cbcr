@@ -64,8 +64,8 @@ class SubscriptionDataRepository @Inject() (mongo: MongoComponent, config: Confi
             .name("CBCId Index")
             .unique(true)
             .expireAfter(
-              config.get[FiniteDuration]("mongodb.subscription-data-repo-cache-ttl.expiry-time").toSeconds,
-              TimeUnit.HOURS
+              config.get[FiniteDuration]("mongodb.cache-ttl.expiry-time").toSeconds,
+              TimeUnit.SECONDS
             )
         ),
         IndexModel(
@@ -74,8 +74,8 @@ class SubscriptionDataRepository @Inject() (mongo: MongoComponent, config: Confi
             .name("Utr Index")
             .unique(true)
             .expireAfter(
-              config.get[FiniteDuration]("mongodb.subscription-data-repo-cache-ttl.expiry-time").toSeconds,
-              TimeUnit.HOURS
+              config.get[FiniteDuration]("mongodb.cache-ttl.expiry-time").toSeconds,
+              TimeUnit.SECONDS
             )
         )
       ),

@@ -43,8 +43,8 @@ class MessageRefIdRepository @Inject() (mongo: MongoComponent, config: Configura
             .unique(true)
             .name("Message Ref MessageRefId")
             .expireAfter(
-              config.get[FiniteDuration]("mongodb.message-ref-id-repo-cache-ttl.expiry-time").toSeconds,
-              TimeUnit.HOURS
+              config.get[FiniteDuration]("mongodb.cache-ttl.expiry-time").toSeconds,
+              TimeUnit.SECONDS
             )
         )
       ),
