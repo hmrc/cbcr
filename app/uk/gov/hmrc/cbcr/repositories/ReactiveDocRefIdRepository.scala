@@ -17,19 +17,35 @@
 package uk.gov.hmrc.cbcr.repositories
 
 import com.google.inject.{Inject, Singleton}
+import org.mongodb.scala.model.Indexes.ascending
+import org.mongodb.scala.model.{IndexModel, IndexOptions}
+import play.api.Configuration
 import uk.gov.hmrc.cbcr.models.DocRefIdRecord
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.FiniteDuration
 
 @Singleton
-class ReactiveDocRefIdRepository @Inject() (mongo: MongoComponent)(implicit ec: ExecutionContext)
+class ReactiveDocRefIdRepository @Inject() (mongo: MongoComponent, config: Configuration)(implicit ec: ExecutionContext)
     extends PlayMongoRepository[DocRefIdRecord](
       mongoComponent = mongo,
       collectionName = "DocRefId",
       domainFormat = DocRefIdRecord.format,
-      indexes = Seq()
+      indexes = Seq(
+        IndexModel(
+          ascending("id"),
+          IndexOptions()
+            .name("id")
+            .expireAfter(
+              config.get[FiniteDuration]("mongodb.cache-ttl.expiry-time").toSeconds,
+              TimeUnit.SECONDS
+            )
+        )
+      ),
+      replaceIndexes = true
     ) {
   override lazy val requiresTtlIndex: Boolean = false
 }
