@@ -17,9 +17,9 @@
 package uk.gov.hmrc.cbcr.emailaddress
 
 import com.google.inject.ImplementedBy
-import play.api.data.validation.{Constraint, Constraints, Valid}
 
 import javax.inject.Singleton
+import scala.util.matching.Regex
 
 case class EmailAddress(value: String) extends StringValue
 
@@ -31,10 +31,10 @@ trait EmailValidation {
 @Singleton
 class EmailAddressValidation extends EmailValidation {
   def isValid(email: String): Boolean = {
-    val emailConstraint: Constraint[String] = Constraints.emailAddress
-    emailConstraint(email) match {
-      case Valid => true
-      case _     => false
+    val validEmailRegex: Regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".r
+    email match {
+      case validEmailRegex(_*) => true
+      case _                   => false
     }
   }
 }

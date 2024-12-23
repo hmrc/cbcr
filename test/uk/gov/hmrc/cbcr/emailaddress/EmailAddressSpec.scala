@@ -31,29 +31,34 @@ class EmailAddressSpec extends AnyWordSpec with ScalaCheckPropertyChecks with Ma
       }
     }
 
-    "validate invalid email" in {
-      emailAddressValidation.isValid(EmailAddress("sausages")) shouldBe false
-    }
+  }
 
-    "Validate email ending with invalid characters" in {
-      forAll(validEmailAddresses()) { address =>
-        emailAddressValidation.isValid(EmailAddress(address + "§")) shouldBe false
-      }
-    }
+  "validate invalid email" in {
+    emailAddressValidation.isValid(EmailAddress("sausages")) shouldBe false
+  }
 
-    "Validate an empty email" in {
-      emailAddressValidation.isValid(EmailAddress("")) shouldBe false
+  "Validate email ending with invalid characters" in {
+    forAll(validEmailAddresses()) { address =>
+      emailAddressValidation.isValid(EmailAddress(address + "§")) shouldBe false
     }
+  }
 
-    "Validate repeated email" in {
-      emailAddressValidation.isValid(EmailAddress("test@domain.comtest@domain.com")) shouldBe false
-    }
+  "Validate an empty email" in {
+    emailAddressValidation.isValid(EmailAddress("")) shouldBe false
+  }
 
-    "Validate when the '@' is missing" in {
-      forAll { s: String =>
-        whenever(!s.contains("@")) {
-          emailAddressValidation.isValid(EmailAddress(s)) shouldBe false
-        }
+  "Validate repeated email" in {
+    emailAddressValidation.isValid(EmailAddress("test@domain.comtest@domain.com")) shouldBe false
+  }
+
+  "Validate an test@test email" in {
+    emailAddressValidation.isValid(EmailAddress("test@test")) shouldBe false
+  }
+
+  "Validate when the '@' is missing" in {
+    forAll { s: String =>
+      whenever(!s.contains("@")) {
+        emailAddressValidation.isValid(EmailAddress(s)) shouldBe false
       }
     }
   }
@@ -67,5 +72,30 @@ class EmailAddressSpec extends AnyWordSpec with ScalaCheckPropertyChecks with Ma
       val e = EmailAddress("test@domain.com")
       e.toString should be("test@domain.com")
     }
+
   }
+
+  "A email address domain" should {
+
+    "not create for invalid domains" in {
+      emailAddressValidation.isValid("test@e.") shouldBe false
+      emailAddressValidation.isValid("test@.uk") shouldBe false
+      emailAddressValidation.isValid("test@.com") shouldBe false
+      emailAddressValidation.isValid("test@*domain") shouldBe false
+    }
+
+  }
+
+  "An email domain validation" should {
+    "return true for a domain that has MX record (ex: gmail.com)" in {
+      val email = new EmailAddressValidation
+      email.isValid("mike@gmail.com") shouldBe true
+      email.isValid("mike@msn.co.uk") shouldBe true
+    }
+    "return false for an invalid domain" in {
+      val email = new EmailAddressValidation
+      email.isValid("mike@fortytwoisnotananswer.org") shouldBe true
+    }
+  }
+
 }
