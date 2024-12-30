@@ -17,10 +17,11 @@
 package uk.gov.hmrc.cbcr.emailaddress
 
 import com.google.inject.ImplementedBy
+import play.api.Logger
 import uk.gov.hmrc.cbcr.emailaddress.EmailAddressValidation.validEmail
 
-import javax.naming.Context.{INITIAL_CONTEXT_FACTORY => ICF}
 import javax.inject.Singleton
+import javax.naming.Context.{INITIAL_CONTEXT_FACTORY => ICF}
 import javax.naming.directory.InitialDirContext
 import scala.jdk.CollectionConverters._
 import scala.util.Try
@@ -28,13 +29,13 @@ import scala.util.matching.Regex
 
 case class EmailAddress(value: String) extends StringValue {
 
-  val (mailbox, domain): (Mailbox, Domain) = value match {
-    case validEmail(m, d) => (Mailbox(m), Domain(d))
-    case invalidEmail     => throw new IllegalArgumentException(s"'$invalidEmail' is not a valid email address")
-  }
-
   lazy val obfuscated: ObfuscatedEmailAddress = ObfuscatedEmailAddress.apply(value)
 
+  val (mailbox, domain): (Mailbox, Domain) = value match {
+    case validEmail(m, d) => (Mailbox(m), Domain(d))
+    case invalidEmail =>
+      throw new IllegalArgumentException(s"'$invalidEmail' is not a valid email address")
+  }
 }
 case class Mailbox(value: String) extends StringValue
 
@@ -46,6 +47,7 @@ case class Domain(value: String) extends StringValue {
 }
 @ImplementedBy(classOf[EmailAddressValidation])
 trait EmailValidation {
+  lazy val logger: Logger = Logger(getClass)
   def isValid(email: String): Boolean
 }
 
@@ -75,7 +77,10 @@ class EmailAddressValidation extends EmailValidation {
   def isValid(email: String): Boolean =
     email match {
       case validEmail(_, _) if isHostMailServer(EmailAddress(email).domain) => true
-      case _                                                                => false
+      case _ =>
+        val obfuscatedEmail = EmailAddress(email).obfuscated
+        logger.error(s"Invalid email Address : $obfuscatedEmail ")
+        false
     }
 }
 
