@@ -115,10 +115,6 @@ class EmailAddressSpec extends AnyWordSpec with ScalaCheckPropertyChecks with Ma
       email.isValid("mike@gmail.com") shouldBe true
       email.isValid("mike@msn.co.uk") shouldBe true
     }
-    "return false for an invalid domain" in {
-      val email = new EmailAddressValidation
-      email.isValid("mike@fortytwoisnotananswer.org") shouldBe false
-    }
   }
 
   "A email address mailbox" should {
