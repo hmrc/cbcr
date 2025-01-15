@@ -74,14 +74,18 @@ class EmailAddressValidation extends EmailValidation {
     }
   }
 
-  def isValid(email: String): Boolean =
+  def isValid(email: String): Boolean = {
+    val obfuscatedEmail = EmailAddress(email).obfuscated
     email match {
       case validEmail(_, _) if isHostMailServer(EmailAddress(email).domain) => true
+      case validEmail(_, _) =>
+        logger.warn(s"Invalid email Address (host validation failure) : $obfuscatedEmail")
+        true
       case _ =>
-        val obfuscatedEmail = EmailAddress(email).obfuscated
-        logger.error(s"Invalid email Address : $obfuscatedEmail ")
+        logger.error(s"Invalid email Address : $obfuscatedEmail")
         false
     }
+  }
 }
 
 object EmailAddressValidation {
