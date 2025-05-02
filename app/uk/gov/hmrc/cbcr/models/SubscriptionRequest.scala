@@ -117,7 +117,7 @@ object SubscriptionRequest {
 case class SubscriptionResponse(processingDate: LocalDateTime, cbcSubscriptionID: CBCId)
 
 object SubscriptionResponse {
-  private val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
   implicit val format: Writes[SubscriptionResponse] = (o: SubscriptionResponse) =>
     Json.obj(
       "processingDate"    -> o.processingDate.format(formatter),
@@ -131,7 +131,7 @@ object SubscriptionResponse {
 }
 case class UpdateResponse(processingDate: LocalDateTime)
 object UpdateResponse {
-  private val formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd'T'HH:mm:ss'Z'")
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
   implicit val format: Writes[UpdateResponse] = (o: UpdateResponse) =>
     Json.obj(
       "processingDate" -> o.processingDate.format(formatter)
