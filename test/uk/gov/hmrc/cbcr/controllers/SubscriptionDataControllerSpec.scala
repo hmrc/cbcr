@@ -22,13 +22,11 @@ import org.bson.BsonNull
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.Configuration
 import play.api.http.Status
 import play.api.libs.json.Json._
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.AnyContentAsEmpty
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.cbcr.util.UnitSpec
@@ -40,8 +38,6 @@ import scala.concurrent.Future
 class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite {
 
   private val store = mock[SubscriptionDataRepository]
-
-  private val config = app.injector.instanceOf[Configuration]
 
   private val bpr = BusinessPartnerRecord(
     "MySafeID",
@@ -57,9 +53,8 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
   private val exampleSubscriberContact =
     SubscriberContact(None, "firstName", "lastName", PhoneNumber("02072653787").get, EmailAddress("dave@dave.com"))
 
-  private val desConnector = mock[DESConnector]
   when(store.getSubscriptions(any())).thenReturn(Future.successful(List()))
-  val controller = new SubscriptionDataController(store, desConnector, cBCRAuth, config, cc)
+  val controller = new SubscriptionDataController(store, cBCRAuth, cc)
 
   private val fakePostRequest: FakeRequest[JsValue] =
     FakeRequest(Helpers.POST, "/saveSubscriptionData").withBody(toJson(exampleSubscriptionData))

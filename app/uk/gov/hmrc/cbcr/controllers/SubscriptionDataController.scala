@@ -17,11 +17,9 @@
 package uk.gov.hmrc.cbcr.controllers
 
 import org.mongodb.scala.model.Filters.equal
-import play.api.Configuration
 import play.api.libs.json.{JsError, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.cbcr.auth.CBCRAuth
-import uk.gov.hmrc.cbcr.connectors.DESConnector
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.cbcr.repositories.SubscriptionDataRepository
 import uk.gov.hmrc.mongo.play.json.Codecs
@@ -33,9 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class SubscriptionDataController @Inject() (
   repo: SubscriptionDataRepository,
-  des: DESConnector,
   auth: CBCRAuth,
-  configuration: Configuration,
   cc: ControllerComponents
 )(implicit val ec: ExecutionContext)
     extends BackendController(cc) {

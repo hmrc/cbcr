@@ -23,6 +23,7 @@ import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
+import org.mongodb.scala.gridfs.ObservableFuture
 
 import scala.concurrent.ExecutionContext
 

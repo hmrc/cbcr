@@ -58,7 +58,7 @@ class FileUploadResponseControllerSpec extends UnitSpec with ScalaFutures with M
     }
 
     "respond with a 200 when asked to store an FileUploadResponse" in {
-      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(None))
+      when(repo.save2(any(classOf[FileUploadResponse]))).thenReturn(Future.successful(()))
       val result = controller.saveFileUploadResponse(fakePostRequest)
       status(result) shouldBe Status.OK
     }
