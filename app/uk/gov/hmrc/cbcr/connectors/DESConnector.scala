@@ -88,7 +88,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
       http
         .post(url"$request")
         .withBody(Json.toJson(lookupData))
-        .setHeader(desHeaders: _*)
+        .setHeader(desHeaders *)
         .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
@@ -102,7 +102,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
       http
         .post(url"$request")
         .withBody(Json.toJson(sub))
-        .setHeader(desHeaders: _*)
+        .setHeader(desHeaders *)
         .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
@@ -119,7 +119,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
       http
         .put(url"$request")
         .withBody(Json.toJson(cor))
-        .setHeader(desHeaders: _*)
+        .setHeader(desHeaders *)
         .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)
@@ -132,7 +132,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
     withCorrelationId { implicit hc =>
       http
         .get(url"$request")
-        .setHeader(desHeaders: _*)
+        .setHeader(desHeaders *)
         .execute[HttpResponse]
     } recover { case e: HttpException =>
       HttpResponse(status = e.responseCode, body = e.message)

@@ -112,7 +112,7 @@ object ReportingEntityData {
       (JsPath \ "currencyCode").readNullable[String] and
       (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod] and
       (JsPath \ "tin").read[String].map(_ => false)
-  )(ReportingEntityData.apply _)
+  )(ReportingEntityData.apply)
 
   implicit val writes: OWrites[ReportingEntityData] = Json.writes[ReportingEntityData]
 }
@@ -193,7 +193,7 @@ object ReportingEntityDataModel {
       (JsPath \ "reportingPeriod").readNullable[String].map(_.map(LocalDate.parse)) and
       (JsPath \ "currencyCode").readNullable[String] and
       (JsPath \ "entityReportingPeriod").readNullable[EntityReportingPeriod]
-  )(ReportingEntityDataModel.apply _)
+  )(ReportingEntityDataModel.apply)
 
   implicit val writes: Writes[ReportingEntityDataModel] = Json.writes[ReportingEntityDataModel]
 
