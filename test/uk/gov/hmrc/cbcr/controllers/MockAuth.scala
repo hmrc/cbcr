@@ -33,7 +33,7 @@ trait MockAuth extends MockitoSugar {
     Future successful Some(AffinityGroup.Agent)
 
   private def agentAuthStub(returnValue: Future[Option[AffinityGroup]]) =
-    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(), any()))
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(using any(), any()))
       .thenReturn(returnValue)
 
   agentAuthStub(agentAffinity)

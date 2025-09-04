@@ -40,7 +40,7 @@ class CBCREmailControllerSpec extends UnitSpec with ScalaFutures with MockAuth {
   "The CBCREmailController" should {
     "return a 202 for a valid rest call" in {
       val fakeRequestSubscribe = FakeRequest("POST", "/email").withBody(Json.toJson(correctEmail))
-      when(mockEmailService.sendEmail(any())(any())) thenReturn Future.successful(Accepted)
+      when(mockEmailService.sendEmail(any())(using any())).thenReturn(Future.successful(Accepted))
 
       val response = cbcrEmailController.sendEmail()(fakeRequestSubscribe)
       status(response) shouldBe Status.ACCEPTED

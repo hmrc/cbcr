@@ -41,11 +41,11 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
 
   val writeResult: DeleteResult = DeleteResult.acknowledged(1)
 
-  when(docRefIdRepo.delete(any())) thenReturn Future.successful(writeResult)
-  when(reportingEntityDataRepo.delete(any())) thenReturn Future.successful(writeResult)
+  when(docRefIdRepo.delete(any())).thenReturn(Future.successful(writeResult))
+  when(reportingEntityDataRepo.delete(any())).thenReturn(Future.successful(writeResult))
 
   // This is now being called and it wasn't bruv
-  when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
+  when(mockAudit.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Disabled))
 
   new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
 
@@ -60,8 +60,8 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
     }
 
     "make an audit call" in {
-      when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
-      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
+      when(mockAudit.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(using any(), any())
     }
 
   }
@@ -71,36 +71,38 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
     "complete without error" in {
       reset(reportingEntityDataRepo)
       reset(mockAudit)
-      when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
-      when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Success)
+      when(reportingEntityDataRepo.delete(any())).thenReturn(Future.failed[DeleteResult](new Exception()))
+      when(mockAudit.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Success))
 
       new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())
-      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(using any(), any())
     }
 
     "complete without error but audit fails" in {
       reset(reportingEntityDataRepo)
       reset(mockAudit)
-      when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
-      when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
-        AuditResult.Failure("Audit Failure", None)
+      when(reportingEntityDataRepo.delete(any())).thenReturn(Future.failed[DeleteResult](new Exception()))
+      when(mockAudit.sendExtendedEvent(any())(using any(), any())).thenReturn(
+        Future.successful(
+          AuditResult.Failure("Audit Failure", None)
+        )
       )
 
       new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())
-      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(using any(), any())
     }
 
     "complete without error but audit disabled" in {
       reset(reportingEntityDataRepo)
       reset(mockAudit)
-      when(reportingEntityDataRepo.delete(any())) thenReturn Future.failed[DeleteResult](new Exception())
-      when(mockAudit.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(AuditResult.Disabled)
+      when(reportingEntityDataRepo.delete(any())).thenReturn(Future.failed[DeleteResult](new Exception()))
+      when(mockAudit.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Disabled))
 
       new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
       verify(reportingEntityDataRepo, times(4)).delete(any())
-      verify(mockAudit, times(4)).sendExtendedEvent(any())(any(), any())
+      verify(mockAudit, times(4)).sendExtendedEvent(any())(using any(), any())
     }
 
   }

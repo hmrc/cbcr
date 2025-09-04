@@ -90,7 +90,7 @@ class ReportingEntityDataSpec extends UnitSpec with Suite {
 
     "fail if AdditionalInfo is invalid" in {
       val caught = intercept[Exception](Json.parse(additionalInfoInvalid).as[ReportingEntityData])
-      assert(caught.getMessage contains "JsResultException")
+      assert(caught.getMessage.contains("JsResultException"))
     }
   }
 

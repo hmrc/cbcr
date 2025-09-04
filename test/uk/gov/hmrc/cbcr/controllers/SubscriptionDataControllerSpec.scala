@@ -92,13 +92,13 @@ class SubscriptionDataControllerSpec extends UnitSpec with MockAuth with GuiceOn
     }
 
     "respond with a 200 when asked to update SubscriptionData" in {
-      when(store.update(any(), any(classOf[SubscriberContact]))) thenReturn Future.successful(true)
+      when(store.update(any(), any(classOf[SubscriberContact]))).thenReturn(Future.successful(true))
       val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
       status(result) shouldBe Status.OK
     }
 
     "respond with a 500 if there is a DB failure during update" in {
-      when(store.update(any(), any(classOf[SubscriberContact]))) thenReturn Future.successful(false)
+      when(store.update(any(), any(classOf[SubscriberContact]))).thenReturn(Future.successful(false))
       val result = controller.updateSubscriberContactDetails(cbcId)(fakePutRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }

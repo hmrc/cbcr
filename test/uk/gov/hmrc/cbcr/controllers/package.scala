@@ -40,7 +40,7 @@ package object controllers extends MockitoSugar {
     Future successful Some(AffinityGroup.Agent)
 
   def passAuthMock(): OngoingStubbing[Future[Option[AffinityGroup]]] =
-    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(any(), any()))
+    when(mockAuthConnector.authorise(any(), any[Retrieval[Option[AffinityGroup]]]())(using any(), any()))
       .thenReturn(agentAffinity)
 
 }

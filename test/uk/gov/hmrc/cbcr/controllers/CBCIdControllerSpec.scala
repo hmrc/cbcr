@@ -73,7 +73,8 @@ class CBCIdControllerSpec
     "query the remoteCBCId generator when useDESApi is set to true" in {
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(srb))
-      when(handler.createSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("cbc-id" -> id.value)))
+      when(handler.createSubscription(any())(using any()))
+        .thenReturn(Future.successful(Ok(Json.obj("cbc-id" -> id.value))))
       val response = controller.subscribe()(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
       jsonBodyOf(response).futureValue shouldEqual Json.obj("cbc-id" -> "XTCBC0100000001")
@@ -90,9 +91,8 @@ class CBCIdControllerSpec
     "return 200 when updateSubscription passed valid CorrespondenceDetails in request" in {
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("POST", "/cbc-id").withBody(Json.toJson(crb))
-      when(handler.updateSubscription(any(), any())(any())) thenReturn Future.successful(
-        Ok(Json.obj("cbc-id" -> id.value))
-      )
+      when(handler.updateSubscription(any(), any())(using any()))
+        .thenReturn(Future.successful(Ok(Json.obj("cbc-id" -> id.value))))
       val response = controller.updateSubscription("safeId")(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
     }
@@ -107,7 +107,7 @@ class CBCIdControllerSpec
     "no error generated when getSubscription called" in {
       val controller = new CBCIdController(handler, cBCRAuth, cc)
       val fakeRequestSubscribe = FakeRequest("GET", "/cbc-id")
-      when(handler.getSubscription(any())(any())) thenReturn Future.successful(Ok(Json.obj("some" -> "thing")))
+      when(handler.getSubscription(any())(using any())).thenReturn(Future.successful(Ok(Json.obj("some" -> "thing"))))
       val response = controller.getSubscription("safeId")(fakeRequestSubscribe)
       status(response) shouldBe Status.OK
     }
