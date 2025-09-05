@@ -31,7 +31,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[DESConnectorImpl])
-trait DESConnector extends RawResponseReads with HttpErrorFunctions {
+trait DESConnector extends HttpErrorFunctions {
 
   lazy val logger: Logger = Logger(this.getClass)
 
@@ -59,7 +59,7 @@ trait DESConnector extends RawResponseReads with HttpErrorFunctions {
   ): HttpResponse =
     response.status match {
       case 429 =>
-        logger.error("[RATE LIMITED] Received 429 from DES - converting to 503")
+        logger.error(s"[RATE LIMITED] Received 429 from DES - converting to 503, method $http, url $url")
         throw UpstreamErrorResponse("429 received from DES - converted to 503", 429, 503)
       case _ => response
     }
