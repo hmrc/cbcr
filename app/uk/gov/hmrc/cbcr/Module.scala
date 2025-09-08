@@ -29,8 +29,9 @@ import uk.gov.hmrc.play.bootstrap.http.HttpClientV2Provider
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
+import scala.annotation.nowarn
 
-class Module(environment: Environment, configuration: Configuration) extends AbstractModule {
+class Module(@nowarn environment: Environment, configuration: Configuration) extends AbstractModule {
 
   lazy val logger: Logger = Logger(this.getClass)
 
