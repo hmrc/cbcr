@@ -5,13 +5,13 @@ object AppDependencies {
   val hmrc = "uk.gov.hmrc"
   val playVersion = "play-30"
   val mongoVersion = "2.7.0"
-  var bootstrapVersion = "9.19.0"
+  var bootstrapVersion = "10.1.0"
   val mockitoScalaVersion = "3.2.17.0"
 
   val compile: Seq[ModuleID] = Seq(
     ws,
     "uk.gov.hmrc"       %% s"bootstrap-backend-$playVersion" % bootstrapVersion,
-    "uk.gov.hmrc"       %% s"domain-$playVersion"            % "11.0.0",
+    "uk.gov.hmrc"       %% s"domain-$playVersion"            % "13.0.0",
     "org.typelevel"     %% "cats-core"                       % "2.12.0",
     "uk.gov.hmrc.mongo" %% s"hmrc-mongo-$playVersion"        % mongoVersion,
     "commons-codec"     % "commons-codec"                    % "1.17.1",
