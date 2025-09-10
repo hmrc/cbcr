@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.cbcr.repositories
 
+import org.mongodb.scala.gridfs.ObservableFuture
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Configuration
@@ -23,7 +24,6 @@ import uk.gov.hmrc.cbcr.controllers.MockAuth
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.cbcr.util.UnitSpec
 import uk.gov.hmrc.http.HeaderCarrier
-import org.mongodb.scala.gridfs.ObservableFuture
 
 import scala.concurrent.ExecutionContext
 

@@ -20,9 +20,7 @@ import org.mongodb.scala.model.Filters.equal
 import uk.gov.hmrc.cbcr.models.FileUploadResponse
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
-import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
-import org.mongodb.scala.SingleObservableFuture
-import org.mongodb.scala.ObservableFuture
+import uk.gov.hmrc.mdc.Mdc.preservingMdc
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}

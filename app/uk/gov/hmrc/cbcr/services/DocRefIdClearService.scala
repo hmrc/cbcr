@@ -47,7 +47,7 @@ class DocRefIdClearService @Inject() (
 
   if (docRefIds.nonEmpty) {
     logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")
-    def ignoreOutputAndHandleError(f: Future[_]): Future[Unit] =
+    def ignoreOutputAndHandleError(f: Future[?]): Future[Unit] =
       f.map(_ => ()).handleError(_.getMessage.pipe(logger.error(_)))
     Await.result(
       docRefIds

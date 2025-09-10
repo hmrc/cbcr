@@ -46,16 +46,16 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
   "the email service" should {
     "return 202 when everything is ok" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(202, "202"))
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
+      when(mockEmailConnector.sendEmail(any())(using any())).thenReturn(Future.successful(HttpResponse(202, "202")))
+      when(mockAuditConnector.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(Success))
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe Accepted
     }
 
     "return 400 when everything is ok" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Success)
+      when(mockEmailConnector.sendEmail(any())(using any())).thenReturn(Future.successful(HttpResponse(400, "400")))
+      when(mockAuditConnector.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(Success))
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe BadRequest
@@ -63,9 +63,11 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
     "return 400 when everything is ok but audit fails" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(
-        Failure("test to designed to provoke an emotional response", None)
+      when(mockEmailConnector.sendEmail(any())(using any())).thenReturn(Future.successful(HttpResponse(400, "400")))
+      when(mockAuditConnector.sendExtendedEvent(any())(using any(), any())).thenReturn(
+        Future.successful(
+          Failure("test to designed to provoke an emotional response", None)
+        )
       )
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
@@ -74,8 +76,8 @@ class EmailServiceSpec extends UnitSpec with MockitoSugar with GuiceOneAppPerSui
 
     "return 400 when everything is ok but audit disabled" in {
 
-      when(mockEmailConnector.sendEmail(any())(any())) thenReturn Future.successful(HttpResponse(400, "400"))
-      when(mockAuditConnector.sendExtendedEvent(any())(any(), any())) thenReturn Future.successful(Disabled)
+      when(mockEmailConnector.sendEmail(any())(using any())).thenReturn(Future.successful(HttpResponse(400, "400")))
+      when(mockAuditConnector.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(Disabled))
 
       val result: Future[Result] = emailService.sendEmail(correctEmail)
       await(result) shouldBe BadRequest

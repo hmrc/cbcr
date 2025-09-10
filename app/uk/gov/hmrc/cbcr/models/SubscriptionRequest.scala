@@ -126,7 +126,7 @@ object SubscriptionResponse {
 
   implicit val reads: Reads[SubscriptionResponse] =
     ((JsPath \ "processingDate").read[LocalDateTime] and
-      (JsPath \ "cbcSubscriptionID").read[CBCId])(SubscriptionResponse.apply _)
+      (JsPath \ "cbcSubscriptionID").read[CBCId])(SubscriptionResponse.apply)
 
 }
 case class UpdateResponse(processingDate: LocalDateTime)
@@ -144,7 +144,7 @@ case class GetResponse(safeId: String, names: ContactName, contact: ContactDetai
 object GetResponse {
 
   implicit val contactReads: Reads[ContactDetails] =
-    ((JsPath \ "email").read[EmailAddress] and (JsPath \ "phoneNumber").read[PhoneNumber])(ContactDetails.apply _)
+    ((JsPath \ "email").read[EmailAddress] and (JsPath \ "phoneNumber").read[PhoneNumber])(ContactDetails.apply)
 
   val grReads: Reads[GetResponse] = ((JsPath \ "safeId").read[String] and
     (JsPath \ "names").read[ContactName] and

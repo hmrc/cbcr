@@ -15,7 +15,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(playDefaultPort := 9797)
   .settings(majorVersion := 1)
   .settings(
-    scalaVersion := "3.3.5",
+    scalaVersion := "3.7.1",
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     scalacOptions ~= { options =>
       options.distinct

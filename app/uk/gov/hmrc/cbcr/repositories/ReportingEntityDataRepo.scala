@@ -25,9 +25,7 @@ import org.mongodb.scala.result.{DeleteResult, InsertOneResult}
 import uk.gov.hmrc.cbcr.models._
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
-import uk.gov.hmrc.play.http.logging.Mdc.preservingMdc
-import org.mongodb.scala.SingleObservableFuture
-import org.mongodb.scala.gridfs.ObservableFuture
+import uk.gov.hmrc.mdc.Mdc.preservingMdc
 
 import java.time._
 import java.time.format.DateTimeFormatter
@@ -98,7 +96,7 @@ class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: Exe
             p.additionalInfoDRI.flatMap(_.corrDocRefId).map(c => equal("additionalInfoDRI", c.cid.id)) ++
               p.reportingEntityDRI.corrDocRefId.map(c => equal("reportingEntityDRI", c.cid.id)) ++
               p.cbcReportsDRI.flatMap(_.corrDocRefId).map(c => equal("cbcReportsDRI", c.cid.id))
-          Filters.and(conditions: _*)
+          Filters.and(conditions *)
         }
 
         for {
@@ -108,7 +106,7 @@ class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: Exe
                         throw new NoSuchElementException("Original report not found in Mongo, while trying to update.")
                     }
           modifier = buildModifier(p, record)
-          update <- collection.findOneAndUpdate(condition, combine(modifier: _*)).toFutureOption()
+          update <- collection.findOneAndUpdate(condition, combine(modifier *)).toFutureOption()
         } yield update.isDefined
       }
     }
@@ -194,7 +192,7 @@ class ReportingEntityDataRepo @Inject() (mongo: MongoComponent)(implicit ec: Exe
             .pipe(timestampRegex.findFirstIn(_).get)
             .pipe(LocalDateTime.parse(_, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss")))
         )
-        .max((a: LocalDateTime, b: LocalDateTime) => a.compareTo(b))
+        .max(using (a: LocalDateTime, b: LocalDateTime) => a.compareTo(b))
         .toString
         .filterNot(timestampSeparator.contains)
     reportingEntityData.filter(_.reportingEntityDRI.id.contains(searchedFor))

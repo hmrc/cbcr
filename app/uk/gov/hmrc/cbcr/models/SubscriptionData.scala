@@ -46,7 +46,7 @@ object SubscriberContact {
         (JsPath \ "firstName").read[String] and
         (JsPath \ "lastName").read[String] and
         (JsPath \ "phoneNumber").read[PhoneNumber] and
-        (JsPath \ "email").read[EmailAddress])(SubscriberContact.apply _)
+        (JsPath \ "email").read[EmailAddress])(SubscriberContact.apply)
 
     override def reads(json: JsValue): JsResult[SubscriberContact] = subscriberContactReads.reads(json)
   }
