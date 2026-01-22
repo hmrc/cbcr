@@ -85,13 +85,12 @@ class DESConnectorSpec
     }
 
     "return an error when the future fails" in new Setup {
-      wireMockServer.stop()
       val utr = "700000003"
       when(POST, s"/$orgLookupURI/utr/$utr", body = Some(Json.toJson(lookupData).toString()))
+        .thenReturn(502)
 
       val result: Future[HttpResponse] = connector.lookup(utr)
       await(result).status shouldBe 502
-      wireMockServer.start()
     }
   }
 

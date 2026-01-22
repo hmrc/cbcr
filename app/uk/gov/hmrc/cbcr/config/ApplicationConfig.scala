@@ -23,11 +23,10 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class ApplicationConfig @Inject() (configuration: Configuration, servicesConfig: ServicesConfig) {
-  import uk.gov.hmrc.cbcr.config.ConfigurationOpts.ConfigurationOps
-  private val etmpHod_ = servicesConfig.baseUrl("etmp-hod")
-  private val docRefIdsToClear_ = configuration.load[String]("Prod.DocRefId.clear")
-  def etmpHod: String = etmpHod_
-  def etmpHodEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
-  def etmpHodAuthorizationToken: String = servicesConfig.getConfString("etmp-hod.authorization-token", "")
-  def docRefIdsToClear: String = docRefIdsToClear_
+  val etmpHod: String = servicesConfig.baseUrl("etmp-hod")
+  val etmpHodEnvironment: String = servicesConfig.getConfString("etmp-hod.environment", "")
+  val etmpHodAuthorizationToken: String = servicesConfig.getConfString("etmp-hod.authorization-token", "")
+  val docRefIdsToClear: Seq[String] = configuration.getOptional[Seq[String]]("Prod.DocRefId.clear").getOrElse(Seq())
+  val msgRefIdsToClear: Seq[String] =
+    configuration.getOptional[Seq[String]]("Prod.MessageRefId.clear").getOrElse(Seq())
 }

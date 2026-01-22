@@ -32,7 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPerSuite with Eventually {
 
   private val config = mock[ApplicationConfig]
-  when(config.docRefIdsToClear).thenReturn("docRefId1_docRefId2_docRefId3_docRefId4")
+  when(config.docRefIdsToClear).thenReturn(Seq("docRefId1", "docRefId2", "docRefId3", "docRefId4"))
   private implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   private val docRefIdRepo = mock[DocRefIdRepository]
@@ -44,12 +44,11 @@ class DocRefIdClearServiceSpec extends UnitSpec with MockAuth with GuiceOneAppPe
   when(docRefIdRepo.delete(any())).thenReturn(Future.successful(writeResult))
   when(reportingEntityDataRepo.delete(any())).thenReturn(Future.successful(writeResult))
 
-  // This is now being called and it wasn't bruv
   when(mockAudit.sendExtendedEvent(any())(using any(), any())).thenReturn(Future.successful(AuditResult.Disabled))
 
   new DocRefIdClearService(docRefIdRepo, reportingEntityDataRepo, config, mockAudit)
 
-  "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each '_' separated docrefid, it" should {
+  "If there are docRefIds in the $RUNMODE.DocRefId.clear field then, for each docrefid, it" should {
 
     "call delete to the DocRefIdRepo" in {
       verify(docRefIdRepo, times(4)).delete(any())
