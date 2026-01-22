@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.cbcr.services
 
-import cats.instances.all._
-import cats.syntax.all._
+import cats.instances.all.*
+import cats.syntax.all.*
 import play.api.Logger
 import play.api.libs.json.Json
 import uk.gov.hmrc.cbcr.config.ApplicationConfig
-import uk.gov.hmrc.cbcr.models.DocRefId
-import uk.gov.hmrc.cbcr.repositories.{DocRefIdRepository, ReportingEntityDataRepo}
+import uk.gov.hmrc.cbcr.models.MessageRefId
+import uk.gov.hmrc.cbcr.repositories.MessageRefIdRepository
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 
@@ -32,30 +32,28 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.chaining.scalaUtilChainingOps
 
 @Singleton
-class DocRefIdClearService @Inject() (
-  docRefIdRepo: DocRefIdRepository,
-  reportingEntityDataRepo: ReportingEntityDataRepo,
+class MessageRefIdClearService @Inject() (
+  msgRefIdRepo: MessageRefIdRepository,
   configuration: ApplicationConfig,
   audit: AuditConnector
 )(implicit ec: ExecutionContext) {
 
   lazy val logger: Logger = Logger(this.getClass)
 
-  private val DOCREFID_AUDIT = "CBCR-DocRefIdClear"
+  private val MSG_REFID_AUDIT = "CBCR-MsgRefIdClear"
 
-  val docRefIds: Seq[DocRefId] = configuration.docRefIdsToClear.map(DocRefId.apply)
+  private val msgRefIds: Seq[MessageRefId] = configuration.msgRefIdsToClear.map(MessageRefId.apply)
 
-  if (docRefIds.nonEmpty) {
-    logger.info(s"About to clear DocRefIds:\n${docRefIds.mkString("\n")}")
+  if (msgRefIds.nonEmpty) {
+    logger.info(s"About to clear MsgRefIds:\n${msgRefIds.mkString("\n")}")
     def ignoreOutputAndHandleError(f: Future[?]): Future[Unit] =
       f.map(_ => ()).handleError(_.getMessage.pipe(logger.error(_)))
     Await.result(
-      docRefIds
-        .map { d =>
+      msgRefIds
+        .map { id =>
           for {
-            _   <- docRefIdRepo.delete(d).pipe(ignoreOutputAndHandleError)
-            _   <- reportingEntityDataRepo.delete(d).pipe(ignoreOutputAndHandleError)
-            err <- auditDocRefIdClear(d)
+            _   <- msgRefIdRepo.delete(id).pipe(ignoreOutputAndHandleError)
+            err <- auditMsgRefIdClear(id)
           } yield err.foreach(logger.error(_))
         }
         .pipe(Future.sequence(_)),
@@ -63,15 +61,15 @@ class DocRefIdClearService @Inject() (
     )
   }
 
-  private def auditDocRefIdClear(docRefId: DocRefId): Future[Option[String]] = {
+  private def auditMsgRefIdClear(msgRefId: MessageRefId): Future[Option[String]] = {
     val k =
       audit
         .sendExtendedEvent(
           ExtendedDataEvent(
             "Country-By-Country-Backend",
-            DOCREFID_AUDIT,
+            MSG_REFID_AUDIT,
             detail = Json.obj(
-              "docRefId" -> Json.toJson(docRefId)
+              "msgRefId" -> Json.toJson(msgRefId)
             )
           )
         )
