@@ -4,7 +4,7 @@ import sbt.*
 object AppDependencies {
   val hmrc = "uk.gov.hmrc"
   val playVersion = "play-30"
-  val mongoVersion = "2.11.0"
+  val mongoVersion = "2.7.0"
   var bootstrapVersion = "10.5.0"
   val mockitoScalaVersion = "3.2.17.0"
 
