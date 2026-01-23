@@ -26,6 +26,7 @@ import uk.gov.hmrc.cbcr.config.ConfigurationOpts.ConfigurationOps
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.http.HttpClientV2Provider
+import uk.gov.hmrc.cbcr.services.{DocRefIdClearService, MessageRefIdClearService}
 
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit.{MILLISECONDS, SECONDS}
@@ -73,6 +74,8 @@ class Module(@nowarn environment: Environment, configuration: Configuration) ext
 
     bind(classOf[HttpClientV2]).toProvider(classOf[HttpClientV2Provider])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
+    bind(classOf[DocRefIdClearService]).asEagerSingleton()
+    bind(classOf[MessageRefIdClearService]).asEagerSingleton()
     MDC.put("appName", appName)
   }
 }
